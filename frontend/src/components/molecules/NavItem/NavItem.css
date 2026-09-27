@@ -1,0 +1,75 @@
+.ar-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 32px;
+  padding-right: var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--ink-muted);
+  cursor: pointer;
+  font-size: 14px;
+}
+.ar-nav:hover {
+  background: var(--surface-muted);
+  color: var(--ink);
+}
+.ar-nav.is-active {
+  background: var(--primary-soft);
+  color: var(--ink);
+  font-weight: 500;
+}
+/* Benang merah: penanda "Anda di sini" */
+.ar-nav.is-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--thread);
+}
+.ar-nav-caret {
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  flex: none;
+  transition: transform 0.12s;
+}
+.ar-nav-caret.is-open {
+  transform: rotate(90deg);
+}
+.ar-nav-label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ar-nav-count {
+  font-size: 12px;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+/* Tambahan untuk versi yang bisa dipakai keyboard: tautan dan tombol mewarisi tampilan baris */
+button.ar-nav-caret {
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.ar-nav-link {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}

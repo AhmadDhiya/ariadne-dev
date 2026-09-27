@@ -1,0 +1,35 @@
+.ar-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 280px;
+  max-width: 420px;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--sky);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-md);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 18px;
+  box-sizing: border-box;
+}
+.ar-toast-text {
+  flex: 1;
+}
+.ar-toast-info > .ar-icon {
+  color: var(--sky);
+}
+.ar-toast-success {
+  border-left-color: var(--status-done);
+}
+.ar-toast-success > .ar-icon {
+  color: var(--status-done-ink);
+}
+.ar-toast-error {
+  border-left-color: var(--danger);
+}
+.ar-toast-error > .ar-icon {
+  color: var(--danger);
+}

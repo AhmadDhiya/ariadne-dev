@@ -1,0 +1,19 @@
+.ar-select {
+  font: inherit;
+  height: var(--control-height);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+.ar-select-sm {
+  height: var(--control-height-sm);
+  font-size: 12px;
+}
+.ar-select:disabled {
+  background: var(--surface-muted);
+  color: var(--ink-muted);
+  cursor: not-allowed;
+}

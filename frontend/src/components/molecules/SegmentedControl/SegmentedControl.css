@@ -1,0 +1,30 @@
+/* Mengikuti mockup 04 dan 06: tombol terpilih bergaris di atas latar abu-abu */
+.ar-seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  box-sizing: border-box;
+  height: var(--control-height);
+}
+.ar-seg-btn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  height: 100%;
+  padding: 0 var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+.ar-seg-btn:hover {
+  color: var(--ink);
+}
+.ar-seg-btn.is-selected {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}

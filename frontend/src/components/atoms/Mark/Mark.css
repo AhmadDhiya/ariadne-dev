@@ -1,0 +1,9 @@
+.ar-mark-walls {
+  stroke: var(--ink);
+}
+.ar-mark-thread {
+  stroke: var(--thread);
+}
+.ar-mark-knot {
+  fill: var(--thread);
+}

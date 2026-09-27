@@ -1,0 +1,50 @@
+# Menyalakan seluruh aplikasi: docker compose up --build
+# Pengaturan (termasuk password) diambil dari file .env; salin dari .env.example dulu.
+name: ariadne
+
+services:
+  db:
+    image: postgres:17.11-alpine
+    environment:
+      POSTGRES_DB: ariadne
+      POSTGRES_USER: ariadne
+      # Wajib diisi di .env; tidak ada password bawaan (pedoman A5)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Isi POSTGRES_PASSWORD di file .env (lihat .env.example)}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    # Hanya bisa diakses dari laptop ini (untuk "dotnet run"), tidak dari jaringan (pedoman I4)
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ariadne -d ariadne"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mailpit:
+    # Kotak surat palsu: semua email aplikasi berhenti di sini, tidak terkirim ke orang sungguhan
+    image: axllent/mailpit:v1.31.3
+    ports:
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
+
+  api:
+    build: ./backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__Default: Host=db;Database=ariadne;Username=ariadne;Password=${POSTGRES_PASSWORD}
+      Database__MigrateOnStartup: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+    # Tidak ada port yang dibuka: API hanya diakses lewat nginx di layanan "web"
+
+  web:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      - api
+
+volumes:
+  db-data:

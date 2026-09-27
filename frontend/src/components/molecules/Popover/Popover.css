@@ -1,0 +1,15 @@
+.ar-popover-anchor {
+  position: relative;
+  display: inline-flex;
+}
+.ar-popover {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + var(--space-1));
+}
+.ar-popover-bottom-start {
+  left: 0;
+}
+.ar-popover-bottom-end {
+  right: 0;
+}

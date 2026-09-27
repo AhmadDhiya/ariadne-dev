@@ -1,0 +1,14 @@
+.ar-track {
+  position: relative;
+  background: var(--surface);
+}
+.ar-track-day {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-right: 1px solid var(--line);
+  box-sizing: border-box;
+}
+.ar-track-day.is-weekend {
+  background: repeating-linear-gradient(135deg, var(--surface-muted) 0 4px, transparent 4px 8px);
+}

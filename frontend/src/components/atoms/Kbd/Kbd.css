@@ -1,0 +1,9 @@
+/* Sama dengan ".ar-search kbd" di design system, supaya bisa dipakai ulang */
+.ar-kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink-muted);
+}

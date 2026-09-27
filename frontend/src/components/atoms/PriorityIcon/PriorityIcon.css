@@ -1,0 +1,27 @@
+/* Prioritas tidak pernah pill: glyph polos, tanpa latar */
+.ar-prio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+.ar-prio-critical {
+  color: var(--priority-critical);
+}
+.ar-prio-high {
+  color: var(--priority-high);
+}
+.ar-prio-medium {
+  color: var(--priority-medium);
+}
+.ar-prio-low {
+  color: var(--priority-low);
+}
+/* Perbedaan dari design system: warna prioritas hanya untuk glyph ("used only as glyph
+   colour", brand book). Di tema terang, priority-high (4,06:1) dan priority-medium (3,85:1)
+   kurang dari 4,5:1 untuk teks, jadi kata labelnya memakai ink (pedoman H1). */
+.ar-prio > span {
+  color: var(--ink);
+}

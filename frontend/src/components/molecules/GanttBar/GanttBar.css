@@ -1,0 +1,55 @@
+.ar-bar-wrap {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.ar-bar {
+  display: flex;
+  align-items: center;
+  height: var(--bar-height);
+  padding-left: 4px;
+  box-sizing: border-box;
+  border-radius: var(--radius-sm);
+  color: var(--on-status);
+}
+.ar-bar-not-started {
+  background: var(--surface);
+  border: 1.5px dashed var(--status-not-started);
+  color: var(--status-not-started);
+}
+.ar-bar-progress {
+  background: var(--status-progress);
+}
+.ar-bar-fixing {
+  background: var(--status-fixing);
+}
+.ar-bar-blocked {
+  background: var(--status-blocked);
+}
+.ar-bar-hold {
+  background: var(--status-hold);
+}
+.ar-bar-request {
+  background: var(--status-request);
+}
+.ar-bar-done {
+  background: var(--status-done);
+}
+.ar-bar-routine {
+  background: var(--status-routine);
+}
+.ar-bar.is-overdue {
+  box-shadow:
+    0 0 0 1.5px var(--surface),
+    0 0 0 3px var(--danger);
+}
+.ar-bar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink);
+}

@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Ariadne.Api/Ariadne.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Ariadne.Api.Tests/Ariadne.Api.Tests.csproj" />
+  </Folder>
+</Solution>

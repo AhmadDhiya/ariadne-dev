@@ -1,0 +1,33 @@
+.ar-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ar-field-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.ar-field-label {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.ar-field-req {
+  color: var(--danger);
+}
+.ar-field-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted);
+}
+.ar-field-error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--danger);
+}

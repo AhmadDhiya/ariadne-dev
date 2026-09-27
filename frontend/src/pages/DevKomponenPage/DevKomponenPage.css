@@ -1,0 +1,172 @@
+/* Tata letak katalog komponen (hanya saat pengembangan) */
+.dev {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+.dev-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--line);
+}
+.dev-head-text {
+  flex: 1;
+}
+.dev-title {
+  margin: 0;
+}
+.dev-lead {
+  margin: 2px 0 0;
+}
+.dev-toc {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  gap: var(--space-5);
+  padding: var(--space-3) 0;
+  background: var(--canvas);
+  border-bottom: 1px solid var(--line);
+}
+.dev-toc a {
+  color: var(--link);
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+.dev-toc a:hover {
+  text-decoration: underline;
+}
+.dev-level {
+  padding-top: var(--space-8);
+  scroll-margin-top: var(--space-10);
+}
+.dev-level-title {
+  margin: 0 0 var(--space-4);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+.dev-demo {
+  margin-bottom: var(--space-6);
+}
+.dev-demo-name {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.dev-demo-note {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+.dev-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+.dev-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--canvas);
+  color: var(--ink);
+}
+/* tokens.css mendefinisikan alias (danger, link, focus) sekali di :root. Di panel bertema
+   yang bersarang, alias itu harus dihitung ulang supaya memakai warna tema panelnya. */
+.dev-panel[data-theme] {
+  --danger: var(--status-blocked-ink);
+  --link: var(--primary);
+  --focus: var(--sky);
+}
+.dev-panel.is-column {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.dev-panel.is-surface {
+  background: var(--surface);
+}
+.dev-panel.is-scroll {
+  overflow-x: auto;
+}
+.dev-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: var(--space-2);
+  width: 100%;
+}
+.dev-icon-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+.dev-icon-cell > .ar-icon {
+  color: var(--ink);
+}
+.dev-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  width: 100%;
+}
+.dev-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.dev-wide {
+  width: 100%;
+}
+.dev-form {
+  width: 100%;
+  max-width: 380px;
+}
+.dev-inline {
+  display: flex;
+  gap: var(--space-2);
+}
+.dev-row-end {
+  display: flex;
+  justify-content: flex-end;
+}
+.dev-gantt {
+  padding-top: var(--space-5);
+}
+.dev-popover-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-md);
+  white-space: nowrap;
+}
+.dev-fields {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: var(--space-3) var(--space-4);
+  align-items: center;
+  margin: 0 0 var(--space-5);
+  font-size: 14px;
+}
+.dev-fields dt {
+  color: var(--ink-muted);
+}
+.dev-fields dd {
+  margin: 0;
+}

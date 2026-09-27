@@ -1,0 +1,37 @@
+.ar-radiocard {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  cursor: pointer;
+}
+.ar-radiocard .ar-radio-input {
+  margin-top: 2px;
+}
+.ar-radiocard.is-selected {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.ar-radiocard.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ar-radiocard-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ar-radiocard-title {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.ar-radiocard-desc {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-muted);
+}

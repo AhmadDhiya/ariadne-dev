@@ -1,0 +1,26 @@
+#!/bin/sh
+# Menolak commit yang berisi rahasia: password, API key, token (pedoman A1, A2).
+# Aktifkan sekali per clone:  git config core.hooksPath .githooks
+#
+# Memakai gitleaks yang terpasang di komputer bila ada; bila tidak, lewat Docker
+# (image dengan versi terkunci, jadi tidak perlu memasang apa pun).
+GITLEAKS_IMAGE="ghcr.io/gitleaks/gitleaks:v8.30.1"
+
+if command -v gitleaks >/dev/null 2>&1; then
+  git diff --cached --no-color -U0 | gitleaks stdin --redact --no-banner --log-level warn
+  status=$?
+elif command -v docker >/dev/null 2>&1; then
+  git diff --cached --no-color -U0 | docker run --rm -i "$GITLEAKS_IMAGE" stdin --redact --no-banner --log-level warn
+  status=$?
+else
+  echo "pre-commit: gitleaks dan Docker tidak ditemukan; commit dihentikan agar rahasia tidak lolos." >&2
+  exit 1
+fi
+
+if [ "$status" -ne 0 ]; then
+  echo "" >&2
+  echo "pre-commit: commit DITOLAK. Ada yang terlihat seperti rahasia (lihat di atas)." >&2
+  echo "Pindahkan nilainya ke file .env (tidak ikut di-commit) lalu coba lagi." >&2
+  echo "Jika Docker belum menyala, nyalakan Docker Desktop dulu." >&2
+  exit 1
+fi
