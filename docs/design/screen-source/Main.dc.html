@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Ariadne</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/ariadne/tokens.css">
+<link rel="stylesheet" href="ds/ariadne/components/bundle.css">
+<script src="ds/ariadne/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--link)}a:hover{color:var(--primary-hover)}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 1440px; height: 1320px; display: flex; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="width: 248px; height: 1320px; flex-shrink: 0; border-right: 1px solid var(--line); overflow: hidden; background: var(--canvas)">
+<dc-import name="Sidebar" active="dashboard" role="supervisor" hint-size="248px,1000px"></dc-import>
+</div>
+<div style="width: 1192px; display: flex; flex-direction: column">
+<dc-import name="Topbar" user="Ahmad" role="Supervisor · Tim Sentul" notif="{{notif}}" hint-size="1192px,56px"></dc-import>
+<main style="padding: 24px; display: flex; flex-direction: column; gap: 20px">
+
+<div style="display: flex; align-items: flex-end; justify-content: space-between">
+<div>
+<div style="font-size: 13px; line-height: 18px; color: var(--ink-muted)">Senin, 28 September 2026</div>
+<h1 style="margin: 2px 0 0; font-size: 20px; line-height: 28px; font-weight: 600">Selamat pagi, Ahmad</h1>
+</div>
+<x-import component-from-global-scope="Ariadne.Button" variant="primary" icon="plus">Tambah task</x-import>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+<x-import component-from-global-scope="Ariadne.SummaryCard" label="Terlambat" value="{{n2}}" icon="calendar" tone="danger" hint="1 Critical · 1 High"></x-import>
+<x-import component-from-global-scope="Ariadne.SummaryCard" label="Jatuh tempo minggu ini" value="{{n5}}" icon="calendar" hint="s.d. Jumat, 2 Okt"></x-import>
+<x-import component-from-global-scope="Ariadne.SummaryCard" label="Sedang dikerjakan" value="{{n4}}" icon="status-progress" hint="di 2 proyek"></x-import>
+<x-import component-from-global-scope="Ariadne.SummaryCard" label="Tertahan" value="{{n2}}" icon="status-hold" tone="held" hint="Blocked 1 · On Request 1"></x-import>
+</div>
+
+<div style="display: flex; gap: 20px; align-items: flex-start">
+<section class="ar-card" style="flex-grow: 1; min-width: 0">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--line)">
+<h2 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 600">Hari Ini</h2>
+<span style="font-size: 12px; color: var(--ink-muted)">Diurutkan: prioritas</span>
+</div>
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+<div style="display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 16px; background: var(--surface-muted); font-size: 12px; font-weight: 600; color: {{g.color}}">
+<span>{{g.label}}</span><span style="font-weight: 500; color: var(--ink-muted)">{{g.count}}</span>
+</div>
+<sc-for list="{{g.rows}}" as="t" hint-placeholder-count="2">
+<div style="display: flex; align-items: center; gap: 12px; height: 52px; padding: 0 16px; border-bottom: 1px solid var(--line)">
+<x-import component-from-global-scope="Ariadne.PriorityIcon" priority="{{t.prio}}"></x-import>
+<span class="ar-id" style="width: 64px; flex-shrink: 0">{{t.id}}</span>
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column">
+<span style="font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.title}}</span>
+<span style="font-size: 12px; line-height: 16px; color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.path}}</span>
+</div>
+<div style="width: 150px; flex-shrink: 0">
+<x-import component-from-global-scope="Ariadne.DueDate" overdue="{{t.overdue}}" late-by="{{t.late}}">{{t.due}}</x-import>
+</div>
+<div style="width: 128px; flex-shrink: 0">
+<x-import component-from-global-scope="Ariadne.StatusPill" status="{{t.status}}" select="{{yes}}"></x-import>
+</div>
+<x-import component-from-global-scope="Ariadne.Button" size="sm" icon="update">Tambah update</x-import>
+</div>
+</sc-for>
+</sc-for>
+</section>
+
+<section class="ar-card" style="width: 360px; flex-shrink: 0">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--line)">
+<h2 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 600">Perlu perhatian</h2>
+<a href="Notifikasi.dc.html" style="font-size: 13px">Lihat semua</a>
+</div>
+<sc-for list="{{attention}}" as="n" hint-placeholder-count="4">
+<div style="display: flex; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line)">
+<span style="width: 28px; height: 28px; flex-shrink: 0; display: grid; place-items: center; border-radius: 9999px; background: {{n.bg}}; color: {{n.fg}}">
+<x-import component-from-global-scope="Ariadne.Icon" name="{{n.icon}}" size="{{s14}}"></x-import>
+</span>
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ink-muted)">{{n.kind}}</span>
+<span style="font-size: 13px; line-height: 18px"><b style="font-weight: 600">{{n.who}}</b> {{n.text}}</span>
+<span style="font-size: 13px; line-height: 18px; color: var(--ink-muted)">{{n.detail}}</span>
+</div>
+<span style="font-size: 12px; color: var(--ink-muted); white-space: nowrap">{{n.time}}</span>
+</div>
+</sc-for>
+</section>
+</div>
+
+<section class="ar-card">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line)">
+<div style="display: flex; align-items: baseline; gap: 12px">
+<h2 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 600">Timeline saya</h2>
+<span style="font-size: 12px; color: var(--ink-muted)">Semua proyek · 21 Sep – 11 Okt</span>
+</div>
+<div role="group" aria-label="Zoom" style="display: flex; gap: 4px">
+<button type="button" aria-pressed="true" style="height: 24px; padding: 0 10px; border: 1px solid var(--primary); border-radius: 4px; background: var(--primary-soft); color: var(--primary); font: inherit; font-size: 12px; font-weight: 500">Hari</button>
+<button type="button" aria-pressed="false" style="height: 24px; padding: 0 10px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--ink-muted); font: inherit; font-size: 12px; font-weight: 500">Minggu</button>
+<button type="button" aria-pressed="false" style="height: 24px; padding: 0 10px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--ink-muted); font: inherit; font-size: 12px; font-weight: 500">Bulan</button>
+</div>
+</div>
+<div style="display: flex">
+<div style="width: 300px; flex-shrink: 0; border-right: 1px solid var(--line)">
+<div style="height: 44px; display: flex; align-items: flex-end; padding: 0 16px 6px; box-sizing: border-box; font-size: 12px; font-weight: 500; color: var(--ink-muted); border-bottom: 1px solid var(--line)">Task</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="9">
+<sc-if value="{{r.isGroup}}" hint-placeholder-val="{{ false }}">
+<div style="height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 16px; background: var(--surface-muted); font-size: 13px; font-weight: 600">
+<x-import component-from-global-scope="Ariadne.Icon" name="chevron-down" size="{{s14}}"></x-import>{{r.title}}
+</div>
+</sc-if>
+<sc-if value="{{r.isTask}}" hint-placeholder-val="{{ true }}">
+<div style="height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 16px 0 36px; box-sizing: border-box; border-bottom: 1px solid var(--line); font-size: 13px">
+<span class="ar-id" style="white-space: nowrap; flex-shrink: 0">{{r.id}}</span>
+<span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.title}}</span>
+</div>
+</sc-if>
+</sc-for>
+<div style="height: 44px; display: flex; align-items: center; padding: 0 16px; font-size: 13px; font-weight: 600; border-top: 1px solid var(--line)">Beban kerja saya</div>
+</div>
+<div style="width: 840px; overflow: hidden">
+<div style="display: flex; height: 44px; border-bottom: 1px solid var(--line)">
+<sc-for list="{{days}}" as="d" hint-placeholder-count="21">
+<div style="width: 40px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 6px; box-sizing: border-box; font-size: 11px; line-height: 14px; color: {{d.fg}}; background: {{d.bg}}">
+<span>{{d.wd}}</span><span style="font-size: 12px; font-weight: 600">{{d.n}}</span>
+</div>
+</sc-for>
+</div>
+<x-import component-from-global-scope="Ariadne.GanttTrack" days="{{days}}" day-width="{{dw}}" height="{{chartH}}">
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="7">
+<x-import component-from-global-scope="Ariadne.GanttBar" status="{{b.status}}" start="{{b.start}}" span="{{b.span}}" top="{{b.top}}" overdue="{{b.overdue}}" day-width="{{dw}}"></x-import>
+</sc-for>
+<sc-for list="{{milestones}}" as="m" hint-placeholder-count="2">
+<x-import component-from-global-scope="Ariadne.Milestone" day="{{m.day}}" label="{{m.label}}" top="{{m.top}}" day-width="{{dw}}"></x-import>
+</sc-for>
+<x-import component-from-global-scope="Ariadne.TodayMarker" day="{{today}}" label="{{no}}" day-width="{{dw}}"></x-import>
+</x-import>
+<div style="height: 44px; display: flex; align-items: center; border-top: 1px solid var(--line)">
+<x-import component-from-global-scope="Ariadne.WorkloadRow" counts="{{load}}" weekends="{{weekends}}" day-width="{{dw}}"></x-import>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"Tema"},"notif":{"editor":"int","default":3},"$preview":{"width":1440,"height":1320}}'>
+class Component extends DCLogic {
+renderVals() {
+const groups = [
+{ label: 'Terlambat', count: '2', color: 'var(--danger)', rows: [
+{ prio: 'critical', id: 'SEN-115', title: 'Pipeline GitLab IRS', path: 'Sentul / Dispatch', due: '25 Sep', overdue: true, late: 3, status: 'blocked' },
+{ prio: 'high', id: 'SEN-121', title: 'Perbaikan temuan UAT modul absensi', path: 'Sentul / SLMS / Temuan UAT & API', due: '26 Sep', overdue: true, late: 2, status: 'fixing' } ] },
+{ label: 'Jatuh tempo hari ini', count: '2', color: 'var(--ink)', rows: [
+{ prio: 'critical', id: 'SEN-112', title: 'Paket PenTest whitebox', path: 'Sentul / SLMS', due: 'Hari ini', overdue: false, late: 0, status: 'progress' },
+{ prio: 'low', id: 'MDC-018', title: 'Konfirmasi jadwal akses gedung', path: 'Migrasi Data Center', due: 'Hari ini', overdue: false, late: 0, status: 'progress' } ] },
+{ label: 'Sedang berjalan', count: '3', color: 'var(--ink)', rows: [
+{ prio: 'high', id: 'MDC-021', title: 'Inventaris rak & kabel', path: 'Migrasi Data Center', due: '30 Sep', overdue: false, late: 0, status: 'progress' },
+{ prio: 'high', id: 'SEN-133', title: 'Menunggu akses VPN dari klien', path: 'Sentul / Menagih Pihak Lain', due: '30 Sep', overdue: false, late: 0, status: 'request' },
+{ prio: 'medium', id: 'SEN-104', title: 'Integrasi log & metrics', path: 'Sentul / Dispatch', due: '2 Okt', overdue: false, late: 0, status: 'progress' } ] }
+];
+const attention = [
+{ kind: 'Di-mention', icon: 'at', bg: 'var(--sky-soft)', fg: 'var(--primary)', who: 'Syaikhan', text: 'menyebut Anda di SEN-115', detail: '“@Ahmad bisa dicek apakah runner boleh lewat proxy sementara?”', time: '08.55' },
+{ kind: 'Task baru ditugaskan', icon: 'plus', bg: 'var(--primary-soft)', fg: 'var(--primary)', who: 'Wiwiet', text: 'menugaskan MDC-024 ke Anda', detail: 'Rencana cut-over · mulai 5 Okt', time: '08.30' },
+{ kind: 'Terlambat', icon: 'calendar', bg: 'var(--status-blocked-soft)', fg: 'var(--danger)', who: 'SEN-121', text: 'lewat tenggat 2 hari', detail: 'Perbaikan temuan UAT modul absensi', time: '07.00' },
+{ kind: 'Di-mention', icon: 'at', bg: 'var(--sky-soft)', fg: 'var(--primary)', who: 'Khalil', text: 'menyebut Anda di SEN-112', detail: '“Draf laporan PenTest sudah saya unggah, mohon review.”', time: 'Kemarin' }
+];
+const wd = ['S', 'S', 'R', 'K', 'J', 'S', 'M'];
+const days = [];
+for (let i = 0; i < 21; i++) {
+const n = i < 10 ? 21 + i : i - 9;
+const weekend = i % 7 === 5 || i % 7 === 6;
+const isToday = i === 7;
+days.push({ n: String(n), wd: wd[i % 7], weekend: weekend, fg: isToday ? 'var(--on-primary)' : 'var(--ink-muted)', bg: isToday ? 'var(--thread)' : (weekend ? 'var(--surface-muted)' : 'transparent') });
+}
+const list = [
+{ group: 'Sentul' },
+{ id: 'SEN-115', title: 'Pipeline GitLab IRS', status: 'blocked', start: 0, span: 5, overdue: true },
+{ id: 'SEN-121', title: 'Perbaikan temuan UAT modul absensi', status: 'fixing', start: 2, span: 4, overdue: true },
+{ id: 'SEN-112', title: 'Paket PenTest whitebox', status: 'progress', start: 0, span: 8 },
+{ id: 'SEN-133', title: 'Menunggu akses VPN dari klien', status: 'request', start: 1, span: 9 },
+{ id: 'SEN-104', title: 'Integrasi log & metrics', status: 'progress', start: 7, span: 5 },
+{ group: 'Migrasi Data Center' },
+{ id: 'MDC-018', title: 'Konfirmasi jadwal akses gedung', status: 'progress', start: 5, span: 3 },
+{ id: 'MDC-021', title: 'Inventaris rak & kabel', status: 'progress', start: 3, span: 7 },
+{ id: 'MDC-024', title: 'Rencana cut-over', status: 'not-started', start: 14, span: 5 }
+];
+let y = 0; const rows = []; const bars = []; const groupTops = [];
+list.forEach((r) => {
+if (r.group) { rows.push({ isGroup: true, isTask: false, title: r.group }); groupTops.push(y); y += 32; }
+else { rows.push({ isGroup: false, isTask: true, id: r.id, title: r.title }); bars.push({ status: r.status, start: r.start, span: r.span, top: y + 8, overdue: !!r.overdue }); y += 36; }
+});
+return {
+theme: this.props.theme ?? 'light', notif: this.props.notif ?? 3,
+yes: true, no: false, n2: 2, n4: 4, n5: 5, s14: 14,
+groups: groups, attention: attention, days: days, rows: rows, bars: bars,
+milestones: [ { day: 14, label: 'UAT SLMS · 5 Okt', top: groupTops[0] + 8 }, { day: 16, label: 'Freeze jaringan · 7 Okt', top: groupTops[1] + 8 } ],
+dw: 40, chartH: y, today: 7,
+load: [3, 4, 4, 5, 5, 0, 0, 5, 4, 4, 3, 2, 0, 0, 2, 1, 1, 1, 1, 0, 0],
+weekends: [5, 6, 12, 13, 19, 20]
+};
+}
+}
+</script>
+</body>
+</html>

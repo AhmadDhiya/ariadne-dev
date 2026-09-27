@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Notifikasi — Ariadne</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/ariadne/tokens.css">
+<link rel="stylesheet" href="ds/ariadne/components/bundle.css">
+<script src="ds/ariadne/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--link)}a:hover{color:var(--primary-hover)}
+.nf-tab{height:32px;padding:0 10px;border:0;border-bottom:2px solid transparent;background:transparent;font:inherit;font-size:13px;font-weight:500;color:var(--ink-muted);cursor:pointer}
+.nf-tab.is-on{color:var(--primary);border-bottom-color:var(--primary)}
+.nf-item{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.nf-item:hover{background:var(--surface-muted)}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 1440px; height: 780px; position: relative; overflow: hidden; background: var(--canvas); font-family: var(--font-sans); color: var(--ink)">
+<dc-import name="Main" theme="{{theme}}" notif="{{n4}}" hint-size="1440px,1320px"></dc-import>
+<div style="position: absolute; left: 783px; top: 50px; width: 420px; box-sizing: border-box; background: var(--surface-raised); border: 1px solid var(--line); border-radius: 6px; box-shadow: var(--shadow-md); display: flex; flex-direction: column" role="dialog" aria-label="Notifikasi">
+<div style="position: absolute; right: 22px; top: -6px; width: 10px; height: 10px; transform: rotate(45deg); background: var(--surface-raised); border-left: 1px solid var(--line); border-top: 1px solid var(--line)"></div>
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 0">
+<h2 style="margin: 0; font-size: 15px; line-height: 22px; font-weight: 600">Notifikasi</h2>
+<a href="#baca" style="font-size: 13px">Tandai semua dibaca</a>
+</div>
+<div role="tablist" style="display: flex; gap: 8px; padding: 4px 8px 0; border-bottom: 1px solid var(--line)">
+<button type="button" role="tab" aria-selected="true" class="nf-tab is-on">Semua</button>
+<button type="button" role="tab" aria-selected="false" class="nf-tab">Belum dibaca · 4</button>
+<button type="button" role="tab" aria-selected="false" class="nf-tab">Di-mention</button>
+</div>
+<sc-for list="{{sections}}" as="s" hint-placeholder-count="2">
+<div style="padding: 8px 16px 4px; font-size: 12px; font-weight: 500; color: var(--ink-muted); background: var(--surface-muted)">{{s.label}}</div>
+<sc-for list="{{s.items}}" as="n" hint-placeholder-count="3">
+<a class="nf-item" href="TaskDrawer.dc.html" style="background: {{n.bg}}">
+<span style="width: 28px; height: 28px; flex-shrink: 0; display: grid; place-items: center; border-radius: 9999px; background: {{n.iconBg}}; color: {{n.iconFg}}">
+<x-import component-from-global-scope="Ariadne.Icon" name="{{n.icon}}" size="{{s14}}"></x-import>
+</span>
+<span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ink-muted)">{{n.kind}}</span>
+<span style="font-size: 13px; line-height: 18px"><b style="font-weight: 600">{{n.who}}</b> {{n.text}}</span>
+<span style="font-size: 12px; line-height: 16px; color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{n.detail}}</span>
+</span>
+<span style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0">
+<span style="font-size: 12px; color: var(--ink-muted)">{{n.time}}</span>
+<sc-if value="{{n.unread}}" hint-placeholder-val="{{ true }}">
+<span aria-label="Belum dibaca" style="width: 8px; height: 8px; border-radius: 9999px; background: var(--thread)"></span>
+</sc-if>
+</span>
+</a>
+</sc-for>
+</sc-for>
+<a href="#semua" style="display: block; padding: 10px 16px; text-align: center; font-size: 13px; font-weight: 500">Lihat semua notifikasi</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"Tema"},"$preview":{"width":1440,"height":780}}'>
+class Component extends DCLogic {
+renderVals() {
+const U = 'var(--primary-soft)';
+return {
+theme: this.props.theme ?? 'light', n4: 4, s14: 14,
+sections: [
+{ label: 'Hari ini', items: [
+{ kind: 'Di-mention', icon: 'at', iconBg: 'var(--sky-soft)', iconFg: 'var(--primary)', who: 'Syaikhan', text: 'menyebut Anda di SEN-115', detail: '“@Ahmad bisa dicek apakah runner boleh lewat proxy sementara?”', time: '08.55', unread: true, bg: 'transparent' },
+{ kind: 'Task baru ditugaskan', icon: 'plus', iconBg: 'var(--primary-soft)', iconFg: 'var(--primary)', who: 'Wiwiet', text: 'menugaskan MDC-024 ke Anda', detail: 'Rencana cut-over · Migrasi Data Center · mulai 5 Okt', time: '08.30', unread: true, bg: 'transparent' },
+{ kind: 'Task dipindahkan', icon: 'move', iconBg: 'var(--surface-muted)', iconFg: 'var(--ink-muted)', who: 'Syaikhan', text: 'memindahkan SEN-117 dari Rama ke Anda', detail: 'Buka akses runner ke staging · Sentul / Dispatch', time: '08.12', unread: true, bg: 'transparent' },
+{ kind: 'Tenggat besok', icon: 'calendar', iconBg: 'var(--status-fixing-soft)', iconFg: 'var(--status-fixing-ink)', who: 'MDC-025', text: 'jatuh tempo besok, 29 Sep', detail: 'Label ulang kabel rak A · Migrasi Data Center', time: '07.00', unread: true, bg: 'transparent' },
+{ kind: 'Terlambat', icon: 'calendar', iconBg: 'var(--status-blocked-soft)', iconFg: 'var(--danger)', who: 'SEN-121', text: 'lewat tenggat 2 hari', detail: 'Perbaikan temuan UAT modul absensi · Sentul / SLMS', time: '07.00', unread: false, bg: 'transparent' }
+] },
+{ label: 'Kemarin', items: [
+{ kind: 'Di-mention', icon: 'at', iconBg: 'var(--sky-soft)', iconFg: 'var(--primary)', who: 'Khalil', text: 'menyebut Anda di SEN-112', detail: '“Draf laporan PenTest sudah saya unggah, mohon review.”', time: '16.40', unread: false, bg: 'transparent' }
+] }
+]
+};
+}
+}
+</script>
+</body>
+</html>

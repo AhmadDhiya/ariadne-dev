@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Sentul — Anggota</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/ariadne/tokens.css">
+<link rel="stylesheet" href="ds/ariadne/components/bundle.css">
+<script src="ds/ariadne/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--link)}a:hover{color:var(--primary-hover)}
+.ap-tab{height:40px;display:inline-flex;align-items:center;margin-bottom:-1px;border-bottom:2px solid transparent;font-size:14px;font-weight:500;color:var(--ink-muted);text-decoration:none}
+.ap-tab.is-active{color:var(--primary);border-bottom-color:var(--primary)}
+.ap-th{font-size:12px;line-height:16px;font-weight:500;color:var(--ink-muted)}
+.ap-role{height:28px;padding:0 8px;border:1px solid var(--line-strong);border-radius:4px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px}
+.ap-opt{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.ap-opt input{margin:2px 0 0;width:16px;height:16px;accent-color:var(--primary)}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 1440px; height: 860px; position: relative; display: flex; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="width: 248px; height: 860px; flex-shrink: 0; border-right: 1px solid var(--line); overflow: hidden; background: var(--canvas)">
+<dc-import name="Sidebar" active="sentul" role="supervisor" hint-size="248px,1000px"></dc-import>
+</div>
+<div style="width: 1192px; display: flex; flex-direction: column">
+<dc-import name="Topbar" user="Ahmad" role="Supervisor · Tim Sentul" notif="{{n3}}" hint-size="1192px,56px"></dc-import>
+<main style="padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: flex-end; justify-content: space-between">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<nav aria-label="Breadcrumb" style="font-size: 13px; line-height: 18px; color: var(--ink-muted)">Proyek / <span style="color: var(--ink)">Sentul</span></nav>
+<h1 style="margin: 0; font-size: 20px; line-height: 28px; font-weight: 600">Sentul</h1>
+</div>
+<x-import component-from-global-scope="Ariadne.Button" variant="primary" icon="mail">Undang</x-import>
+</div>
+<div role="tablist" style="display: flex; gap: 24px; border-bottom: 1px solid var(--line)">
+<a class="ap-tab" role="tab" aria-selected="false" href="ProyekTabel.dc.html">Tabel</a>
+<a class="ap-tab" role="tab" aria-selected="false" href="ProyekGantt.dc.html">Gantt</a>
+<a class="ap-tab" role="tab" aria-selected="false" href="#milestone">Milestone</a>
+<a class="ap-tab is-active" role="tab" aria-selected="true" href="AnggotaProyek.dc.html">Anggota</a>
+</div>
+<div style="display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--ink-muted)">
+<span><b style="color: var(--ink); font-weight: 600">10</b> orang</span><span>2 Pengelola · 6 Anggota · 2 Tamu</span>
+</div>
+<section class="ar-card" style="box-shadow: none">
+<div style="display: flex; align-items: center; height: 36px; padding: 0 16px; background: var(--surface-muted); border-bottom: 1px solid var(--line); border-radius: 6px 6px 0 0">
+<span class="ap-th" style="flex-grow: 1">Nama</span>
+<span class="ap-th" style="width: 150px">Peran</span>
+<span class="ap-th" style="width: 180px">Status</span>
+<span class="ap-th" style="width: 140px">Ditambahkan</span>
+<span class="ap-th" style="width: 110px"></span>
+</div>
+<sc-for list="{{members}}" as="m" hint-placeholder-count="10">
+<div style="display: flex; align-items: center; height: 44px; padding: 0 16px; border-bottom: 1px solid var(--line)">
+<span style="flex-grow: 1; display: flex; align-items: center; gap: 10px; min-width: 0">
+<x-import component-from-global-scope="Ariadne.Avatar" name="{{m.name}}" size="{{av}}" guest="{{m.guest}}"></x-import>
+<span style="display: flex; flex-direction: column">
+<span style="font-size: 14px; font-weight: 500">{{m.name}}</span>
+<span style="font-size: 12px; color: var(--ink-muted)">{{m.email}}</span>
+</span>
+</span>
+<span style="width: 150px"><select class="ap-role" aria-label="Peran {{m.name}}"><option selected="{{m.r1}}">Pengelola</option><option selected="{{m.r2}}">Anggota</option><option selected="{{m.r3}}">Tamu</option></select></span>
+<span style="width: 180px; font-size: 13px; color: {{m.statusColor}}">{{m.status}}</span>
+<span style="width: 140px; font-size: 13px; color: var(--ink-muted)">{{m.added}}</span>
+<span style="width: 110px; display: flex; justify-content: flex-end"><x-import component-from-global-scope="Ariadne.Button" size="sm" variant="ghost">{{m.action}}</x-import></span>
+</div>
+</sc-for>
+</section>
+</main>
+</div>
+
+<sc-if value="{{showDialog}}" hint-placeholder-val="{{ true }}">
+<div style="position: absolute; left: 0; top: 0; width: 1440px; height: 860px; background: var(--overlay)"></div>
+<div role="dialog" aria-modal="true" aria-labelledby="ap-dlg" style="position: absolute; left: 872px; top: 96px; width: 520px; box-sizing: border-box; padding: 24px; background: var(--surface-raised); border-radius: 10px; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<h2 id="ap-dlg" style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 600">Undang ke Sentul</h2>
+<x-import component-from-global-scope="Ariadne.IconButton" icon="x" label="Tutup" size="sm"></x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="ap-email" style="font-size: 13px; font-weight: 500">Email</label>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 40px; padding: 4px 8px; box-sizing: border-box; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface); box-shadow: var(--focus-ring)">
+<span style="display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 4px 0 8px; border-radius: 4px; background: var(--surface-muted); font-size: 13px">tim-it@klien.example<x-import component-from-global-scope="Ariadne.IconButton" icon="x" label="Hapus tim-it@klien.example" size="sm"></x-import></span>
+<input id="ap-email" placeholder="Tambah email lain" style="flex-grow: 1; min-width: 120px; height: 28px; border: 0; outline: 0; background: transparent; color: var(--ink); font: inherit; font-size: 14px">
+</div>
+<span style="font-size: 12px; color: var(--ink-muted)">Pisahkan beberapa email dengan koma.</span>
+</div>
+<fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+<legend style="font-size: 13px; font-weight: 500; margin-bottom: 6px">Peran</legend>
+<sc-for list="{{roles}}" as="r" hint-placeholder-count="3">
+<label class="ap-opt" style="border-color: {{r.border}}; background: {{r.bg}}">
+<input type="radio" name="ap-role" checked="{{r.checked}}">
+<span style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 600">{{r.name}}</span>
+<span style="font-size: 13px; line-height: 18px; color: var(--ink-muted)">{{r.desc}}</span>
+</span>
+</label>
+</sc-for>
+</fieldset>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="ap-msg" style="font-size: 13px; font-weight: 500">Pesan <span style="font-weight: 400; color: var(--ink-muted)">(opsional)</span></label>
+<textarea id="ap-msg" rows="2" style="padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; resize: none">Halo tim IT, ini akses untuk memantau progres Sentul dan membalas pertanyaan di task.</textarea>
+</div>
+<div style="display: flex; justify-content: flex-end; gap: 8px">
+<x-import component-from-global-scope="Ariadne.Button">Batal</x-import>
+<x-import component-from-global-scope="Ariadne.Button" variant="primary" icon="mail">Kirim undangan</x-import>
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"Tema"},"showDialog":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":860}}'>
+class Component extends DCLogic {
+renderVals() {
+const M = (name, email, role, status, added, guest) => ({ name: name, email: email, r1: role === 1, r2: role === 2, r3: role === 3, guest: !!guest, status: status, statusColor: status === 'Aktif' ? 'var(--ink)' : 'var(--status-fixing-ink)', added: added, action: status === 'Aktif' ? 'Keluarkan' : 'Batalkan' });
+return {
+theme: this.props.theme ?? 'light', showDialog: this.props.showDialog ?? true, n3: 3, av: 28,
+members: [
+M('Ahmad', 'ahmad@perusahaan.co.id', 1, 'Aktif', '2 Jun 2026'),
+M('Syaikhan', 'syaikhan@perusahaan.co.id', 1, 'Aktif', '2 Jun 2026'),
+M('Wiwiet', 'wiwiet@perusahaan.co.id', 2, 'Aktif', '2 Jun 2026'),
+M('Manto', 'manto@perusahaan.co.id', 2, 'Aktif', '10 Jun 2026'),
+M('Rama', 'rama@perusahaan.co.id', 2, 'Aktif', '10 Jun 2026'),
+M('Khalil', 'khalil@perusahaan.co.id', 2, 'Aktif', '1 Jul 2026'),
+M('Galih', 'galih@perusahaan.co.id', 2, 'Aktif', '1 Jul 2026'),
+M('Bintang', 'bintang@perusahaan.co.id', 2, 'Aktif', '14 Agu 2026'),
+M('Pak Budi', 'budi@klien.example', 3, 'Aktif', '3 Agu 2026', true),
+M('Sari', 'sari@klien.example', 3, 'Menunggu diterima', '26 Sep 2026', true)
+],
+roles: [
+{ name: 'Pengelola', desc: 'Mengatur proyek, sub-proyek, milestone, dan anggota.', checked: false, border: 'var(--line)', bg: 'transparent' },
+{ name: 'Anggota', desc: 'Membuat dan mengubah task, memberi update dan komentar.', checked: false, border: 'var(--line)', bg: 'transparent' },
+{ name: 'Tamu', desc: 'Hanya melihat progres. Bisa berkomentar dan menandai dengan @, tidak melihat komentar internal.', checked: true, border: 'var(--primary)', bg: 'var(--primary-soft)' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

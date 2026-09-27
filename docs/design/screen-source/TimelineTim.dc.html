@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Timeline Tim — Ariadne</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/ariadne/tokens.css">
+<link rel="stylesheet" href="ds/ariadne/components/bundle.css">
+<script src="ds/ariadne/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--link)}a:hover{color:var(--primary-hover)}
+.tt-seg{height:28px;padding:0 12px;border:0;border-radius:4px;background:transparent;color:var(--ink-muted);font:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.tt-seg.is-on{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line-strong)}
+.tt-person{color:var(--ink);text-decoration:none;font-size:13px;font-weight:600}
+.tt-person:hover{color:var(--primary);text-decoration:underline}
+.tt-opt{display:flex;align-items:center;gap:10px;min-height:44px;padding:0 12px;border-radius:4px;cursor:pointer;font-size:14px}
+.tt-opt input{margin:0;width:16px;height:16px;accent-color:var(--primary)}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 1440px; height: 720px; position: relative; display: flex; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="width: 248px; height: 720px; flex-shrink: 0; border-right: 1px solid var(--line); overflow: hidden; background: var(--canvas)">
+<dc-import name="Sidebar" active="timeline" role="supervisor" hint-size="248px,1000px"></dc-import>
+</div>
+<div style="width: 1192px; display: flex; flex-direction: column">
+<dc-import name="Topbar" user="Ahmad" role="Supervisor · Tim Sentul" notif="{{n3}}" hint-size="1192px,56px"></dc-import>
+<main style="padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; gap: 16px">
+<h1 style="margin: 0; font-size: 20px; line-height: 28px; font-weight: 600">Timeline Tim</h1>
+<button type="button" aria-haspopup="listbox" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px 0 12px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer">
+<x-import component-from-global-scope="Ariadne.Icon" name="users" size="{{s16}}"></x-import>Tim Sentul <span style="color: var(--ink-muted); font-weight: 400">· 7 orang</span>
+<x-import component-from-global-scope="Ariadne.Icon" name="chevron-down" size="{{s14}}"></x-import>
+</button>
+<span style="font-size: 13px; color: var(--ink-muted)">Anda juga memegang: Tim QA</span>
+<div style="flex-grow: 1"></div>
+<div role="group" aria-label="Zoom" style="display: flex; gap: 2px; padding: 2px; border-radius: 6px; background: var(--surface-muted)">
+<button type="button" class="tt-seg is-on" aria-pressed="true">Hari</button>
+<button type="button" class="tt-seg" aria-pressed="false">Minggu</button>
+<button type="button" class="tt-seg" aria-pressed="false">Bulan</button>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Ariadne.FilterChip" label="Proyek" value="Semua"></x-import>
+<x-import component-from-global-scope="Ariadne.FilterChip" label="Status"></x-import>
+<x-import component-from-global-scope="Ariadne.FilterChip" label="Prioritas"></x-import>
+<x-import component-from-global-scope="Ariadne.FilterChip" label="Hanya yang terlambat" toggle="{{yes}}"></x-import>
+<div style="flex-grow: 1"></div>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-muted)">Task aktif per hari: 0
+<span class="ar-heat ar-heat-0" style="width: 16px; height: 12px"></span><span class="ar-heat ar-heat-1" style="width: 16px; height: 12px"></span><span class="ar-heat ar-heat-2" style="width: 16px; height: 12px"></span><span class="ar-heat ar-heat-3" style="width: 16px; height: 12px"></span><span class="ar-heat ar-heat-4" style="width: 16px; height: 12px"></span><span class="ar-heat ar-heat-5" style="width: 16px; height: 12px"></span>5+</span>
+</div>
+
+<section class="ar-card" style="box-shadow: none; overflow: hidden">
+<div style="display: flex">
+<div style="width: 304px; flex-shrink: 0; border-right: 1px solid var(--line)">
+<div style="height: 44px; display: flex; align-items: flex-end; padding: 0 12px 6px; box-sizing: border-box; border-bottom: 1px solid var(--line); background: var(--surface-muted); font-size: 12px; font-weight: 500; color: var(--ink-muted)">Anggota · task</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="12">
+<sc-if value="{{r.isPerson}}" hint-placeholder-val="{{ true }}">
+<div style="height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 12px; box-sizing: border-box; border-bottom: 1px solid var(--line); background: {{r.bg}}">
+<button type="button" aria-label="Buka task {{r.name}}" aria-expanded="{{r.open}}" style="display: inline-grid; place-items: center; width: 22px; height: 22px; border: 0; padding: 0; border-radius: 4px; background: transparent; color: var(--ink-muted); cursor: pointer; transform: {{r.caret}}"><x-import component-from-global-scope="Ariadne.Icon" name="chevron-down" size="{{s14}}"></x-import></button>
+<x-import component-from-global-scope="Ariadne.Avatar" name="{{r.name}}" size="{{av}}"></x-import>
+<a class="tt-person" href="DashboardSupervisor.dc.html">{{r.name}}</a>
+<span style="flex-grow: 1"></span>
+<span style="font-size: 12px; color: {{r.countColor}}; font-weight: {{r.countWeight}}">{{r.count}}</span>
+</div>
+</sc-if>
+<sc-if value="{{r.isTask}}" hint-placeholder-val="{{ false }}">
+<div style="height: 36px; display: flex; align-items: center; gap: 6px; padding: 0 8px 0 42px; box-sizing: border-box; border-bottom: 1px solid var(--line); background: {{r.bg}}">
+<x-import component-from-global-scope="Ariadne.PriorityIcon" priority="{{r.prio}}" size="{{s14}}"></x-import>
+<span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column">
+<span style="font-size: 13px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.title}}</span>
+<span style="font-size: 11px; line-height: 14px; color: var(--ink-muted); white-space: nowrap">{{r.id}} · {{r.project}}</span>
+</span>
+<sc-if value="{{r.selected}}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="Ariadne.IconButton" icon="move" label="Pindahkan ke anggota lain" size="sm"></x-import>
+<x-import component-from-global-scope="Ariadne.IconButton" icon="calendar" label="Ubah tanggal" size="sm"></x-import>
+</sc-if>
+</div>
+</sc-if>
+</sc-for>
+</div>
+<div style="width: 840px; overflow: hidden">
+<div style="display: flex; height: 44px; border-bottom: 1px solid var(--line); background: var(--surface-muted)">
+<sc-for list="{{days}}" as="d" hint-placeholder-count="30">
+<div style="width: 28px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 6px; box-sizing: border-box; font-size: 10px; line-height: 13px; color: {{d.fg}}; background: {{d.bg}}">
+<span>{{d.wd}}</span><span style="font-size: 12px; font-weight: 600">{{d.n}}</span>
+</div>
+</sc-for>
+</div>
+<x-import component-from-global-scope="Ariadne.GanttTrack" days="{{days}}" day-width="{{dw}}" height="{{chartH}}">
+<sc-for list="{{heatRows}}" as="hr" hint-placeholder-count="7">
+<div style="position: absolute; left: 0; top: {{hr.top}}px; height: 40px; display: flex; align-items: center; background: var(--surface)">
+<x-import component-from-global-scope="Ariadne.WorkloadRow" counts="{{hr.load}}" weekends="{{weekends}}" day-width="{{dw}}"></x-import>
+</div>
+</sc-for>
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="5">
+<x-import component-from-global-scope="Ariadne.GanttBar" status="{{b.status}}" start="{{b.start}}" span="{{b.span}}" top="{{b.top}}" overdue="{{b.overdue}}" priority="{{b.prio}}" label="{{b.label}}" day-width="{{dw}}"></x-import>
+</sc-for>
+<div style="position: absolute; left: {{sel.left}}px; top: {{sel.top}}px; width: {{sel.width}}px; height: 24px; border: 2px solid var(--sky); border-radius: 5px; box-sizing: border-box; pointer-events: none">
+<span style="position: absolute; left: -5px; top: 5px; width: 6px; height: 10px; border-radius: 2px; background: var(--surface-raised); border: 1.5px solid var(--sky)"></span>
+<span style="position: absolute; right: -5px; top: 5px; width: 6px; height: 10px; border-radius: 2px; background: var(--surface-raised); border: 1.5px solid var(--sky)"></span>
+</div>
+<x-import component-from-global-scope="Ariadne.TodayMarker" day="{{today}}" label="{{no}}" day-width="{{dw}}"></x-import>
+</x-import>
+</div>
+</div>
+</section>
+</main>
+</div>
+
+<sc-if value="{{showDialog}}" hint-placeholder-val="{{ true }}">
+<div style="position: absolute; left: 0; top: 0; width: 1440px; height: 720px; background: var(--overlay)"></div>
+<div role="dialog" aria-modal="true" aria-labelledby="tt-dlg-title" style="position: absolute; left: 520px; top: 96px; width: 480px; box-sizing: border-box; background: var(--surface-raised); border-radius: 10px; box-shadow: var(--shadow-lg); display: flex; flex-direction: column">
+<div style="padding: 20px 24px 12px; display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<h2 id="tt-dlg-title" style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 600">Pindahkan ke…</h2>
+<x-import component-from-global-scope="Ariadne.IconButton" icon="x" label="Tutup" size="sm"></x-import>
+</div>
+<div style="font-size: 13px; line-height: 18px; color: var(--ink-muted)"><span class="ar-id">SEN-150</span> Uji beban Dispatch · 29 Sep – 1 Okt · saat ini: <b style="color: var(--ink); font-weight: 500">Rama</b></div>
+</div>
+<div style="padding: 0 24px">
+<x-import component-from-global-scope="Ariadne.SearchField" placeholder="Cari anggota" width="{{fullW}}"></x-import>
+</div>
+<fieldset style="border: 0; margin: 0; padding: 8px 16px; display: flex; flex-direction: column; gap: 2px">
+<legend style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Pilih anggota</legend>
+<sc-for list="{{candidates}}" as="c" hint-placeholder-count="5">
+<label class="tt-opt" style="background: {{c.bg}}">
+<input type="radio" name="tt-target" checked="{{c.checked}}">
+<x-import component-from-global-scope="Ariadne.Avatar" name="{{c.name}}" size="{{av}}"></x-import>
+<span style="flex-grow: 1; font-weight: 500">{{c.name}}</span>
+<x-import component-from-global-scope="Ariadne.WorkloadRow" counts="{{c.load}}" day-width="{{mini}}"></x-import>
+<span style="width: 92px; text-align: right; font-size: 12px; color: {{c.noteColor}}">{{c.note}}</span>
+</label>
+</sc-for>
+</fieldset>
+<div style="margin: 0 24px; padding: 10px 12px; border-radius: 6px; background: var(--sky-soft); font-size: 13px; line-height: 18px">Beban 3 hari (29 Sep – 1 Okt). Galih paling longgar: 1–2 task aktif per hari.</div>
+<label style="display: flex; align-items: center; gap: 8px; padding: 14px 24px 0; font-size: 13px; color: var(--ink-muted)"><input type="checkbox" checked="checked" style="margin: 0; width: 16px; height: 16px; accent-color: var(--primary)">Kabari Rama dan Galih lewat notifikasi</label>
+<div style="display: flex; justify-content: flex-end; gap: 8px; padding: 20px 24px">
+<x-import component-from-global-scope="Ariadne.Button">Batal</x-import>
+<x-import component-from-global-scope="Ariadne.Button" variant="primary" icon="move">Pindahkan ke Galih</x-import>
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"Tema"},"showDialog":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":720}}'>
+class Component extends DCLogic {
+renderVals() {
+const wd = ['S', 'S', 'R', 'K', 'J', 'S', 'M'];
+const days = [];
+for (let i = 0; i < 30; i++) {
+const n = i < 10 ? 21 + i : i - 9;
+const weekend = i % 7 === 5 || i % 7 === 6;
+const isToday = i === 7;
+days.push({ n: String(n), wd: wd[i % 7], weekend: weekend, fg: isToday ? 'var(--on-primary)' : 'var(--ink-muted)', bg: isToday ? 'var(--thread)' : 'transparent' });
+}
+const pad = (a) => a.concat(new Array(30 - a.length).fill(0));
+const people = [
+{ name: 'Ahmad', load: pad([4, 5, 6, 6, 6, 0, 0, 5, 5, 4, 4, 3, 0, 0, 2, 2, 2, 2, 2, 0, 0, 1, 1, 1]), over: true },
+{ name: 'Rama', load: pad([3, 3, 3, 4, 4, 0, 0, 5, 6, 6, 5, 4, 0, 0, 3, 3, 3, 3, 3, 0, 0, 2, 2, 2]), over: true, open: true, tasks: [
+{ id: 'SEN-150', title: 'Uji beban Dispatch', project: 'Sentul / Testing Oktober', status: 'not-started', prio: 'high', start: 8, span: 3, selected: true },
+{ id: 'SEN-104', title: 'Integrasi log & metrics', project: 'Sentul / Dispatch', status: 'progress', prio: 'medium', start: 7, span: 5 },
+{ id: 'MDC-022', title: 'Migrasi VM tahap 2', project: 'Migrasi Data Center', status: 'progress', prio: 'high', start: 3, span: 9 },
+{ id: 'SEN-151', title: 'Data dummy untuk UAT', project: 'Sentul / SLMS', status: 'fixing', prio: 'medium', start: 2, span: 4, overdue: true },
+{ id: 'SEN-145', title: 'Skenario uji Oktober', project: 'Sentul / Testing Oktober', status: 'hold', prio: 'medium', start: 10, span: 9 }
+] },
+{ name: 'Wiwiet', load: pad([2, 2, 2, 2, 2, 0, 0, 2, 3, 3, 3, 2, 0, 0, 2, 2, 2, 1, 1]) },
+{ name: 'Manto', load: pad([2, 2, 2, 3, 4, 0, 0, 3, 3, 2, 2, 1, 0, 0, 1, 1, 1, 1, 1]) },
+{ name: 'Galih', load: pad([1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) },
+{ name: 'Khalil', load: pad([1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2]) },
+{ name: 'Bintang', load: pad([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1]) }
+];
+let y = 0; const rows = []; const heatRows = []; const bars = []; let sel = { left: 0, top: 0, width: 0 };
+people.forEach((p) => {
+const active = p.load[7];
+rows.push({ isPerson: true, isTask: false, name: p.name, open: !!p.open, caret: p.open ? 'none' : 'rotate(-90deg)', count: active + ' aktif hari ini', countColor: p.over ? 'var(--danger)' : 'var(--ink-muted)', countWeight: p.over ? 600 : 400, bg: 'transparent' });
+heatRows.push({ top: y, load: p.load });
+y += 40;
+(p.open ? p.tasks : []).forEach((t) => {
+rows.push({ isPerson: false, isTask: true, id: t.id, title: t.title, project: t.project, prio: t.prio, selected: !!t.selected, bg: t.selected ? 'var(--primary-soft)' : 'transparent' });
+bars.push({ status: t.status, start: t.start, span: t.span, top: y + 8, overdue: !!t.overdue, prio: t.prio, label: t.selected ? '29 Sep – 1 Okt · 3 hari' : '' });
+if (t.selected) sel = { left: t.start * 28 - 3, top: y + 6, width: t.span * 28 + 4 };
+y += 36;
+});
+});
+return {
+theme: this.props.theme ?? 'light', showDialog: this.props.showDialog ?? false,
+yes: true, no: false, n3: 3, s14: 14, s16: 16, av: 24, dw: 28, today: 7, mini: 14, fullW: '100%',
+days: days, rows: rows, heatRows: heatRows, bars: bars, sel: sel, chartH: y,
+weekends: [5, 6, 12, 13, 19, 20, 26, 27],
+candidates: [
+{ name: 'Galih', load: [2, 1, 1], note: 'paling longgar', noteColor: 'var(--status-done-ink)', checked: true, bg: 'var(--primary-soft)' },
+{ name: 'Khalil', load: [1, 0, 0], note: 'cuti 30 Sep', noteColor: 'var(--ink-muted)', checked: false, bg: 'transparent' },
+{ name: 'Wiwiet', load: [3, 3, 3], note: '', noteColor: 'var(--ink-muted)', checked: false, bg: 'transparent' },
+{ name: 'Manto', load: [3, 2, 2], note: '', noteColor: 'var(--ink-muted)', checked: false, bg: 'transparent' },
+{ name: 'Ahmad', load: [5, 4, 4], note: 'padat', noteColor: 'var(--danger)', checked: false, bg: 'transparent' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

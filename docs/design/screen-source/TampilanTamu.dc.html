@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Sentul — tampilan Tamu</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/ariadne/tokens.css">
+<link rel="stylesheet" href="ds/ariadne/components/bundle.css">
+<script src="ds/ariadne/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 1440px; height: 1100px; position: relative; overflow: hidden; background: var(--canvas); font-family: var(--font-sans)">
+<dc-import name="ProyekTabel" theme="{{theme}}" guest="{{yes}}" show-demos="{{no}}" notif="{{one}}" hint-size="1440px,1100px"></dc-import>
+<sc-if value="{{showDrawer}}" hint-placeholder-val="{{ true }}">
+<div style="position: absolute; right: 0; top: 0; width: 520px; height: 1100px">
+<dc-import name="Drawer" guest="{{yes}}" hint-size="520px,1100px"></dc-import>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"Tema"},"showDrawer":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.theme ?? 'light', yes: true, no: false, one: 1, showDrawer: this.props.showDrawer ?? true };
+}
+}
+</script>
+</body>
+</html>

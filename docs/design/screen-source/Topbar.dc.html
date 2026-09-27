@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Topbar Ariadne</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/ariadne/tokens.css">
+<link rel="stylesheet" href="ds/ariadne/components/bundle.css">
+<script src="ds/ariadne/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<header style="width: 1192px; height: 56px; box-sizing: border-box; padding: 0 24px; display: flex; align-items: center; gap: 12px; background: var(--surface); border-bottom: 1px solid var(--line); font-family: var(--font-sans); color: var(--ink)">
+<x-import component-from-global-scope="Ariadne.SearchField" width="{{searchW}}" shortcut="/"></x-import>
+<div style="flex-grow: 1"></div>
+<x-import component-from-global-scope="Ariadne.IconButton" icon="bell" label="Notifikasi" badge="{{notif}}"></x-import>
+<button type="button" aria-label="Menu akun" style="display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 8px 0 4px; border: 0; background: transparent; border-radius: 4px; font: inherit; color: var(--ink); cursor: pointer">
+<x-import component-from-global-scope="Ariadne.Avatar" name="{{user}}" size="{{avatarSize}}" guest="{{guest}}"></x-import>
+<span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 16px">
+<span style="font-size: 13px; font-weight: 500">{{user}}</span>
+<span style="font-size: 12px; color: var(--ink-muted)">{{role}}</span>
+</span>
+<x-import component-from-global-scope="Ariadne.Icon" name="chevron-down" size="{{iconSize}}"></x-import>
+</button>
+</header>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"user":{"editor":"text","default":"Ahmad"},"role":{"editor":"text","default":"Supervisor · Tim Sentul"},"notif":{"editor":"int","default":3},"guest":{"editor":"boolean","default":false},"$preview":{"width":1192,"height":56}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+user: this.props.user ?? 'Ahmad',
+role: this.props.role ?? 'Supervisor · Tim Sentul',
+notif: this.props.notif ?? 3,
+guest: this.props.guest ?? false,
+searchW: 360, avatarSize: 32, iconSize: 14
+};
+}
+}
+</script>
+</body>
+</html>

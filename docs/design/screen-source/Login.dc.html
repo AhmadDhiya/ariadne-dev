@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Masuk — Ariadne</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/ariadne/tokens.css">
+<link rel="stylesheet" href="ds/ariadne/components/bundle.css">
+<script src="ds/ariadne/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--link)}a:hover{color:var(--primary-hover)}
+.ln-input{height:40px;padding:0 12px;border:1px solid var(--line-strong);border-radius:4px;background:var(--surface);color:var(--ink);font:inherit;font-size:14px;box-sizing:border-box;width:100%}
+.ln-input:focus{outline:2px solid transparent;box-shadow:var(--focus-ring)}
+.ln-wall{fill:none;stroke:var(--primary-soft);stroke-width:3;stroke-linecap:round;opacity:.35}
+.ln-thread{fill:none;stroke:var(--thread);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 1440px; height: 900px; display: flex; background: var(--canvas); color: var(--ink); font-family: var(--font-sans)">
+<div style="width: 640px; height: 900px; flex-shrink: 0; position: relative; overflow: hidden; background: var(--primary); display: flex; flex-direction: column; justify-content: flex-end; padding: 56px; box-sizing: border-box">
+<svg width="640" height="900" viewBox="0 0 640 900" aria-hidden="true" style="position: absolute; left: 0; top: 0">
+<path class="ln-wall" d="M394.9 399.2A40 40 0 1 1 394.9 380.8"/>
+<path class="ln-wall" d="M275.4 402.1A80 80 0 1 0 275.4 377.9"/>
+<path class="ln-wall" d="M474.4 405.9A120 120 0 1 1 474.4 374.1"/>
+<path class="ln-wall" d="M195.9 408.8A160 160 0 1 0 195.9 371.2"/>
+<path class="ln-wall" d="M554.1 412.6A200 200 0 1 1 554.1 367.4"/>
+<path class="ln-thread" d="M355 390H415A60 60 0 0 0 295 390H255A100 100 0 0 0 455 390H495A140 140 0 0 0 215 390H175A180 180 0 0 0 535 390H660"/>
+<circle cx="355" cy="390" r="8" style="fill: var(--thread)"/>
+</svg>
+<div style="position: relative; color: var(--on-primary)">
+<div style="font-size: 32px; line-height: 40px; font-weight: 600; letter-spacing: -0.01em">Benang merah setiap proyek.</div>
+<div style="margin-top: 12px; font-size: 15px; line-height: 22px; opacity: .85; max-width: 440px">Semua task, tenggat, dan beban kerja tim dalam satu tempat — dari Sentul sampai Migrasi Data Center.</div>
+</div>
+</div>
+<div style="flex-grow: 1; display: flex; align-items: center; justify-content: center">
+<form style="width: 380px; display: flex; flex-direction: column; gap: 20px" onSubmit="{{noop}}">
+<x-import component-from-global-scope="Ariadne.Logo" size="{{logo}}"></x-import>
+<div>
+<h1 style="margin: 12px 0 4px; font-size: 28px; line-height: 36px; font-weight: 600; letter-spacing: -0.01em">Masuk</h1>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted)">Gunakan email kantor Anda.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="ln-email" style="font-size: 13px; font-weight: 500">Email</label>
+<input id="ln-email" class="ln-input" type="email" placeholder="nama@perusahaan.co.id" value="ahmad@perusahaan.co.id">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<label for="ln-pass" style="font-size: 13px; font-weight: 500">Password</label>
+<a href="#lupa" style="font-size: 13px">Lupa password?</a>
+</div>
+<input id="ln-pass" class="ln-input" type="password" value="rahasia123">
+</div>
+<label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-muted)">
+<input type="checkbox" checked="checked" style="width: 16px; height: 16px; margin: 0; accent-color: var(--primary)">Ingat saya di perangkat ini
+</label>
+<button type="submit" style="height: 44px; border: 0; border-radius: 4px; background: var(--primary); color: var(--on-primary); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer">Masuk</button>
+<p style="margin: 8px 0 0; font-size: 12px; line-height: 16px; color: var(--ink-muted)">Tamu dari klien masuk lewat tautan undangan di email.</p>
+</form>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"Tema"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return { theme: this.props.theme ?? 'light', logo: 40, noop: (e) => e.preventDefault() };
+}
+}
+</script>
+</body>
+</html>

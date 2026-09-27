@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Sidebar Ariadne</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/ariadne/tokens.css">
+<link rel="stylesheet" href="ds/ariadne/components/bundle.css">
+<script src="ds/ariadne/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<nav aria-label="Navigasi utama" style="width: 248px; height: 1000px; box-sizing: border-box; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; background: var(--canvas); font-family: var(--font-sans); color: var(--ink)">
+<div style="padding: 4px 8px 20px">
+<x-import component-from-global-scope="Ariadne.Logo" size="{{logoSize}}"></x-import>
+</div>
+<x-import component-from-global-scope="Ariadne.NavItem" icon="dashboard" label="Dashboard" active="{{isDashboard}}"></x-import>
+<sc-if value="{{isSupervisor}}" hint-placeholder-val="{{ true }}">
+<x-import component-from-global-scope="Ariadne.NavItem" icon="timeline" label="Timeline Tim" active="{{isTimeline}}"></x-import>
+</sc-if>
+<div style="padding: 20px 12px 6px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ink-muted)">Proyek</div>
+<x-import component-from-global-scope="Ariadne.NavItem" icon="folder" label="Sentul" expandable="{{yes}}" expanded="{{yes}}" active="{{isSentul}}"></x-import>
+<x-import component-from-global-scope="Ariadne.NavItem" label="Dispatch" depth="{{one}}" count="{{c12}}"></x-import>
+<x-import component-from-global-scope="Ariadne.NavItem" label="SLMS" depth="{{one}}" expandable="{{yes}}" expanded="{{yes}}" count="{{c18}}" active="{{isSlms}}"></x-import>
+<x-import component-from-global-scope="Ariadne.NavItem" label="Temuan UAT &amp; API" depth="{{two}}" count="{{c9}}"></x-import>
+<x-import component-from-global-scope="Ariadne.NavItem" label="Smartclassroom" depth="{{one}}" count="{{c6}}"></x-import>
+<x-import component-from-global-scope="Ariadne.NavItem" label="FAQ" depth="{{one}}" count="{{c3}}"></x-import>
+<x-import component-from-global-scope="Ariadne.NavItem" label="Menagih Pihak Lain" depth="{{one}}" count="{{c4}}"></x-import>
+<x-import component-from-global-scope="Ariadne.NavItem" label="Testing Oktober" depth="{{one}}" count="{{c7}}"></x-import>
+<sc-if value="{{notGuest}}" hint-placeholder-val="{{ true }}">
+<x-import component-from-global-scope="Ariadne.NavItem" icon="folder" label="Migrasi Data Center" expandable="{{yes}}" count="{{c11}}"></x-import>
+</sc-if>
+<sc-if value="{{notGuest}}" hint-placeholder-val="{{ true }}">
+<div style="height: 1px; background: var(--line); margin: 16px 8px"></div>
+<x-import component-from-global-scope="Ariadne.NavItem" icon="users" label="Tim" active="{{isTim}}"></x-import>
+</sc-if>
+<sc-if value="{{isSupervisor}}" hint-placeholder-val="{{ true }}">
+<x-import component-from-global-scope="Ariadne.NavItem" icon="settings" label="Pengaturan"></x-import>
+</sc-if>
+</nav>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"active":{"editor":"enum","options":["dashboard","timeline","sentul","slms","tim"],"default":"dashboard"},"role":{"editor":"enum","options":["supervisor","anggota","tamu"],"default":"supervisor"},"$preview":{"width":248,"height":1000}}'>
+class Component extends DCLogic {
+renderVals() {
+const a = this.props.active ?? 'dashboard';
+const r = this.props.role ?? 'supervisor';
+return {
+yes: true, one: 1, two: 2, logoSize: 28,
+c12: 12, c18: 18, c9: 9, c6: 6, c3: 3, c4: 4, c7: 7, c11: 11,
+isDashboard: a === 'dashboard', isTimeline: a === 'timeline', isSlms: a === 'slms', isSentul: a === 'sentul', isTim: a === 'tim',
+isSupervisor: r === 'supervisor', notGuest: r !== 'tamu'
+};
+}
+}
+</script>
+</body>
+</html>

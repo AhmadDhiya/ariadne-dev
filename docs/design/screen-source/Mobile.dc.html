@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Hari Ini — Ariadne mobile</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/ariadne/tokens.css">
+<link rel="stylesheet" href="ds/ariadne/components/bundle.css">
+<script src="ds/ariadne/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.mb-btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:1px solid var(--line-strong);border-radius:4px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.mb-pill{display:inline-flex;align-items:center;gap:2px;height:36px;padding:0;border:0;background:transparent;cursor:pointer;color:var(--ink-muted)}
+.mb-opt{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:0 16px;border:0;border-bottom:1px solid var(--line);background:transparent;font:inherit;color:var(--ink);cursor:pointer;text-align:left}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; background: var(--canvas); color: var(--ink); font-family: var(--font-sans)">
+<header style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 8px 0 4px; background: var(--surface); border-bottom: 1px solid var(--line)">
+<button type="button" aria-label="Buka menu" style="width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: transparent; color: var(--ink); cursor: pointer">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+</button>
+<x-import component-from-global-scope="Ariadne.Logo" size="{{logo}}" subtitle="{{no}}"></x-import>
+<div style="flex-grow: 1"></div>
+<x-import component-from-global-scope="Ariadne.IconButton" icon="bell" label="Notifikasi" badge="{{n3}}"></x-import>
+<x-import component-from-global-scope="Ariadne.Avatar" name="Ahmad" size="{{av}}"></x-import>
+</header>
+<div style="flex-grow: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px">
+<div>
+<div style="font-size: 12px; line-height: 16px; color: var(--ink-muted)">Senin, 28 September 2026</div>
+<h1 style="margin: 2px 0 0; font-size: 20px; line-height: 28px; font-weight: 600">Hari Ini</h1>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{stats}}" as="s" hint-placeholder-count="4">
+<div class="ar-card" style="padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; box-shadow: none">
+<span style="font-size: 20px; line-height: 24px; font-weight: 600; font-variant-numeric: tabular-nums; color: {{s.color}}">{{s.value}}</span>
+<span style="font-size: 11px; line-height: 14px; color: var(--ink-muted)">{{s.label}}</span>
+</div>
+</sc-for>
+</div>
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+<section style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 4px 0 0; font-size: 13px; line-height: 18px; font-weight: 600; color: {{g.color}}">{{g.label}} · {{g.count}}</h2>
+<sc-for list="{{g.rows}}" as="t" hint-placeholder-count="2">
+<article class="ar-card" style="padding: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: none">
+<div style="display: flex; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Ariadne.PriorityIcon" priority="{{t.prio}}"></x-import>
+<span class="ar-id">{{t.id}}</span>
+<span style="flex-grow: 1"></span>
+<x-import component-from-global-scope="Ariadne.DueDate" overdue="{{t.overdue}}">{{t.due}}</x-import>
+</div>
+<div>
+<div style="font-size: 15px; line-height: 20px; font-weight: 500">{{t.title}}</div>
+<div style="font-size: 12px; line-height: 16px; color: var(--ink-muted)">{{t.path}}</div>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between">
+<button type="button" class="mb-pill" aria-label="Ubah status" onClick="{{t.open}}">
+<x-import component-from-global-scope="Ariadne.StatusPill" status="{{t.status}}"></x-import>
+<x-import component-from-global-scope="Ariadne.Icon" name="chevron-down" size="{{s14}}"></x-import>
+</button>
+<button type="button" class="mb-btn" onClick="{{t.update}}">
+<x-import component-from-global-scope="Ariadne.Icon" name="update" size="{{s14}}"></x-import>Tambah update
+</button>
+</div>
+</article>
+</sc-for>
+</section>
+</sc-for>
+</div>
+
+<sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; background: var(--overlay)" onClick="{{close}}"></div>
+<div role="dialog" aria-label="{{sheetTitle}}" style="position: absolute; left: 0; bottom: 0; width: 390px; box-sizing: border-box; padding-bottom: 16px; background: var(--surface-raised); border-radius: 10px 10px 0 0; box-shadow: var(--shadow-lg)">
+<div style="width: 36px; height: 4px; border-radius: 9999px; background: var(--line-strong); margin: 8px auto 4px"></div>
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 16px 12px; border-bottom: 1px solid var(--line)">
+<div>
+<div style="font-size: 12px; color: var(--ink-muted)">{{sheetId}}</div>
+<div style="font-size: 15px; font-weight: 600">{{sheetTitle}}</div>
+</div>
+<x-import component-from-global-scope="Ariadne.IconButton" icon="x" label="Tutup" on-click="{{close}}"></x-import>
+</div>
+<sc-if value="{{isStatusSheet}}" hint-placeholder-val="{{ true }}">
+<sc-for list="{{options}}" as="o" hint-placeholder-count="8">
+<button type="button" class="mb-opt" onClick="{{o.pick}}">
+<x-import component-from-global-scope="Ariadne.StatusPill" status="{{o.key}}"></x-import>
+<span style="flex-grow: 1"></span>
+<sc-if value="{{o.current}}" hint-placeholder-val="{{ false }}">
+<span style="color: var(--primary)"><x-import component-from-global-scope="Ariadne.Icon" name="check" size="{{s18}}"></x-import></span>
+</sc-if>
+</button>
+</sc-for>
+</sc-if>
+<sc-if value="{{isUpdateSheet}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<label for="mb-upd" style="font-size: 13px; font-weight: 500">Update progres</label>
+<textarea id="mb-upd" rows="4" placeholder="Apa yang sudah dikerjakan hari ini?" style="padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; resize: none"></textarea>
+<button type="button" onClick="{{close}}" style="height: 44px; border: 0; border-radius: 4px; background: var(--primary); color: var(--on-primary); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer">Kirim update</button>
+</div>
+</sc-if>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"Tema"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { statuses: {}, sheet: null };
+}
+renderVals() {
+const base = [
+{ group: 0, prio: 'critical', id: 'SEN-115', title: 'Pipeline GitLab IRS', path: 'Sentul / Dispatch', due: '25 Sep', overdue: true, status: 'blocked' },
+{ group: 0, prio: 'high', id: 'SEN-121', title: 'Perbaikan temuan UAT modul absensi', path: 'Sentul / SLMS / Temuan UAT & API', due: '26 Sep', overdue: true, status: 'fixing' },
+{ group: 1, prio: 'critical', id: 'SEN-112', title: 'Paket PenTest whitebox', path: 'Sentul / SLMS', due: 'Hari ini', overdue: false, status: 'progress' },
+{ group: 1, prio: 'low', id: 'MDC-018', title: 'Konfirmasi jadwal akses gedung', path: 'Migrasi Data Center', due: 'Hari ini', overdue: false, status: 'progress' },
+{ group: 2, prio: 'high', id: 'MDC-021', title: 'Inventaris rak & kabel', path: 'Migrasi Data Center', due: '30 Sep', overdue: false, status: 'progress' },
+{ group: 2, prio: 'high', id: 'SEN-133', title: 'Menunggu akses VPN dari klien', path: 'Sentul / Menagih Pihak Lain', due: '30 Sep', overdue: false, status: 'request' }
+];
+const st = this.state.statuses;
+const tasks = base.map((t) => Object.assign({}, t, {
+status: st[t.id] || t.status,
+open: () => this.setState({ sheet: { kind: 'status', id: t.id } }),
+update: () => this.setState({ sheet: { kind: 'update', id: t.id } })
+}));
+const meta = [
+{ label: 'Terlambat', color: 'var(--danger)' },
+{ label: 'Jatuh tempo hari ini', color: 'var(--ink)' },
+{ label: 'Sedang berjalan', color: 'var(--ink)' }
+];
+const groups = meta.map((m, i) => {
+const rows = tasks.filter((t) => t.group === i);
+return { label: m.label, color: m.color, count: String(rows.length), rows: rows };
+});
+const sheet = this.state.sheet;
+const cur = sheet ? tasks.find((t) => t.id === sheet.id) : null;
+const options = (window.Ariadne ? window.Ariadne.STATUSES : []).map((s) => ({
+key: s.key, current: cur ? cur.status === s.key : false,
+pick: () => this.setState({ statuses: Object.assign({}, st, { [sheet.id]: s.key }), sheet: null })
+}));
+return {
+theme: this.props.theme ?? 'light',
+logo: 26, av: 32, n3: 3, s14: 14, s18: 18, no: false,
+stats: [
+{ value: '2', label: 'Terlambat', color: 'var(--danger)' },
+{ value: '5', label: 'Minggu ini', color: 'var(--ink)' },
+{ value: '4', label: 'Dikerjakan', color: 'var(--ink)' },
+{ value: '2', label: 'Tertahan', color: 'var(--ink)' }
+],
+groups: groups,
+sheetOpen: !!sheet,
+isStatusSheet: !!sheet && sheet.kind === 'status',
+isUpdateSheet: !!sheet && sheet.kind === 'update',
+sheetId: cur ? cur.id : '',
+sheetTitle: sheet ? (sheet.kind === 'status' ? 'Ubah status' : 'Tambah update') + ' — ' + cur.title : '',
+options: options,
+close: () => this.setState({ sheet: null })
+};
+}
+}
+</script>
+</body>
+</html>

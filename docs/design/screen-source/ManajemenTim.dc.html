@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Manajemen Tim — Ariadne</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/ariadne/tokens.css">
+<link rel="stylesheet" href="ds/ariadne/components/bundle.css">
+<script src="ds/ariadne/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--link)}a:hover{color:var(--primary-hover)}
+.mt-team{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1px solid var(--line);border-radius:6px;background:var(--surface);text-decoration:none;color:var(--ink)}
+.mt-team:hover{border-color:var(--line-strong)}
+.mt-th{font-size:12px;line-height:16px;font-weight:500;color:var(--ink-muted)}
+.mt-role{height:28px;padding:0 8px;border:1px solid var(--line-strong);border-radius:4px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 1440px; height: 680px; display: flex; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="width: 248px; height: 680px; flex-shrink: 0; border-right: 1px solid var(--line); overflow: hidden; background: var(--canvas)">
+<dc-import name="Sidebar" active="tim" role="supervisor" hint-size="248px,1000px"></dc-import>
+</div>
+<div style="width: 1192px; display: flex; flex-direction: column">
+<dc-import name="Topbar" user="Ahmad" role="Supervisor · Tim Sentul" notif="{{n3}}" hint-size="1192px,56px"></dc-import>
+<main style="padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<div>
+<h1 style="margin: 0; font-size: 20px; line-height: 28px; font-weight: 600">Tim</h1>
+<p style="margin: 2px 0 0; font-size: 13px; color: var(--ink-muted)">Satu orang bisa masuk beberapa tim, dan satu supervisor bisa memegang beberapa tim.</p>
+</div>
+<x-import component-from-global-scope="Ariadne.Button" variant="primary" icon="plus">Buat tim</x-import>
+</div>
+<div style="display: flex; gap: 20px; align-items: flex-start">
+<nav aria-label="Daftar tim" style="width: 280px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{teams}}" as="t" hint-placeholder-count="3">
+<a class="mt-team" href="#tim" style="border-color: {{t.border}}; background: {{t.bg}}">
+<span style="display: flex; align-items: center; justify-content: space-between">
+<span style="font-size: 14px; font-weight: 600">{{t.name}}</span>
+<span style="font-size: 12px; color: var(--ink-muted)">{{t.count}} orang</span>
+</span>
+<span style="font-size: 12px; color: var(--ink-muted)">Supervisor: {{t.sup}}</span>
+<x-import component-from-global-scope="Ariadne.AvatarStack" names="{{t.members}}" max="{{six}}" size="{{av}}"></x-import>
+</a>
+</sc-for>
+</nav>
+<section class="ar-card" style="flex-grow: 1; min-width: 0; box-shadow: none">
+<div style="display: flex; align-items: flex-start; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--line)">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h2 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 600">Tim Sentul</h2>
+<div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-muted)">Supervisor:
+<x-import component-from-global-scope="Ariadne.Avatar" name="Ahmad" size="{{av}}"></x-import><span style="color: var(--ink); font-weight: 500">Ahmad</span>
+<span>· Proyek: Sentul, Migrasi Data Center</span>
+</div>
+</div>
+<div style="display: flex; gap: 8px">
+<x-import component-from-global-scope="Ariadne.Button" size="sm" icon="settings">Ubah tim</x-import>
+</div>
+</div>
+<div style="position: relative; padding: 12px 16px; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid var(--line)">
+<label for="mt-add" style="font-size: 13px; font-weight: 500; white-space: nowrap">Tambah anggota</label>
+<div style="position: relative; width: 320px">
+<input id="mt-add" value="Sya" style="width: 100%; box-sizing: border-box; height: 32px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; box-shadow: var(--focus-ring)">
+<div style="position: absolute; left: 0; top: 38px; z-index: 5">
+<x-import component-from-global-scope="Ariadne.Menu" width="{{menuW}}" active-index="{{zero}}" items="{{addItems}}"></x-import>
+</div>
+</div>
+<select class="mt-role" aria-label="Peran di tim"><option>Anggota</option><option>Supervisor</option></select>
+<x-import component-from-global-scope="Ariadne.Button" size="sm" variant="primary">Tambahkan</x-import>
+</div>
+<div style="display: flex; align-items: center; height: 36px; padding: 0 16px; background: var(--surface-muted); border-bottom: 1px solid var(--line)">
+<span class="mt-th" style="flex-grow: 1">Nama</span>
+<span class="mt-th" style="width: 140px">Peran di tim</span>
+<span class="mt-th" style="width: 200px">Tim lain</span>
+<span class="mt-th" style="width: 110px; text-align: right; padding-right: 24px">Task aktif</span>
+<span class="mt-th" style="width: 110px"></span>
+</div>
+<sc-for list="{{members}}" as="m" hint-placeholder-count="7">
+<div style="display: flex; align-items: center; height: 44px; padding: 0 16px; border-bottom: 1px solid var(--line)">
+<span style="flex-grow: 1; display: flex; align-items: center; gap: 10px; min-width: 0">
+<x-import component-from-global-scope="Ariadne.Avatar" name="{{m.name}}" size="{{av28}}"></x-import>
+<span style="display: flex; flex-direction: column">
+<span style="font-size: 14px; font-weight: 500">{{m.name}}</span>
+<span style="font-size: 12px; color: var(--ink-muted)">{{m.email}}</span>
+</span>
+</span>
+<span style="width: 140px"><select class="mt-role" aria-label="Peran {{m.name}}"><option selected="{{m.isSup}}">Supervisor</option><option selected="{{m.isMember}}">Anggota</option></select></span>
+<span style="width: 200px; display: flex; gap: 4px"><sc-for list="{{m.other}}" as="o" hint-placeholder-count="1"><x-import component-from-global-scope="Ariadne.Label">{{o}}</x-import></sc-for></span>
+<span style="width: 110px; text-align: right; padding-right: 24px; box-sizing: border-box; font-size: 13px; font-variant-numeric: tabular-nums; color: {{m.loadColor}}; font-weight: {{m.loadWeight}}">{{m.load}}</span>
+<span style="width: 110px; display: flex; justify-content: flex-end"><x-import component-from-global-scope="Ariadne.Button" size="sm" variant="ghost" icon="x">Keluarkan</x-import></span>
+</div>
+</sc-for>
+</section>
+</div>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"Tema"},"$preview":{"width":1440,"height":680}}'>
+class Component extends DCLogic {
+renderVals() {
+const M = (name, email, sup, other, load) => ({ name: name, email: email, isSup: sup, isMember: !sup, other: other, load: String(load), loadColor: load >= 5 ? 'var(--danger)' : 'var(--ink)', loadWeight: load >= 5 ? 600 : 400 });
+return {
+theme: this.props.theme ?? 'light', n3: 3, six: 6, av: 22, av28: 28, zero: 0, menuW: 320,
+teams: [
+{ name: 'Tim Sentul', count: 7, sup: 'Ahmad', members: ['Ahmad', 'Wiwiet', 'Manto', 'Rama', 'Galih', 'Khalil', 'Bintang'], border: 'var(--primary)', bg: 'var(--primary-soft)' },
+{ name: 'Tim Infrastruktur', count: 4, sup: 'Syaikhan', members: ['Syaikhan', 'Wiwiet', 'Manto', 'Galih'], border: 'var(--line)', bg: 'var(--surface)' },
+{ name: 'Tim QA', count: 3, sup: 'Ahmad', members: ['Ahmad', 'Rama', 'Bintang'], border: 'var(--line)', bg: 'var(--surface)' }
+],
+addItems: [
+{ avatar: 'Syaikhan', label: 'Syaikhan', meta: 'Supervisor · Tim Infrastruktur' }
+],
+members: [
+M('Ahmad', 'ahmad@perusahaan.co.id', true, ['Tim QA'], 5),
+M('Wiwiet', 'wiwiet@perusahaan.co.id', false, ['Tim Infrastruktur'], 2),
+M('Manto', 'manto@perusahaan.co.id', false, ['Tim Infrastruktur'], 3),
+M('Rama', 'rama@perusahaan.co.id', false, ['Tim QA'], 5),
+M('Galih', 'galih@perusahaan.co.id', false, ['Tim Infrastruktur'], 2),
+M('Khalil', 'khalil@perusahaan.co.id', false, [], 1),
+M('Bintang', 'bintang@perusahaan.co.id', false, ['Tim QA'], 0)
+]
+};
+}
+}
+</script>
+</body>
+</html>

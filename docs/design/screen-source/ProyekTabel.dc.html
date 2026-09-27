@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Sentul — Tabel</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/ariadne/tokens.css">
+<link rel="stylesheet" href="ds/ariadne/components/bundle.css">
+<script src="ds/ariadne/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--link)}a:hover{color:var(--primary-hover)}
+.pt-th{font-size:12px;line-height:16px;font-weight:500;color:var(--ink-muted);white-space:nowrap}
+.pt-cell{font-size:13px;line-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pt-row:hover{background:var(--surface-muted)}
+.pt-tab{height:40px;display:inline-flex;align-items:center;margin-bottom:-1px;border-bottom:2px solid transparent;font-size:14px;font-weight:500;color:var(--ink-muted);text-decoration:none}
+.pt-tab:hover{color:var(--ink)}
+.pt-tab.is-active{color:var(--primary);border-bottom-color:var(--primary)}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="width: 1440px; height: 1100px; display: flex; background: var(--canvas); color: var(--ink); font-family: var(--font-sans); overflow: hidden">
+<div style="width: 248px; height: 1100px; flex-shrink: 0; border-right: 1px solid var(--line); overflow: hidden; background: var(--canvas)">
+<dc-import name="Sidebar" active="sentul" role="{{sidebarRole}}" hint-size="248px,1000px"></dc-import>
+</div>
+<div style="width: 1192px; display: flex; flex-direction: column">
+<dc-import name="Topbar" user="{{user}}" role="{{userRole}}" notif="{{notif}}" guest="{{guest}}" hint-size="1192px,56px"></dc-import>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="Ariadne.Banner" kind="guest">Anda melihat sebagai <b>Tamu</b>. Anda bisa melihat progres, berkomentar, dan menandai anggota dengan @.</x-import>
+</sc-if>
+<main style="padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 16px">
+
+<div style="display: flex; align-items: flex-end; justify-content: space-between">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<nav aria-label="Breadcrumb" style="font-size: 13px; line-height: 18px; color: var(--ink-muted)"><a href="#proyek" style="color: var(--ink-muted); text-decoration: none">Proyek</a> / <span style="color: var(--ink)">Sentul</span></nav>
+<div style="display: flex; align-items: center; gap: 16px">
+<h1 style="margin: 0; font-size: 20px; line-height: 28px; font-weight: 600">Sentul</h1>
+<div style="display: flex; align-items: center; gap: 8px">
+<div role="progressbar" aria-valuenow="58" aria-valuemin="0" aria-valuemax="100" aria-label="Progres proyek" style="width: 120px; height: 6px; border-radius: 9999px; background: var(--surface-muted); overflow: hidden">
+<div style="width: 58%; height: 6px; background: var(--status-done)"></div>
+</div>
+<span style="font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums">58%</span>
+<span style="font-size: 12px; color: var(--ink-muted)">41 dari 71 task selesai</span>
+</div>
+<x-import component-from-global-scope="Ariadne.AvatarStack" names="{{members}}" max="{{five}}"></x-import>
+</div>
+</div>
+<sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; gap: 8px">
+<x-import component-from-global-scope="Ariadne.Button" icon="users">Undang</x-import>
+<x-import component-from-global-scope="Ariadne.Button" variant="primary" icon="plus">Tambah task</x-import>
+</div>
+</sc-if>
+</div>
+
+<div role="tablist" style="display: flex; gap: 24px; border-bottom: 1px solid var(--line)">
+<a class="pt-tab is-active" role="tab" aria-selected="true" href="ProyekTabel.dc.html">Tabel</a>
+<a class="pt-tab" role="tab" aria-selected="false" href="ProyekGantt.dc.html">Gantt</a>
+<a class="pt-tab" role="tab" aria-selected="false" href="#milestone">Milestone</a>
+<a class="pt-tab" role="tab" aria-selected="false" href="AnggotaProyek.dc.html">Anggota</a>
+</div>
+
+<div style="display: flex; align-items: center; gap: 8px">
+<x-import component-from-global-scope="Ariadne.FilterChip" label="PIC"></x-import>
+<x-import component-from-global-scope="Ariadne.FilterChip" label="Status"></x-import>
+<x-import component-from-global-scope="Ariadne.FilterChip" label="Prioritas"></x-import>
+<x-import component-from-global-scope="Ariadne.FilterChip" label="Label"></x-import>
+<div style="width: 1px; height: 20px; background: var(--line); margin: 0 4px"></div>
+<x-import component-from-global-scope="Ariadne.FilterChip" label="Terlambat" toggle="{{yes}}"></x-import>
+<x-import component-from-global-scope="Ariadne.FilterChip" label="Minggu ini" toggle="{{yes}}"></x-import>
+<x-import component-from-global-scope="Ariadne.FilterChip" label="Task saya" toggle="{{yes}}"></x-import>
+<div style="flex-grow: 1"></div>
+<x-import component-from-global-scope="Ariadne.SearchField" placeholder="Cari di proyek ini" width="{{searchW}}"></x-import>
+</div>
+
+<section class="ar-card" style="box-shadow: none">
+<div style="display: flex; align-items: center; height: 36px; padding: 0 12px; background: var(--surface-muted); border-bottom: 1px solid var(--line); border-radius: 6px 6px 0 0">
+<span class="pt-th" style="width: 88px">ID</span>
+<span class="pt-th" style="flex-grow: 1">Judul</span>
+<span class="pt-th" style="width: 92px">Prioritas</span>
+<span class="pt-th" style="width: 140px">Status</span>
+<span class="pt-th" style="width: 76px">PIC</span>
+<span class="pt-th" style="width: 64px">Mulai</span>
+<span class="pt-th" style="width: 104px">Selesai</span>
+<span class="pt-th" style="width: 52px; text-align: right; padding-right: 12px">Durasi</span>
+<span class="pt-th" style="width: 150px">Update terakhir</span>
+<span class="pt-th" style="width: 104px">Label</span>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="16">
+<sc-if value="{{r.isGroup}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; background: var(--surface-muted); border-bottom: 1px solid var(--line); font-size: 13px; line-height: 18px">
+<span style="display: inline-grid; place-items: center; width: 16px; color: var(--ink-muted); transform: {{r.caretTurn}}"><x-import component-from-global-scope="Ariadne.Icon" name="chevron-down" size="{{s14}}"></x-import></span>
+<span style="font-weight: 600">{{r.title}}</span>
+<span style="color: var(--ink-muted)">{{r.meta}}</span>
+</div>
+</sc-if>
+<sc-if value="{{r.isTask}}" hint-placeholder-val="{{ true }}">
+<div class="pt-row" style="display: flex; align-items: center; height: 36px; padding: 0 12px; border-bottom: 1px solid var(--line); background: {{r.bg}}">
+<span class="ar-id" style="width: 88px; flex-shrink: 0; padding-left: {{r.idPad}}px; box-sizing: border-box; white-space: nowrap">{{r.id}}</span>
+<span style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 6px; padding-left: {{r.indent}}px; padding-right: 12px">
+<sc-if value="{{r.hasSubs}}" hint-placeholder-val="{{ false }}">
+<button type="button" aria-label="Tampilkan sub-task" aria-expanded="true" style="display: inline-grid; place-items: center; width: 20px; height: 20px; border: 0; border-radius: 4px; background: transparent; color: var(--ink-muted); padding: 0; cursor: pointer"><x-import component-from-global-scope="Ariadne.Icon" name="chevron-down" size="{{s14}}"></x-import></button>
+</sc-if>
+<span class="pt-cell" style="font-size: 14px; font-weight: {{r.weight}}">{{r.title}}</span>
+<sc-if value="{{r.subCount}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 12px; color: var(--ink-muted); white-space: nowrap">{{r.subCount}}</span>
+</sc-if>
+</span>
+<span style="width: 92px; flex-shrink: 0"><x-import component-from-global-scope="Ariadne.PriorityIcon" priority="{{r.prio}}" show-label="{{yes}}"></x-import></span>
+<span style="width: 140px; flex-shrink: 0; display: flex; align-items: center; gap: 2px; position: relative">
+<x-import component-from-global-scope="Ariadne.StatusPill" status="{{r.status}}" select="{{canEdit}}" open="{{r.menuOpen}}"></x-import>
+<sc-if value="{{r.held}}" hint-placeholder-val="{{ false }}">
+<span style="position: relative; width: 22px; height: 22px; display: inline-block">
+<span style="position: absolute; left: 0; top: 0; z-index: {{r.tipZ}}">
+<x-import component-from-global-scope="Ariadne.HoldTooltip" status="{{r.status}}" open="{{r.tipOpen}}" reason="{{r.reason}}" waiting-on="{{r.waiting}}" since="{{r.since}}"></x-import>
+</span>
+</span>
+</sc-if>
+<sc-if value="{{r.menuOpen}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; left: 0; top: 30px; z-index: 20">
+<x-import component-from-global-scope="Ariadne.Menu" title="Ubah status" width="{{menuW}}" active-index="{{menuActive}}" items="{{statusItems}}"></x-import>
+</div>
+</sc-if>
+</span>
+<span style="width: 76px; flex-shrink: 0"><x-import component-from-global-scope="Ariadne.AvatarStack" names="{{r.pic}}" size="{{av}}"></x-import></span>
+<span class="pt-cell" style="width: 64px; flex-shrink: 0; font-variant-numeric: tabular-nums">{{r.start}}</span>
+<span style="width: 104px; flex-shrink: 0"><x-import component-from-global-scope="Ariadne.DueDate" overdue="{{r.overdue}}">{{r.end}}</x-import></span>
+<span class="pt-cell" style="width: 52px; flex-shrink: 0; text-align: right; padding-right: 12px; box-sizing: border-box; font-variant-numeric: tabular-nums">{{r.dur}}</span>
+<span style="width: 150px; flex-shrink: 0; display: flex; flex-direction: column; min-width: 0; padding-right: 8px; box-sizing: border-box">
+<span class="pt-cell" style="font-size: 12px; line-height: 15px">{{r.upd}}</span>
+<span style="font-size: 11px; line-height: 14px; color: var(--ink-muted)">{{r.updMeta}}</span>
+</span>
+<span style="width: 104px; flex-shrink: 0; display: flex; gap: 4px; overflow: hidden">
+<sc-for list="{{r.labels}}" as="l" hint-placeholder-count="1">
+<x-import component-from-global-scope="Ariadne.Label">{{l}}</x-import>
+</sc-for>
+</span>
+</div>
+</sc-if>
+</sc-for>
+</section>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"Tema"},"guest":{"editor":"boolean","default":false},"showDemos":{"editor":"boolean","default":true},"notif":{"editor":"int","default":3},"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+renderVals() {
+const guest = !!(this.props.guest ?? false);
+const demos = !!(this.props.showDemos ?? true) && !guest;
+const T = (o) => Object.assign({ isGroup: false, isTask: true, held: false, overdue: false, labels: [], hasSubs: false, subCount: '', indent: 0, idPad: 0, weight: 500, menuOpen: false, tipOpen: false, tipZ: 1, reason: '', waiting: '', since: '', bg: 'transparent' }, o);
+const G = (title, meta, collapsed) => ({ isGroup: true, isTask: false, title: title, meta: meta, caretTurn: collapsed ? 'rotate(-90deg)' : 'none' });
+const rows = [
+G('Dispatch', '3 task', false),
+T({ id: 'SEN-101', title: 'Pengisian Kebutuhan Server', prio: 'high', status: 'done', pic: ['Ahmad'], start: '14 Sep', end: '18 Sep', dur: '5', upd: 'Spesifikasi final dikirim ke klien', updMeta: 'Ahmad · 18 Sep', labels: ['Infra'] }),
+T({ id: 'SEN-104', title: 'Integrasi log & metrics', prio: 'medium', status: 'progress', pic: ['Ahmad', 'Rama'], start: '28 Sep', end: '2 Okt', dur: '5', upd: 'Dashboard Grafana 60%, alert belum', updMeta: 'Rama · 09.40', labels: ['Monitoring'] }),
+T({ id: 'SEN-115', title: 'Pipeline GitLab IRS', prio: 'critical', status: 'blocked', pic: ['Wiwiet', 'Ahmad'], start: '21 Sep', end: '25 Sep', overdue: true, dur: '5', upd: 'Runner gagal konek ke staging', updMeta: 'Wiwiet · 08.40', labels: ['DevOps'], held: true, tipOpen: demos, tipZ: demos ? 15 : 1, reason: 'Runner GitLab belum bisa mengakses server staging; port 22 dan 443 masih ditutup firewall.', waiting: 'Manto', since: '24 Sep' }),
+G('SLMS', '2 task', false),
+T({ id: 'SEN-112', title: 'Paket PenTest whitebox', prio: 'critical', status: 'progress', pic: ['Ahmad', 'Khalil'], start: '21 Sep', end: '28 Sep', dur: '6', upd: 'Draf laporan sudah diunggah', updMeta: 'Khalil · Kemarin', labels: ['Keamanan'] }),
+T({ id: 'SEN-118', title: 'Dokumentasi API absensi', prio: 'medium', status: 'progress', pic: ['Manto'], start: '24 Sep', end: '29 Sep', dur: '4', upd: '12 dari 18 endpoint terdokumentasi', updMeta: 'Manto · 10.05', labels: ['Dokumentasi'] }),
+G('SLMS / Temuan UAT & API', '2 task · 3 sub-task', false),
+T({ id: 'SEN-121', title: 'Perbaikan temuan UAT modul absensi', prio: 'high', status: 'fixing', pic: ['Ahmad'], start: '23 Sep', end: '26 Sep', overdue: true, dur: '4', upd: 'Validasi shift malam masih salah', updMeta: 'Ahmad · Kemarin', labels: ['UAT'], hasSubs: true, subCount: '1/3' }),
+T({ id: 'SEN-122', title: 'Validasi jam masuk shift malam', prio: 'high', status: 'fixing', pic: ['Ahmad'], start: '23 Sep', end: '26 Sep', overdue: true, dur: '4', upd: 'Kasus lewat tengah malam', updMeta: 'Ahmad · Kemarin', labels: ['UAT'], indent: 26, idPad: 12, weight: 400 }),
+T({ id: 'SEN-123', title: 'Pesan error saat token kedaluwarsa', prio: 'medium', status: 'done', pic: ['Manto'], start: '23 Sep', end: '24 Sep', dur: '2', upd: 'Sudah dites di staging', updMeta: 'Manto · 24 Sep', labels: ['UAT'], indent: 26, idPad: 12, weight: 400 }),
+T({ id: 'SEN-124', title: 'Uji ulang oleh klien', prio: 'medium', status: 'not-started', pic: ['Ahmad'], start: '29 Sep', end: '30 Sep', dur: '2', upd: '—', updMeta: '', labels: ['UAT'], indent: 26, idPad: 12, weight: 400 }),
+T({ id: 'SEN-126', title: 'Endpoint rekap kehadiran lambat', prio: 'high', status: 'progress', pic: ['Manto', 'Galih'], start: '25 Sep', end: '1 Okt', dur: '5', upd: 'Index baru dipasang, 2,1 dtk → 0,4 dtk', updMeta: 'Galih · 11.20', labels: ['API'], menuOpen: demos, bg: demos ? 'var(--primary-soft)' : 'transparent' }),
+G('Smartclassroom', '6 task · dilipat', true),
+G('FAQ', '1 task', false),
+T({ id: 'SEN-130', title: 'Penyusunan FAQ', prio: 'low', status: 'not-started', pic: ['Bintang'], start: '1 Okt', end: '7 Okt', dur: '5', upd: '—', updMeta: '', labels: ['Konten'] }),
+G('Menagih Pihak Lain', '1 task', false),
+T({ id: 'SEN-133', title: 'Menunggu akses VPN dari klien', prio: 'high', status: 'request', pic: ['Ahmad'], start: '22 Sep', end: '30 Sep', dur: '7', upd: 'Formulir akses sudah dikirim ulang', updMeta: 'Ahmad · 26 Sep', labels: ['Klien'], held: true, reason: 'Akun VPN untuk tim belum dibuatkan oleh klien.', waiting: 'Klien — tim IT', since: '22 Sep' }),
+G('Testing Oktober', '1 task', false),
+T({ id: 'SEN-145', title: 'Skenario uji Oktober', prio: 'medium', status: 'hold', pic: ['Rama'], start: '1 Okt', end: '9 Okt', dur: '7', upd: 'Ditunda sampai jadwal UAT final', updMeta: 'Rama · 25 Sep', labels: ['QA'], held: true, reason: 'Menunggu jadwal UAT final dari klien.', waiting: 'Syaikhan', since: '25 Sep' })
+];
+const statuses = window.Ariadne ? window.Ariadne.STATUSES : [];
+return {
+theme: this.props.theme ?? 'light', notif: this.props.notif ?? 3,
+guest: guest, canEdit: !guest,
+sidebarRole: guest ? 'tamu' : 'supervisor',
+user: guest ? 'Pak Budi' : 'Ahmad', userRole: guest ? 'Tamu · Klien' : 'Supervisor · Tim Sentul',
+yes: true, five: 5, s14: 14, av: 22, searchW: 220, menuW: 200, menuActive: 2,
+members: ['Syaikhan', 'Wiwiet', 'Ahmad', 'Manto', 'Rama', 'Khalil', 'Bintang', 'Galih'],
+statusItems: statuses.map((s) => ({ status: s.key, selected: s.key === 'progress' })),
+rows: rows
+};
+}
+}
+</script>
+</body>
+</html>
