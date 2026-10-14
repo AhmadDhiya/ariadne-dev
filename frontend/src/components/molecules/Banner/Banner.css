@@ -1,0 +1,30 @@
+.ar-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  background: var(--sky-soft);
+  color: var(--ink);
+  font-size: 13px;
+  border-bottom: 1px solid var(--line);
+}
+.ar-banner > .ar-icon {
+  color: var(--sky);
+}
+.ar-banner-text {
+  flex: 1;
+}
+.ar-banner-text b {
+  font-weight: 600;
+}
+.ar-banner-action {
+  font: inherit;
+  font-weight: 500;
+  background: none;
+  border: 0;
+  color: var(--primary);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+}

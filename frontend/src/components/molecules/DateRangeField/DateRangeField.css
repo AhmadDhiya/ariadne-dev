@@ -1,0 +1,12 @@
+.ar-daterange {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.ar-daterange .ar-input {
+  width: auto;
+  font-variant-numeric: tabular-nums;
+}
+.ar-daterange-sep {
+  color: var(--ink-muted);
+}

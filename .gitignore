@@ -31,3 +31,4 @@ frontend/playwright/.cache/
 .idea/
 Thumbs.db
 .DS_Store
+.vitest/

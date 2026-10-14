@@ -1,0 +1,58 @@
+.ar-pill {
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 22px;
+  padding: 0 var(--space-2) 0 6px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+.ar-pill-select {
+  cursor: pointer;
+  padding-right: 6px;
+}
+.ar-pill-select .ar-pill-caret {
+  opacity: 0.75;
+}
+.ar-pill-select.is-open {
+  box-shadow: var(--focus-ring);
+}
+.ar-pill-not-started {
+  background: transparent;
+  border: 1px dashed var(--status-not-started);
+  color: var(--status-not-started-ink);
+}
+.ar-pill-progress {
+  background: var(--status-progress-soft);
+  color: var(--status-progress-ink);
+}
+.ar-pill-fixing {
+  background: var(--status-fixing-soft);
+  color: var(--status-fixing-ink);
+}
+.ar-pill-blocked {
+  background: var(--status-blocked-soft);
+  color: var(--status-blocked-ink);
+}
+.ar-pill-hold {
+  background: var(--status-hold-soft);
+  color: var(--status-hold-ink);
+}
+.ar-pill-request {
+  background: var(--status-request-soft);
+  color: var(--status-request-ink);
+}
+.ar-pill-done {
+  background: var(--status-done-soft);
+  color: var(--status-done-ink);
+}
+.ar-pill-routine {
+  background: var(--status-routine-soft);
+  color: var(--status-routine-ink);
+}

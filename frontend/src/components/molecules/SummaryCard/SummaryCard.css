@@ -1,0 +1,49 @@
+.ar-summary {
+  padding: var(--space-4);
+  min-width: 180px;
+  box-sizing: border-box;
+}
+.ar-summary-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+.ar-summary-value {
+  margin-top: var(--space-2);
+  font-size: 28px;
+  line-height: 32px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.ar-summary-hint {
+  margin-top: var(--space-1);
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.ar-summary.is-danger .ar-summary-head,
+.ar-summary.is-danger .ar-summary-value {
+  color: var(--danger);
+}
+.ar-summary.is-held .ar-summary-head {
+  color: var(--status-hold-ink);
+}
+/* Tambahan: versi kartu yang bisa diklik (filter daftar Hari Ini) */
+.ar-summary-action {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+}
+.ar-summary-action:hover {
+  background: var(--surface-muted);
+}
+.ar-summary-action[aria-pressed='true'] {
+  border-color: var(--primary);
+}

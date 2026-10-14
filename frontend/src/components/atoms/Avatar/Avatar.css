@@ -1,0 +1,19 @@
+.ar-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: var(--radius-full);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+  letter-spacing: 0;
+  box-shadow: 0 0 0 2px var(--surface);
+  line-height: 1;
+}
+.ar-avatar.is-guest {
+  background: var(--surface);
+  color: var(--ink-muted);
+  box-shadow:
+    0 0 0 2px var(--surface),
+    inset 0 0 0 1px var(--line-strong);
+}

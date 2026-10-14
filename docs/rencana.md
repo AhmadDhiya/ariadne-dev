@@ -360,7 +360,7 @@ Tanda ★ = komponen asli design system (di-port dari `bundle.js`). Tanpa tanda 
 | `ProgressBar` | progres proyek (58%) |
 | `HeatCell` | satu kotak angka di heatmap |
 | `Kbd` | petunjuk tombol keyboard (`/`) |
-| `Spinner`, `VisuallyHidden` | indikator memuat, teks khusus pembaca layar |
+| `VisuallyHidden` | teks khusus pembaca layar |
 
 **Molekul** (`components/molecules/`)
 
@@ -385,9 +385,9 @@ Tanda ★ = komponen asli design system (di-port dari `bundle.js`). Tanpa tanda 
 | `DateRangeField` | tanggal mulai – selesai |
 | `SegmentedControl` | Hari / Minggu / Bulan |
 | `Breadcrumb` | Proyek / Sentul |
-| `Popover`, `Tooltip` | wadah melayang untuk Menu dan nama avatar |
+| `Popover` | wadah melayang untuk Menu dan dropdown |
 | `Toast`, `EmptyState` | pesan berhasil/gagal, tampilan kosong |
-| `TaskRow`, `GroupRow` | satu baris task / baris grup sub-proyek (dipakai tabel, Hari Ini, Timeline Tim) |
+| `TaskRow`, `GroupRow` | satu baris task / baris grup sub-proyek (dipakai tabel, Hari Ini, Timeline Tim). **Dibuat di Fase 3** bersama tabelnya |
 
 **Organisme** (`components/organisms/`)
 
@@ -454,6 +454,9 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 - Komponen baru ditempatkan di tingkat atomic yang benar dan muncul di `/dev/komponen`.
 
 ### Fase 1: Kerangka repo + Docker + design system
+
+**Status: selesai, menunggu tinjauan Ahmad** (branch `fase-1-kerangka`). Catatan hasil ada di bagian 7.
+
 - Solution .NET (API + test), aplikasi Vite, `docker-compose.yml`, `.env.example`, `.gitignore`, README cara menjalankan.
 - API: `/api/health`, koneksi Postgres, migrasi kosong pertama, Clock dengan "hari ini" bisa dikunci, header keamanan, error tanpa detail teknis di produksi.
 - Frontend: token + font IBM Plex, semua komponen atom dan molekul dari bagian 4b, ditambah organisme dasar (`Menu`, `Dialog`, `Drawer`) dan halaman `/dev/komponen` dengan tombol ganti tema.
@@ -557,3 +560,34 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 **12. Branch dan PR.** Belum ada remote GitHub. Rekomendasi: saya buat branch per fase dan menggabungkannya ke `main` secara lokal setelah Anda cek. Kalau Anda punya repo GitHub, beri tahu alamatnya, maka setiap fase jadi PR.
 
 **13. Email saat pengembangan.** Rekomendasi: semua email masuk ke **Mailpit** (kotak surat palsu di laptop) sampai hosting dan SMTP asli diputuskan, jadi tidak ada email yang terkirim ke orang sungguhan.
+
+---
+
+## 7. Catatan hasil per fase
+
+### Fase 1 (27 September 2026)
+
+**Perbedaan dari rencana**
+- `Spinner` tidak dibuat: brand book melarang animasi selain fade 120ms dan putaran caret. Keadaan memuat memakai teks ("Memeriksa sambungan…").
+- `Tooltip` tidak dibuat: nama avatar dan tombol ikon sudah memakai atribut `title` seperti design system; komponen tambahan belum dibutuhkan (pedoman G5).
+- `TaskRow` dan `GroupRow` dipindah ke Fase 3, karena bentuknya bergantung pada kolom tabel yang baru dibuat di fase itu.
+- Test ditaruh per komponen (`X.test.tsx`) hanya untuk komponen yang punya perilaku; komponen tampilan murni (Label, Kbd, Mark) dicek lewat screenshot di Playwright.
+
+**Perbedaan dari design system (sengaja, demi aksesibilitas)**
+- **Label prioritas** ("High", "Medium") sempat memakai warna `ink` demi kontras, tetapi **Ahmad memutuskan (14 Oktober 2026) kembali ke warna prioritas seperti mockup**. Konsekuensinya diterima: di tema terang kata "High" (4,06:1) dan "Medium" (3,85:1) di bawah syarat WCAG 4,5:1 untuk teks kecil. Maknanya tetap tidak bergantung pada warna (ikon + kata selalu tampil). Pemeriksaan axe mengecualikan hanya elemen ini (`ACCEPTED_LOW_CONTRAST` di `frontend/e2e/helpers.ts`); jangan diperluas ke elemen lain. Bila kelak ada keluhan keterbacaan, perbaikannya cukup menggelapkan token `priority-high`/`priority-medium` di design system.
+- **NavItem** dibangun dari tautan + tombol buka/tutup (bukan `div role="treeitem"`), supaya sidebar bisa dipakai dengan keyboard. Tampilannya sama.
+- **HoldTooltip** kartunya melayang di kanan tombol info (seperti mockup 03), dan terbuka saat hover atau fokus keyboard.
+- **SummaryCard** bisa menjadi tombol (brand book: "Each card is a link that filters the Today list").
+
+**Temuan tentang design system**
+- `tokens.css` mendefinisikan alias `--danger`, `--link`, `--focus` hanya di blok `:root`. Untuk tema satu halaman penuh ini benar; hanya bermasalah bila tema dipasang bersarang (seperti katalog komponen, yang sudah ditangani di CSS katalog).
+- `component-previews/*.png` dirender tanpa huruf IBM Plex; aplikasi memakai IBM Plex sesuai brand book, jadi bentuk huruf terlihat sedikit berbeda.
+
+### Pemeliharaan 14 Oktober 2026 (sebelum merge Fase 1)
+
+`scripts/check.mjs` menemukan dua kerentanan baru yang muncul setelah 27 September, tanpa ada perubahan kode:
+
+- **NuGet:** `System.Security.Cryptography.Xml` dan `.Pkcs` 10.0.12 (5 advisori denial-of-service, 4 tingkat High), dibawa oleh `Microsoft.AspNetCore.DataProtection.EntityFrameworkCore` yang dipakai untuk kunci cookie login. Diperbaiki dengan menaikkan semua paket Microsoft, `dotnet-ef`, dan image runtime Docker ke **10.0.13**.
+- **npm:** `source-map-js` 1.2.1 (High, denial-of-service), hanya alat build/test, tidak ikut ke browser. Diperbaiki ke 1.2.2 lewat `npm audit fix`; hanya 3 baris `package-lock.json` yang berubah.
+
+Pelajaran untuk fase berikutnya: audit paket harus dijalankan ulang di awal setiap fase, bukan hanya di akhir. Kerentanan baru bisa muncul kapan saja pada kode yang tidak kita ubah.

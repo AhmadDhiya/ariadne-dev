@@ -1,0 +1,26 @@
+/* Tidak ada di design system; dibuat dari token yang sama dengan SearchField */
+.ar-input {
+  font: inherit;
+  width: 100%;
+  height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  box-sizing: border-box;
+}
+.ar-input-lg {
+  height: calc(var(--control-height) + var(--space-2));
+}
+.ar-input::placeholder {
+  color: var(--ink-muted);
+}
+.ar-input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+.ar-input:disabled {
+  background: var(--surface-muted);
+  color: var(--ink-muted);
+  cursor: not-allowed;
+}

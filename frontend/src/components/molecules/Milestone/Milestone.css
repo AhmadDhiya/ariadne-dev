@@ -1,0 +1,28 @@
+.ar-ms {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transform: translateX(-8px);
+  white-space: nowrap;
+}
+.ar-ms-diamond {
+  width: 11px;
+  height: 11px;
+  margin: 2px;
+  transform: rotate(45deg);
+  background: var(--ink);
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.ar-ms-diamond.is-done {
+  background: var(--surface);
+  box-shadow:
+    0 0 0 2px var(--surface),
+    inset 0 0 0 2px var(--ink);
+}
+.ar-ms-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}

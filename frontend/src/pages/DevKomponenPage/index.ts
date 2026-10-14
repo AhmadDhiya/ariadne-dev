@@ -1,0 +1,1 @@
+export { DevKomponenPage } from './DevKomponenPage'

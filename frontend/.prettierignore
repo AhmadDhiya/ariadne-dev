@@ -1,0 +1,8 @@
+dist
+node_modules
+coverage
+playwright-report
+test-results
+e2e/**/*-snapshots
+# Salinan apa adanya dari design system: jangan diformat ulang
+src/styles/tokens.css

@@ -1,0 +1,25 @@
+/* Prioritas tidak pernah pill: glyph polos, tanpa latar */
+.ar-prio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+.ar-prio-critical {
+  color: var(--priority-critical);
+}
+.ar-prio-high {
+  color: var(--priority-high);
+}
+.ar-prio-medium {
+  color: var(--priority-medium);
+}
+.ar-prio-low {
+  color: var(--priority-low);
+}
+/* Keputusan Ahmad (14 Okt 2026): kata label ikut berwarna prioritas seperti mockup. Di tema
+   terang, priority-high (4,06:1) dan priority-medium (3,85:1) di bawah 4,5:1 untuk teks kecil.
+   Dicatat di docs/rencana.md bagian 7; pemeriksaan kontras axe mengecualikan label ini
+   (e2e/helpers.ts). Maknanya tidak bergantung pada warna: ikon dan katanya tetap tampil. */

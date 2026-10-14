@@ -1,0 +1,4 @@
+# Akhir baris selalu LF supaya hook git, Dockerfile, dan skrip shell tidak rusak di Windows
+* text=auto eol=lf
+*.png binary
+*.ico binary

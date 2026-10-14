@@ -1,0 +1,23 @@
+.ar-tabs {
+  display: flex;
+  gap: var(--space-5);
+  border-bottom: 1px solid var(--line);
+}
+.ar-tab {
+  font: inherit;
+  font-weight: 500;
+  background: none;
+  border: 0;
+  padding: var(--space-2) 0;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+.ar-tab:hover {
+  color: var(--ink);
+}
+.ar-tab.is-active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}

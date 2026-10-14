@@ -1,0 +1,55 @@
+.ar-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: calc(var(--control-height) + var(--space-2));
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-sizing: border-box;
+  cursor: text;
+}
+.ar-chips:focus-within {
+  box-shadow: var(--focus-ring);
+}
+.ar-chips.is-invalid {
+  border-color: var(--danger);
+}
+.ar-chipitem {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 24px;
+  padding: 0 2px 0 var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  color: var(--ink);
+  font-size: 13px;
+}
+.ar-chipitem.is-invalid {
+  border: 1px dashed var(--danger);
+  color: var(--danger);
+}
+.ar-chipitem .ar-chipitem-remove {
+  width: 18px;
+  height: 18px;
+}
+.ar-chips-input {
+  flex: 1;
+  min-width: 160px;
+  height: 24px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  color: var(--ink);
+}
+.ar-chips-input:focus-visible {
+  box-shadow: none;
+}
+.ar-chips-input::placeholder {
+  color: var(--ink-muted);
+}

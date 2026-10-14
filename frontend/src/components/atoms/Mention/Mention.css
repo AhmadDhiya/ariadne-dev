@@ -1,0 +1,7 @@
+.ar-mention {
+  padding: 0 3px;
+  border-radius: 3px;
+  background: var(--sky-soft);
+  color: var(--primary);
+  font-weight: 500;
+}

@@ -1,0 +1,47 @@
+.ar-menu {
+  width: 240px;
+  padding: var(--space-1);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  box-sizing: border-box;
+}
+.ar-menu-title {
+  padding: 6px var(--space-2) 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+.ar-menu-query {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 var(--space-1);
+  padding: 6px var(--space-2);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+.ar-menu-query > span {
+  color: var(--ink);
+}
+/* Tambahan: baris pencarian yang bisa diketik */
+.ar-menu-query input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  color: var(--ink);
+}
+.ar-menu-query input:focus-visible {
+  box-shadow: none;
+}
+.ar-menu-query input::placeholder {
+  color: var(--ink-muted);
+}
+.ar-menu-list {
+  border-radius: var(--radius-sm);
+}

@@ -1,0 +1,11 @@
+.ar-avatars {
+  display: inline-flex;
+}
+.ar-avatars > .ar-avatar + .ar-avatar {
+  margin-left: calc(var(--space-1) * -1);
+}
+.ar-avatar-more {
+  background: var(--surface-muted);
+  color: var(--ink-muted);
+  font-size: 10px;
+}

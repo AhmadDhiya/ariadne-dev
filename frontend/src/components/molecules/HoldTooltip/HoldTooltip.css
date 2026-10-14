@@ -1,0 +1,68 @@
+.ar-hold {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.ar-hold-trigger {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  cursor: pointer;
+}
+.ar-hold-blocked {
+  color: var(--status-blocked-ink);
+}
+.ar-hold-hold {
+  color: var(--status-hold-ink);
+}
+.ar-hold-request {
+  color: var(--status-request-ink);
+}
+.ar-tooltip {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px var(--space-3);
+  width: 280px;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-md);
+  font-size: 13px;
+  line-height: 18px;
+}
+.ar-tooltip-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: 2px;
+  font-size: 12px;
+}
+.ar-tooltip-k {
+  color: var(--ink-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.ar-tooltip-v {
+  color: var(--ink);
+}
+.ar-tooltip-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+/* Tambahan: kartu melayang di atas tabel, di kanan tombol info */
+.ar-tooltip.is-floating {
+  position: absolute;
+  top: 0;
+  left: calc(100% + var(--space-2));
+  z-index: 20;
+}

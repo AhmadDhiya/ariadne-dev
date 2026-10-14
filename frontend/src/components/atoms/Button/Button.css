@@ -1,0 +1,46 @@
+.ar-btn {
+  font: inherit;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--control-height);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ar-btn-sm {
+  height: var(--control-height-sm);
+  padding: 0 var(--space-2);
+  font-size: 12px;
+  gap: 4px;
+}
+.ar-btn-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.ar-btn-primary:hover {
+  background: var(--primary-hover);
+}
+.ar-btn-secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+.ar-btn-secondary:hover {
+  background: var(--surface-muted);
+}
+.ar-btn-ghost {
+  background: transparent;
+  color: var(--ink-muted);
+}
+.ar-btn-ghost:hover {
+  background: var(--surface-muted);
+  color: var(--ink);
+}
+.ar-btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

@@ -1,0 +1,16 @@
+.ar-date {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.ar-date.is-overdue {
+  color: var(--danger);
+  font-weight: 500;
+}
+.ar-date-late {
+  font-size: 12px;
+}

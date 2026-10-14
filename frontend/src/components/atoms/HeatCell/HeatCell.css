@@ -1,0 +1,33 @@
+.ar-heat {
+  display: inline-grid;
+  place-items: center;
+  height: 24px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.ar-heat-0 {
+  background: var(--heat-0);
+}
+.ar-heat-1 {
+  background: var(--heat-1);
+}
+.ar-heat-2 {
+  background: var(--heat-2);
+}
+.ar-heat-3 {
+  background: var(--heat-3);
+}
+.ar-heat-4 {
+  background: var(--heat-4);
+  color: var(--on-heat);
+}
+.ar-heat-5 {
+  background: var(--heat-5);
+  color: var(--on-heat);
+}
+.ar-heat-0.is-weekend {
+  background: repeating-linear-gradient(135deg, var(--heat-0) 0 3px, var(--surface) 3px 6px);
+}

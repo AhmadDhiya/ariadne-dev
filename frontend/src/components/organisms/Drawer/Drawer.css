@@ -1,0 +1,64 @@
+.ar-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: var(--drawer-width);
+  max-width: 100vw;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+  box-sizing: border-box;
+}
+.ar-drawer::backdrop {
+  background: var(--overlay);
+}
+.ar-drawer-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.ar-drawer-head {
+  padding: var(--space-4) var(--space-6) var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+.ar-drawer-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
+}
+.ar-drawer-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted);
+}
+.ar-drawer-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: auto;
+}
+.ar-drawer-title {
+  margin: var(--space-1) 0 0;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+.ar-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-5) var(--space-6);
+}
+.ar-drawer-foot {
+  padding: var(--space-3) var(--space-6) var(--space-4);
+  border-top: 1px solid var(--line);
+}

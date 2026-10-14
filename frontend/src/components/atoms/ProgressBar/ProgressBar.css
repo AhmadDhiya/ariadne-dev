@@ -1,0 +1,14 @@
+.ar-progress {
+  display: inline-block;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--surface-muted);
+  overflow: hidden;
+  vertical-align: middle;
+}
+.ar-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--status-done);
+}
