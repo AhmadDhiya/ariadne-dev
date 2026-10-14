@@ -1,0 +1,39 @@
+.ar-teamlist {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ar-teamcard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  text-decoration: none;
+  color: var(--ink);
+}
+.ar-teamcard:hover {
+  border-color: var(--line-strong);
+}
+.ar-teamcard.is-selected {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.ar-teamcard-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ar-teamcard-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+.ar-teamcard-count,
+.ar-teamcard-sup {
+  font-size: 12px;
+  color: var(--ink-muted);
+}

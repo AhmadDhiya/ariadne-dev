@@ -1,0 +1,27 @@
+.ar-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.ar-person-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ar-person-name {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ar-person-email {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

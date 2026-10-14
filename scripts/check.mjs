@@ -5,8 +5,8 @@
 //   node scripts/check.mjs           semua pemeriksaan
 //   node scripts/check.mjs --cepat   tanpa test browser (Playwright)
 //
-// Butuh: .NET 10 SDK, Node 24, dan Docker Desktop yang menyala (untuk test database
-// dan pemindai rahasia).
+// Butuh: .NET 10 SDK, Node 24, Docker Desktop yang menyala (test database, pemindai rahasia,
+// dan stack lengkap untuk test browser), serta file .env (salin dari .env.example).
 import { spawnSync } from 'node:child_process'
 import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -96,7 +96,33 @@ const steps = [
 ]
 
 if (!quick) {
-  steps.push(['Frontend: test browser (Playwright + axe)', () => run('npm run e2e', FRONTEND).ok])
+  steps.push(['Frontend: test browser katalog komponen (Playwright + axe)', () => run('npm run e2e', FRONTEND).ok])
+  steps.push([
+    'Stack penuh: test browser login, peran, dan halaman Fase 2 (Docker + Mailpit)',
+    () => {
+      if (!existsSync(join(ROOT, '.env'))) {
+        console.log('File .env belum ada. Salin .env.example menjadi .env dan isi nilainya.')
+        return false
+      }
+      if (!run('docker compose up -d --build', ROOT).ok) return false
+      if (!waitForStack()) {
+        console.log('API tidak menjawab sehat dalam 3 menit. Periksa: docker compose logs api')
+        return false
+      }
+      return run('npm run e2e:stack', FRONTEND).ok
+    },
+  ])
+}
+
+/** Menunggu API di stack Docker menjawab sehat (maks. 3 menit). */
+function waitForStack() {
+  const until = Date.now() + 180_000
+  while (Date.now() < until) {
+    const r = run('curl -fsS http://localhost:18080/api/health', ROOT, { capture: true })
+    if (r.ok) return true
+    spawnSync(process.execPath, ['-e', 'setTimeout(()=>{},3000)'])
+  }
+  return false
 }
 
 const results = []

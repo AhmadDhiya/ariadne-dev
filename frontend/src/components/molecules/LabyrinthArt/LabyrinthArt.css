@@ -1,0 +1,23 @@
+.ar-labyrinth {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.ar-labyrinth-wall {
+  fill: none;
+  stroke: var(--primary-soft);
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.35;
+}
+.ar-labyrinth-thread {
+  fill: none;
+  stroke: var(--thread);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ar-labyrinth-knot {
+  fill: var(--thread);
+}

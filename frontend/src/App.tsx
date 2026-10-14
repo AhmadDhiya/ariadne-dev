@@ -1,6 +1,17 @@
-import { createBrowserRouter, RouterProvider, type RouteObject } from 'react-router'
-import { HomePage } from '@/pages/HomePage'
+import { Navigate, createBrowserRouter, RouterProvider, type RouteObject } from 'react-router'
+import { ToastProvider } from '@/app/ToastProvider'
+import { AppLayoutPage } from '@/pages/AppLayoutPage'
+import { DashboardPage } from '@/pages/DashboardPage'
+import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
+import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { ProjectMembersPage } from '@/pages/ProjectMembersPage'
+import { ProjectPage } from '@/pages/ProjectPage'
+import { ProjectSoonPage } from '@/pages/ProjectSoonPage'
+import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
+import { SettingsPage } from '@/pages/SettingsPage'
+import { TeamsPage } from '@/pages/TeamsPage'
+import { TimelineTimPage } from '@/pages/TimelineTimPage'
 
 // Katalog komponen hanya ada saat pengembangan: di build produksi cabang ini dihapus
 // seluruhnya, termasuk kodenya (pedoman A6). scripts/check memastikannya.
@@ -16,11 +27,41 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
   : []
 
 const router = createBrowserRouter([
-  { path: '/', Component: HomePage },
+  // Halaman tanpa login
+  { path: '/masuk', Component: LoginPage },
+  { path: '/lupa-password', Component: ForgotPasswordPage },
+  { path: '/reset-password', Component: ResetPasswordPage },
   ...devRoutes,
-  { path: '*', Component: NotFoundPage },
+
+  // Semua halaman setelah login lewat AppLayoutPage (periksa sesi + sidebar + topbar)
+  {
+    Component: AppLayoutPage,
+    children: [
+      { index: true, Component: DashboardPage },
+      { path: 'timeline-tim', Component: TimelineTimPage },
+      { path: 'tim', Component: TeamsPage },
+      { path: 'tim/:teamId', Component: TeamsPage },
+      { path: 'pengaturan', Component: SettingsPage },
+      {
+        path: 'proyek/:projectId',
+        Component: ProjectPage,
+        children: [
+          { index: true, element: <Navigate to="tabel" replace /> },
+          { path: 'tabel', Component: ProjectSoonPage },
+          { path: 'gantt', Component: ProjectSoonPage },
+          { path: 'milestone', Component: ProjectSoonPage },
+          { path: 'anggota', Component: ProjectMembersPage },
+        ],
+      },
+      { path: '*', Component: NotFoundPage },
+    ],
+  },
 ])
 
 export function App() {
-  return <RouterProvider router={router} />
+  return (
+    <ToastProvider>
+      <RouterProvider router={router} />
+    </ToastProvider>
+  )
 }

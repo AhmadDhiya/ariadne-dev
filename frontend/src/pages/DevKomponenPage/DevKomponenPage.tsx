@@ -39,6 +39,7 @@ import { SegmentedControl } from '@/components/molecules/SegmentedControl'
 import { useTheme, type Theme } from '@/hooks/useTheme'
 import { PRIORITIES, STATUSES } from '@/lib/status'
 import { Demo, Level } from './Demo'
+import { Phase2Molecules, Phase2Organisms } from './phase2'
 import {
   GANTT_DAYS,
   GANTT_WEEKENDS,
@@ -445,6 +446,7 @@ export function DevKomponenPage() {
             }
           />
         </Demo>
+        <Phase2Molecules />
       </Level>
 
       <Level id="organisme" title="Organisme">
@@ -462,12 +464,13 @@ export function DevKomponenPage() {
         <Demo name="Drawer" note={EXTRA}>
           <DrawerDemo />
         </Demo>
+        <Phase2Organisms />
       </Level>
 
       <Level id="template" title="Template">
         <p className="ar-muted">
-          AppShell, AuthLayout, ProjectLayout, dan MobileShell dibuat bersama halamannya mulai Fase
-          2.
+          AppShell, AuthLayout, dan ProjectLayout seukuran satu halaman penuh, jadi dilihat langsung
+          di halaman Masuk, Tim, dan Anggota proyek. MobileShell menyusul bersama tampilan mobile.
         </p>
       </Level>
     </main>

@@ -1,0 +1,12 @@
+.ar-formdialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.ar-formdialog-error {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: var(--danger);
+}

@@ -1,0 +1,1 @@
+export { ProjectSoonPage } from './ProjectSoonPage'

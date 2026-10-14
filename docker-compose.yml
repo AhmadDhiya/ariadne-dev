@@ -38,9 +38,23 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ConnectionStrings__Default: Host=db;Database=ariadne;Username=ariadne;Password=${POSTGRES_PASSWORD}
       Database__MigrateOnStartup: "true"
+      # Alamat aplikasi untuk tautan di email (dari konfigurasi, bukan dari header permintaan)
+      App__BaseUrl: ${APP_BASE_URL:-http://localhost:18080}
+      # Semua email berhenti di Mailpit (lihat di http://localhost:18025), tidak terkirim ke orang sungguhan
+      Email__Host: mailpit
+      Email__Port: "1025"
+      Email__Security: None
+      Email__FromAddress: ariadne@localhost
+      # Data contoh dari mockup; hanya dimasukkan di Development dan hanya bila password diisi (pedoman A5)
+      Seed__Password: ${SEED_PASSWORD:-}
+      # Admin pertama untuk database kosong (mis. produksi); diabaikan bila sudah ada pengguna
+      Bootstrap__AdminEmail: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      Bootstrap__AdminPassword: ${BOOTSTRAP_ADMIN_PASSWORD:-}
     depends_on:
       db:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     # Tidak ada port yang dibuka: API hanya diakses lewat nginx di layanan "web"
 
   web:

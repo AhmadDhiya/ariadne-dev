@@ -1,0 +1,41 @@
+.ar-addbar {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.ar-addbar-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+.ar-addbar-label {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.ar-addbar-field {
+  position: relative;
+  width: 320px;
+}
+.ar-addbar-menu {
+  position: absolute;
+  left: 0;
+  top: 38px;
+  z-index: 5;
+}
+.ar-addbar-none {
+  margin: 0;
+  padding: var(--space-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.ar-addbar-error {
+  margin: var(--space-2) 0 0;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--danger);
+}

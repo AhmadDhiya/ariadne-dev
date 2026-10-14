@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { formatDateRange, formatLongDate, formatShortDate, formatTime, parseDate } from './dates'
+import {
+  formatDateRange,
+  formatDateWithYear,
+  formatLongDate,
+  formatShortDate,
+  formatTime,
+  parseDate,
+} from './dates'
 
 describe('format tanggal Indonesia', () => {
   it('tanggal pendek memakai singkatan bulan Indonesia', () => {
@@ -28,6 +35,12 @@ describe('format tanggal Indonesia', () => {
     expect(formatTime('2026-09-28T02:12:00Z')).toBe('09.12')
     // 17.30 UTC = 00.30 WIB keesokan harinya
     expect(formatTime('2026-09-27T17:30:00Z')).toBe('00.30')
+  })
+
+  it('tanggal dengan tahun memakai zona Asia/Jakarta (kolom Ditambahkan)', () => {
+    expect(formatDateWithYear('2026-06-02T02:00:00Z')).toBe('2 Jun 2026')
+    // 17.30 UTC = 00.30 WIB: sudah tanggal berikutnya di Jakarta
+    expect(formatDateWithYear('2026-12-31T17:30:00Z')).toBe('1 Jan 2027')
   })
 
   it('tanggal tidak valid ditolak, tidak diam-diam ditampilkan', () => {

@@ -35,3 +35,10 @@ body {
   outline: 2px solid transparent;
   box-shadow: var(--focus-ring);
 }
+/* Tautan di dalam teks (mockup: a { color: var(--link) }); item navigasi menimpa dengan "color: inherit" */
+a {
+  color: var(--link);
+}
+a:hover {
+  color: var(--primary-hover);
+}
