@@ -19,9 +19,7 @@
 .ar-prio-low {
   color: var(--priority-low);
 }
-/* Perbedaan dari design system: warna prioritas hanya untuk glyph ("used only as glyph
-   colour", brand book). Di tema terang, priority-high (4,06:1) dan priority-medium (3,85:1)
-   kurang dari 4,5:1 untuk teks, jadi kata labelnya memakai ink (pedoman H1). */
-.ar-prio > span {
-  color: var(--ink);
-}
+/* Keputusan Ahmad (14 Okt 2026): kata label ikut berwarna prioritas seperti mockup. Di tema
+   terang, priority-high (4,06:1) dan priority-medium (3,85:1) di bawah 4,5:1 untuk teks kecil.
+   Dicatat di docs/rencana.md bagian 7; pemeriksaan kontras axe mengecualikan label ini
+   (e2e/helpers.ts). Maknanya tidak bergantung pada warna: ikon dan katanya tetap tampil. */

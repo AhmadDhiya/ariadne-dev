@@ -9,7 +9,7 @@ COPY src/ src/
 RUN dotnet publish src/Ariadne.Api/Ariadne.Api.csproj -c Release -o /app --no-restore
 
 # Tahap 2: hanya runtime, tanpa SDK dan tanpa kode sumber
-FROM mcr.microsoft.com/dotnet/aspnet:10.0.12 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.13 AS runtime
 WORKDIR /app
 COPY --from=build /app ./
 # Berjalan sebagai user non-root bawaan image .NET (pedoman I4)

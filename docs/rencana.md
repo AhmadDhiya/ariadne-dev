@@ -574,7 +574,7 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 - Test ditaruh per komponen (`X.test.tsx`) hanya untuk komponen yang punya perilaku; komponen tampilan murni (Label, Kbd, Mark) dicek lewat screenshot di Playwright.
 
 **Perbedaan dari design system (sengaja, demi aksesibilitas)**
-- **Label prioritas** ("High", "Medium") memakai warna `ink`; ikonnya tetap berwarna prioritas. Di tema terang, `priority-high` (4,06:1) dan `priority-medium` (3,85:1) kurang dari syarat kontras teks 4,5:1. Token tidak diubah. Bila Ahmad lebih memilih label berwarna seperti mockup, cukup hapus satu aturan di `PriorityIcon.css`.
+- **Label prioritas** ("High", "Medium") sempat memakai warna `ink` demi kontras, tetapi **Ahmad memutuskan (14 Oktober 2026) kembali ke warna prioritas seperti mockup**. Konsekuensinya diterima: di tema terang kata "High" (4,06:1) dan "Medium" (3,85:1) di bawah syarat WCAG 4,5:1 untuk teks kecil. Maknanya tetap tidak bergantung pada warna (ikon + kata selalu tampil). Pemeriksaan axe mengecualikan hanya elemen ini (`ACCEPTED_LOW_CONTRAST` di `frontend/e2e/helpers.ts`); jangan diperluas ke elemen lain. Bila kelak ada keluhan keterbacaan, perbaikannya cukup menggelapkan token `priority-high`/`priority-medium` di design system.
 - **NavItem** dibangun dari tautan + tombol buka/tutup (bukan `div role="treeitem"`), supaya sidebar bisa dipakai dengan keyboard. Tampilannya sama.
 - **HoldTooltip** kartunya melayang di kanan tombol info (seperti mockup 03), dan terbuka saat hover atau fokus keyboard.
 - **SummaryCard** bisa menjadi tombol (brand book: "Each card is a link that filters the Today list").
@@ -582,3 +582,12 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 **Temuan tentang design system**
 - `tokens.css` mendefinisikan alias `--danger`, `--link`, `--focus` hanya di blok `:root`. Untuk tema satu halaman penuh ini benar; hanya bermasalah bila tema dipasang bersarang (seperti katalog komponen, yang sudah ditangani di CSS katalog).
 - `component-previews/*.png` dirender tanpa huruf IBM Plex; aplikasi memakai IBM Plex sesuai brand book, jadi bentuk huruf terlihat sedikit berbeda.
+
+### Pemeliharaan 14 Oktober 2026 (sebelum merge Fase 1)
+
+`scripts/check.mjs` menemukan dua kerentanan baru yang muncul setelah 27 September, tanpa ada perubahan kode:
+
+- **NuGet:** `System.Security.Cryptography.Xml` dan `.Pkcs` 10.0.12 (5 advisori denial-of-service, 4 tingkat High), dibawa oleh `Microsoft.AspNetCore.DataProtection.EntityFrameworkCore` yang dipakai untuk kunci cookie login. Diperbaiki dengan menaikkan semua paket Microsoft, `dotnet-ef`, dan image runtime Docker ke **10.0.13**.
+- **npm:** `source-map-js` 1.2.1 (High, denial-of-service), hanya alat build/test, tidak ikut ke browser. Diperbaiki ke 1.2.2 lewat `npm audit fix`; hanya 3 baris `package-lock.json` yang berubah.
+
+Pelajaran untuk fase berikutnya: audit paket harus dijalankan ulang di awal setiap fase, bukan hanya di akhir. Kerentanan baru bisa muncul kapan saja pada kode yang tidak kita ubah.
