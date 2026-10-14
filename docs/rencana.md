@@ -76,8 +76,8 @@ ariadne/
 |---|---|
 | `db` | PostgreSQL 17, data disimpan di volume |
 | `api` | backend .NET; saat start menjalankan migrasi dan (di mode dev) seed |
-| `web` | nginx berisi hasil build frontend, port 8080 |
-| `mailpit` | "kotak surat palsu" untuk melihat email yang dikirim aplikasi saat pengembangan (http://localhost:8025) |
+| `web` | nginx berisi hasil build frontend, dibuka di port 18080 |
+| `mailpit` | "kotak surat palsu" untuk melihat email yang dikirim aplikasi saat pengembangan (http://localhost:18025) |
 
 ---
 

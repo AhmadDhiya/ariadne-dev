@@ -39,10 +39,19 @@ cd frontend && npm ci && npx playwright install chromium
 docker compose up --build
 ```
 
-- Aplikasi: http://localhost:8080
-- Kotak surat palsu (email yang dikirim aplikasi): http://localhost:8025
+- Aplikasi: http://localhost:18080
+- Kotak surat palsu (email yang dikirim aplikasi): http://localhost:18025
 
-Semua port hanya terbuka untuk komputer ini, tidak untuk jaringan.
+Semua port hanya terbuka untuk komputer ini, tidak untuk jaringan. Nomor port sengaja dibuat tidak umum supaya tidak bentrok dengan program lain di komputer Anda:
+
+| Port di komputer | Isi | Port di dalam container |
+|---|---|---|
+| `18080` | aplikasi (nginx) | 8080 |
+| `54321` | PostgreSQL | 5432 |
+| `18025` | halaman web Mailpit | 8025 |
+| `10251` | SMTP Mailpit | 1025 |
+
+Mengubah port cukup di `docker-compose.yml` (angka sebelum titik dua). Nomor port maksimal 65535.
 
 ## Mode pengembangan (lebih cepat, berubah otomatis saat kode disimpan)
 
@@ -55,7 +64,7 @@ Semua port hanya terbuka untuk komputer ini, tidak untuk jaringan.
 2. Simpan connection string untuk backend di *user-secrets* .NET (di luar folder repo, jadi tidak mungkin ter-commit). Ganti `PASSWORD` dengan isi `POSTGRES_PASSWORD` di `.env`:
 
    ```bash
-   dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Database=ariadne;Username=ariadne;Password=PASSWORD" --project backend/src/Ariadne.Api
+   dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Port=54321;Database=ariadne;Username=ariadne;Password=PASSWORD" --project backend/src/Ariadne.Api
    ```
 
 3. Jalankan backend (http://localhost:5077):

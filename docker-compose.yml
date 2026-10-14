@@ -12,9 +12,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Isi POSTGRES_PASSWORD di file .env (lihat .env.example)}
     volumes:
       - db-data:/var/lib/postgresql/data
-    # Hanya bisa diakses dari laptop ini (untuk "dotnet run"), tidak dari jaringan (pedoman I4)
+    # Hanya bisa diakses dari laptop ini (untuk "dotnet run"), tidak dari jaringan (pedoman I4).
+    # Angka kiri = port di komputer Anda (54321, sengaja bukan 5432 agar tidak bentrok dengan
+    # PostgreSQL lain); angka kanan = port di dalam container (tetap 5432).
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:54321:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ariadne -d ariadne"]
       interval: 5s
@@ -24,9 +26,11 @@ services:
   mailpit:
     # Kotak surat palsu: semua email aplikasi berhenti di sini, tidak terkirim ke orang sungguhan
     image: axllent/mailpit:v1.31.3
+    # Halaman web di 18025, SMTP di 10251 (port komputer; di dalam container tetap 8025 dan 1025).
+    # Catatan: nomor port maksimal 65535, jadi 80251 tidak valid.
     ports:
-      - "127.0.0.1:8025:8025"
-      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:18025:8025"
+      - "127.0.0.1:10251:1025"
 
   api:
     build: ./backend
@@ -41,8 +45,9 @@ services:
 
   web:
     build: ./frontend
+    # Aplikasi dibuka di http://localhost:18080 (80801 tidak valid: port maksimal 65535)
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:18080:8080"
     depends_on:
       - api
 
