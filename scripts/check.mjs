@@ -5,9 +5,10 @@
 //   node scripts/check.mjs           semua pemeriksaan
 //   node scripts/check.mjs --cepat   tanpa test browser (Playwright)
 //
-// Butuh: .NET 10 SDK, Node 24, Docker Desktop yang menyala (test database, pemindai rahasia,
-// dan stack lengkap untuk test browser), serta file .env (salin dari .env.example).
+// Butuh: .NET 10 SDK, Node 24, dan Docker Desktop yang menyala (test database, pemindai rahasia,
+// dan stack sementara untuk test browser; tidak butuh file .env dan tidak menyentuh stack kerja).
 import { spawnSync } from 'node:child_process'
+import { randomBytes } from 'node:crypto'
 import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -20,9 +21,10 @@ const GITLEAKS_IMAGE = 'ghcr.io/gitleaks/gitleaks:v8.30.1'
 const quick = process.argv.includes('--cepat')
 
 /** Menjalankan perintah; `capture` mengembalikan keluarannya untuk diperiksa. */
-function run(command, cwd, { capture = false } = {}) {
+function run(command, cwd, { capture = false, env = process.env } = {}) {
   const result = spawnSync(command, {
     cwd,
+    env,
     shell: true,
     stdio: capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
     encoding: 'utf8',
@@ -98,28 +100,49 @@ const steps = [
 if (!quick) {
   steps.push(['Frontend: test browser katalog komponen (Playwright + axe)', () => run('npm run e2e', FRONTEND).ok])
   steps.push([
-    'Stack penuh: test browser login, peran, dan halaman Fase 2 (Docker + Mailpit)',
-    () => {
-      if (!existsSync(join(ROOT, '.env'))) {
-        console.log('File .env belum ada. Salin .env.example menjadi .env dan isi nilainya.')
-        return false
-      }
-      if (!run('docker compose up -d --build', ROOT).ok) return false
-      if (!waitForStack()) {
-        console.log('API tidak menjawab sehat dalam 3 menit. Periksa: docker compose logs api')
-        return false
-      }
-      return run('npm run e2e:stack', FRONTEND).ok
-    },
+    'Stack penuh: test browser login, peran, dan halaman Fase 2 (Docker + Mailpit, database sementara)',
+    runStackE2E,
   ])
 }
 
-/** Menunggu API di stack Docker menjawab sehat (maks. 3 menit). */
-function waitForStack() {
+/**
+ * Test browser terhadap stack penuh di Docker. Stack ini TERPISAH dari stack kerja Anda: nama proyek, port,
+ * dan database lain, password acak, dan data contoh aktif. Dibongkar lengkap (termasuk database) di akhir,
+ * jadi data kerja di http://localhost:18080 tidak tersentuh dan tidak butuh file .env.
+ */
+function runStackE2E() {
+  const password = () => randomBytes(18).toString('base64url')
+  const ports = { WEB_PORT: '28080', DB_PORT: '54322', MAILPIT_WEB_PORT: '28025', MAILPIT_SMTP_PORT: '20251' }
+  const env = {
+    ...process.env,
+    ...ports,
+    POSTGRES_PASSWORD: password(),
+    SEED_PASSWORD: password(),
+    BOOTSTRAP_ADMIN_EMAIL: '',
+    BOOTSTRAP_ADMIN_PASSWORD: '',
+    ASPNETCORE_ENVIRONMENT: 'Development',
+    APP_BASE_URL: `http://localhost:${ports.WEB_PORT}`,
+    ARIADNE_STACK_URL: `http://localhost:${ports.WEB_PORT}`,
+    ARIADNE_MAILPIT_URL: `http://localhost:${ports.MAILPIT_WEB_PORT}`,
+  }
+  const compose = 'docker compose -p ariadne-e2e'
+  try {
+    if (!run(`${compose} up -d --build`, ROOT, { env }).ok) return false
+    if (!waitForStack(env.ARIADNE_STACK_URL)) {
+      console.log('API tidak menjawab sehat dalam 3 menit. Periksa: docker compose -p ariadne-e2e logs api')
+      return false
+    }
+    return run('npm run e2e:stack', FRONTEND, { env }).ok
+  } finally {
+    run(`${compose} down -v`, ROOT, { env })
+  }
+}
+
+/** Menunggu API menjawab sehat (maks. 3 menit). */
+function waitForStack(baseUrl) {
   const until = Date.now() + 180_000
   while (Date.now() < until) {
-    const r = run('curl -fsS http://localhost:18080/api/health', ROOT, { capture: true })
-    if (r.ok) return true
+    if (run(`curl -fsS ${baseUrl}/api/health`, ROOT, { capture: true }).ok) return true
     spawnSync(process.execPath, ['-e', 'setTimeout(()=>{},3000)'])
   }
   return false

@@ -137,6 +137,24 @@ public sealed class SeedTests(PostgresFixture postgres)
     }
 
     [Fact]
+    public async Task Bootstrap_admin_uses_the_configured_display_name()
+    {
+        var password = RandomPassword();
+        var settings = new Dictionary<string, string?>
+        {
+            ["Bootstrap:AdminEmail"] = "pertama@uji.example",
+            ["Bootstrap:AdminPassword"] = password,
+            ["Bootstrap:AdminName"] = "  Ahmad  ",
+        };
+        await using var app = new TestApp(postgres.NewDatabase(), settings, environment: "Production");
+        using var client = app.Anonymous();
+
+        var login = await client.PostApiAsync("/api/auth/login", new { email = "pertama@uji.example", password });
+
+        Assert.Equal("Ahmad", (await login.ReadAsync<MeResponse>()).DisplayName);
+    }
+
+    [Fact]
     public async Task Bootstrap_settings_are_ignored_once_any_user_exists()
     {
         var connection = postgres.NewDatabase();

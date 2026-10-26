@@ -1,0 +1,14 @@
+.ar-projects {
+  box-shadow: none;
+  overflow: hidden;
+}
+.ar-projects-name {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 500;
+}
+.ar-projects-actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}

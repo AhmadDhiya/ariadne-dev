@@ -14,8 +14,12 @@ export type UserKey = keyof typeof USERS
 
 export const authFile = (user: UserKey) => resolve(import.meta.dirname, `.auth/${user}.json`)
 
-/** Membaca SEED_PASSWORD dari .env di root repo. Nilainya tidak pernah dicetak atau dicatat. */
+/**
+ * Password akun contoh: dari environment (dipakai scripts/check.mjs yang membuat stack sendiri yang terpisah),
+ * atau dari SEED_PASSWORD di .env bila stack contoh dinyalakan manual. Nilainya tidak pernah dicetak atau dicatat.
+ */
 export function seedPassword(): string {
+  if (process.env.SEED_PASSWORD) return process.env.SEED_PASSWORD
   const envFile = resolve(import.meta.dirname, '../../.env')
   if (!existsSync(envFile))
     throw new Error('File .env tidak ditemukan di root repo (salin dari .env.example).')

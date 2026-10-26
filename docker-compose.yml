@@ -13,10 +13,10 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     # Hanya bisa diakses dari laptop ini (untuk "dotnet run"), tidak dari jaringan (pedoman I4).
-    # Angka kiri = port di komputer Anda (54321, sengaja bukan 5432 agar tidak bentrok dengan
-    # PostgreSQL lain); angka kanan = port di dalam container (tetap 5432).
+    # Angka kiri = port di komputer Anda (bawaan 54321, sengaja bukan 5432 agar tidak bentrok dengan
+    # PostgreSQL lain; bisa diganti lewat DB_PORT); angka kanan = port di dalam container (tetap 5432).
     ports:
-      - "127.0.0.1:54321:5432"
+      - "127.0.0.1:${DB_PORT:-54321}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ariadne -d ariadne"]
       interval: 5s
@@ -29,8 +29,8 @@ services:
     # Halaman web di 18025, SMTP di 10251 (port komputer; di dalam container tetap 8025 dan 1025).
     # Catatan: nomor port maksimal 65535, jadi 80251 tidak valid.
     ports:
-      - "127.0.0.1:18025:8025"
-      - "127.0.0.1:10251:1025"
+      - "127.0.0.1:${MAILPIT_WEB_PORT:-18025}:8025"
+      - "127.0.0.1:${MAILPIT_SMTP_PORT:-10251}:1025"
 
   api:
     build: ./backend
@@ -50,6 +50,7 @@ services:
       # Admin pertama untuk database kosong (mis. produksi); diabaikan bila sudah ada pengguna
       Bootstrap__AdminEmail: ${BOOTSTRAP_ADMIN_EMAIL:-}
       Bootstrap__AdminPassword: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      Bootstrap__AdminName: ${BOOTSTRAP_ADMIN_NAME:-}
     depends_on:
       db:
         condition: service_healthy
@@ -61,7 +62,7 @@ services:
     build: ./frontend
     # Aplikasi dibuka di http://localhost:18080 (80801 tidak valid: port maksimal 65535)
     ports:
-      - "127.0.0.1:18080:8080"
+      - "127.0.0.1:${WEB_PORT:-18080}:8080"
     depends_on:
       - api
 

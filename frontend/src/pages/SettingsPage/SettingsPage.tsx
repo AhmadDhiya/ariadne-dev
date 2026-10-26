@@ -1,23 +1,26 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { fieldErrorsOf, messageOf } from '@/api/errors'
-import { useCreateProject, useProjectTree } from '@/api/projects'
+import {
+  useArchiveProject,
+  useCreateProject,
+  useProjectTree,
+  useRenameProject,
+} from '@/api/projects'
 import { useCreateUser, useUpdateUser, useUsers } from '@/api/users'
 import { useAppContext } from '@/app/context'
 import { Button } from '@/components/atoms/Button'
-import { Label } from '@/components/atoms/Label'
-import { DataTable, type Column } from '@/components/molecules/DataTable'
 import { EmptyState } from '@/components/molecules/EmptyState'
 import { PageHeader } from '@/components/molecules/PageHeader'
 import { Tabs } from '@/components/molecules/Tabs'
 import { FormDialog } from '@/components/organisms/FormDialog'
+import { ProjectsTable } from '@/components/organisms/ProjectsTable'
 import { UsersTable } from '@/components/organisms/UsersTable'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useToast } from '@/hooks/useToast'
 import { flattenTree } from '@/lib/projectTree'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import type { ProjectNode, UserSummary } from '@/types/api'
-import './SettingsPage.css'
 
 const TABS = ['Pengguna', 'Proyek']
 
@@ -35,9 +38,13 @@ export function SettingsPage() {
   const createUser = useCreateUser()
   const updateUser = useUpdateUser()
   const createProject = useCreateProject()
+  const renameProject = useRenameProject()
+  const archiveProject = useArchiveProject()
 
   const [dialog, setDialog] = useState<'user' | 'project' | null>(null)
   const [deactivating, setDeactivating] = useState<UserSummary | null>(null)
+  const [renaming, setRenaming] = useState<ProjectNode | null>(null)
+  const [archiving, setArchiving] = useState<ProjectNode | null>(null)
 
   const projectRows = useMemo(() => flattenTree(tree.data ?? []), [tree.data])
 
@@ -48,49 +55,6 @@ export function SettingsPage() {
     createUser.reset()
     createProject.reset()
   }
-
-  const projectColumns: Column<ProjectNode>[] = [
-    {
-      key: 'name',
-      header: 'Nama proyek',
-      render: (p) => (
-        <span className="ar-settings-name" style={{ paddingLeft: p.depth * 20 }}>
-          {p.name}
-        </span>
-      ),
-    },
-    {
-      key: 'code',
-      header: 'Kode',
-      width: 120,
-      render: (p) => (p.code ? <span className="ar-id">{p.code}</span> : null),
-    },
-    {
-      key: 'level',
-      header: 'Tingkat',
-      width: 150,
-      render: (p) => (
-        <Label>{['Proyek', 'Sub-proyek', 'Sub-sub-proyek'][p.depth] ?? 'Sub-proyek'}</Label>
-      ),
-    },
-    {
-      key: 'open',
-      header: 'Aksi',
-      headerHidden: true,
-      width: 140,
-      align: 'right',
-      render: (p) => (
-        <Button
-          size="sm"
-          variant="ghost"
-          aria-label={`Buka ${p.name}`}
-          onClick={() => void navigate(`/proyek/${p.id}/anggota`)}
-        >
-          Buka
-        </Button>
-      ),
-    },
-  ]
 
   return (
     <>
@@ -162,21 +126,12 @@ export function SettingsPage() {
       ) : tree.isPending ? (
         <p role="status">Memuat proyek…</p>
       ) : (
-        <section className="ar-card ar-settings-card">
-          <DataTable
-            caption="Semua proyek"
-            columns={projectColumns}
-            rows={projectRows}
-            rowKey={(p) => p.id}
-            empty={
-              <EmptyState
-                icon="folder"
-                title="Belum ada proyek"
-                description="Buat proyek pertama, lalu tambahkan pengelolanya."
-              />
-            }
-          />
-        </section>
+        <ProjectsTable
+          projects={projectRows}
+          onOpen={(p) => void navigate(`/proyek/${p.id}/anggota`)}
+          onRename={setRenaming}
+          onArchive={setArchiving}
+        />
       )}
 
       <FormDialog
@@ -276,6 +231,60 @@ export function SettingsPage() {
               },
             },
           )
+        }}
+      />
+      <FormDialog
+        open={renaming !== null}
+        onClose={() => {
+          setRenaming(null)
+          renameProject.reset()
+        }}
+        title={`Ubah nama ${renaming?.name ?? ''}`}
+        description="Kode proyek tidak berubah."
+        fields={[{ name: 'name', label: 'Nama proyek', maxLength: 100 }]}
+        initialValues={{ name: renaming?.name ?? '' }}
+        submitLabel="Simpan"
+        submitting={renameProject.isPending}
+        fieldErrors={renameProject.isError ? fieldErrorsOf(renameProject.error) : undefined}
+        formError={
+          renameProject.isError && Object.keys(fieldErrorsOf(renameProject.error)).length === 0
+            ? messageOf(renameProject.error)
+            : undefined
+        }
+        onSubmit={(values) => {
+          if (!renaming) return
+          const name = String(values.name).trim()
+          renameProject.mutate(
+            { id: renaming.id, name },
+            {
+              onSuccess: () => {
+                toast.success(`Proyek diubah menjadi ${name}`)
+                setRenaming(null)
+              },
+            },
+          )
+        }}
+      />
+      <FormDialog
+        open={archiving !== null}
+        onClose={() => {
+          setArchiving(null)
+          archiveProject.reset()
+        }}
+        title={`Arsipkan ${archiving?.name ?? ''}?`}
+        description="Proyek ini beserta semua sub-proyeknya hilang dari daftar dan tidak bisa dipilih lagi. Datanya tidak dihapus, tetapi belum ada tombol untuk memulihkannya; hubungi pengembang bila perlu dikembalikan."
+        fields={[]}
+        submitLabel="Arsipkan"
+        submitting={archiveProject.isPending}
+        formError={archiveProject.isError ? messageOf(archiveProject.error) : undefined}
+        onSubmit={() => {
+          if (!archiving) return
+          archiveProject.mutate(archiving.id, {
+            onSuccess: () => {
+              toast.success(`${archiving.name} diarsipkan`)
+              setArchiving(null)
+            },
+          })
         }}
       />
     </>

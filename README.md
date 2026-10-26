@@ -21,7 +21,7 @@ Aplikasi web internal untuk melacak task dan Gantt lintas proyek, menggantikan G
 cp .env.example .env
 ```
 
-Buka `.env` lalu isi `POSTGRES_PASSWORD` (huruf dan angka, minimal 16 karakter) dan `SEED_PASSWORD` (password untuk semua akun contoh, minimal 12 karakter). File ini tidak pernah ikut di-commit.
+Buka `.env` lalu isi `POSTGRES_PASSWORD` (huruf dan angka, minimal 16 karakter) dan admin pertama: `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` (minimal 12 karakter), dan `BOOTSTRAP_ADMIN_NAME`. File ini tidak pernah ikut di-commit.
 
 ```bash
 git config core.hooksPath .githooks
@@ -44,15 +44,11 @@ docker compose up --build
 
 ## Masuk ke aplikasi
 
-Buka http://localhost:18080 lalu masuk dengan salah satu akun contoh. Passwordnya sama untuk semuanya: isi `SEED_PASSWORD` di `.env`.
+Database baru kosong. Saat pertama menyala, aplikasi membuat **satu admin** dari `BOOTSTRAP_ADMIN_EMAIL` dan `BOOTSTRAP_ADMIN_PASSWORD` di `.env` (pengaturan ini diabaikan setelah ada pengguna). Buka http://localhost:18080, masuk dengan akun itu, lalu buat tim, pengguna, dan proyek dari menu **Tim** dan **Pengaturan**. Tombol "Lupa password?" mengirim email ke kotak surat palsu di http://localhost:18025.
 
-| Email | Peran |
-|---|---|
-| `ahmad@perusahaan.co.id` | Admin + Supervisor Tim Sentul dan Tim QA |
-| `wiwiet@perusahaan.co.id` | Anggota biasa |
-| `budi@klien.example` | Tamu klien (hanya melihat proyek Sentul) |
+Untuk mengulang dari awal jalankan `docker compose down -v` (menghapus semua data) lalu `docker compose up --build`.
 
-Akun lain mengikuti pola `nama@perusahaan.co.id` (syaikhan, manto, rama, khalil, galih, bintang). Tombol "Lupa password?" mengirim email ke kotak surat palsu di http://localhost:18025. Data contoh dibuat sekali saat database masih kosong; untuk mengulang dari awal jalankan `docker compose down -v` (menghapus data) lalu `docker compose up --build`.
+**Data contoh dari mockup (opsional)**: untuk membandingkan tampilan dengan screenshot, isi `SEED_PASSWORD` di `.env` (minimal 12 karakter) pada database kosong. Aplikasi lalu membuat akun Ahmad (admin), Wiwiet (anggota), Pak Budi (Tamu `budi@klien.example`), dan lainnya (`nama@perusahaan.co.id`), semuanya memakai password itu, beserta tim dan proyek Sentul dan Migrasi Data Center.
 
 Semua port hanya terbuka untuk komputer ini, tidak untuk jaringan. Nomor port sengaja dibuat tidak umum supaya tidak bentrok dengan program lain di komputer Anda:
 
@@ -101,9 +97,7 @@ Di mode pengembangan, "hari ini" dikunci ke **Senin, 28 September 2026** supaya 
 node scripts/check.mjs
 ```
 
-Perintah ini menjalankan build, format, lint, test backend dan frontend, pemeriksa token warna, audit paket rentan, pemindai rahasia, dan test browser (katalog komponen, lalu seluruh aplikasi di Docker: login, peran, screenshot, aksesibilitas). Langkah terakhir menyalakan `docker compose` dan membutuhkan `.env`. Tambahkan `--cepat` untuk melewati semua test browser.
-
-Test browser terhadap aplikasi Docker bisa dijalankan sendiri (aplikasi harus sudah menyala): `cd frontend && npm run e2e:stack`.
+Perintah ini menjalankan build, format, lint, test backend dan frontend, pemeriksa token warna, audit paket rentan, pemindai rahasia, dan test browser (katalog komponen, lalu seluruh aplikasi di Docker: login, peran, screenshot, aksesibilitas). Langkah terakhir menyalakan stack Docker **sementara dan terpisah** (nama proyek `ariadne-e2e`, port 28080, database sendiri dengan data contoh, password acak) lalu membongkarnya, jadi data kerja di http://localhost:18080 tidak tersentuh dan tidak butuh `.env`. Tambahkan `--cepat` untuk melewati semua test browser.
 
 ## Struktur singkat
 

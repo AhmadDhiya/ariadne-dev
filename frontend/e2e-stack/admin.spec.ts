@@ -243,6 +243,49 @@ test.describe('Ahmad: Pengaturan', () => {
     )
   })
 
+  test('ubah nama dan arsipkan proyek lewat tampilan (proyek sementara, data contoh tidak berubah)', async ({
+    page,
+  }) => {
+    const suffix = Math.random().toString(36).slice(2, 6).toUpperCase()
+    const created = await page.request.post('/api/projects', {
+      headers: { 'X-Requested-With': 'ariadne' },
+      data: { name: `Proyek Uji ${suffix}`, code: `U${suffix}` },
+    })
+    expect(created.status()).toBe(201)
+
+    await page.goto('/pengaturan?tab=proyek')
+    const table = page.getByRole('table', { name: 'Semua proyek' })
+    await expect(table.getByRole('row').filter({ hasText: `Proyek Uji ${suffix}` })).toBeVisible()
+
+    // Ubah nama: isian awal berisi nama lama, kosong ditolak, nama baru tampil
+    await page.getByRole('button', { name: `Ubah nama Proyek Uji ${suffix}` }).click()
+    const rename = page.getByRole('dialog', { name: `Ubah nama Proyek Uji ${suffix}` })
+    await expect(rename.getByLabel(/^Nama proyek/)).toHaveValue(`Proyek Uji ${suffix}`)
+    await rename.getByLabel(/^Nama proyek/).fill('')
+    await rename.getByRole('button', { name: 'Simpan' }).click()
+    await expect(rename.getByText('Nama proyek wajib diisi.')).toBeVisible()
+    await rename.getByLabel(/^Nama proyek/).fill(`Uji Ganti ${suffix}`)
+    await rename.getByRole('button', { name: 'Simpan' }).click()
+    await expect(page.getByText(`Proyek diubah menjadi Uji Ganti ${suffix}`)).toBeVisible()
+    const row = table.getByRole('row').filter({ hasText: `Uji Ganti ${suffix}` })
+    await expect(row).toContainText(`U${suffix}`) // kode tidak berubah
+
+    // Arsipkan: ada konfirmasi, Batal tidak mengubah apa pun
+    await page.getByRole('button', { name: `Arsipkan Uji Ganti ${suffix}` }).click()
+    const archive = page.getByRole('dialog', { name: `Arsipkan Uji Ganti ${suffix}?` })
+    await archive.getByRole('button', { name: 'Batal' }).click()
+    await expect(row).toBeVisible()
+
+    await page.getByRole('button', { name: `Arsipkan Uji Ganti ${suffix}` }).click()
+    await page
+      .getByRole('dialog', { name: `Arsipkan Uji Ganti ${suffix}?` })
+      .getByRole('button', { name: 'Arsipkan' })
+      .click()
+    await expect(page.getByText(`Uji Ganti ${suffix} diarsipkan`)).toBeVisible()
+    await expect(row).toHaveCount(0)
+    await expect(table.getByRole('row')).toHaveCount(10) // kembali seperti data contoh
+  })
+
   test('Buat proyek: kode divalidasi server dan tidak boleh kembar', async ({ page }) => {
     await page.goto('/pengaturan?tab=proyek')
     await page.getByRole('button', { name: 'Buat proyek' }).click()
