@@ -16,6 +16,8 @@ internal static partial class BootstrapAdmin
     {
         var email = app.Configuration["Bootstrap:AdminEmail"];
         var password = app.Configuration["Bootstrap:AdminPassword"];
+        // Nama tampilan admin pertama; boleh dikosongkan (jadi "Admin")
+        var name = app.Configuration["Bootstrap:AdminName"];
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
             return;
@@ -36,7 +38,7 @@ internal static partial class BootstrapAdmin
             UserName = email,
             Email = email,
             EmailConfirmed = true,
-            DisplayName = "Admin",
+            DisplayName = string.IsNullOrWhiteSpace(name) ? "Admin" : name.Trim(),
             IsAdmin = true,
             IsActive = true,
             CreatedAt = clock.UtcNow,

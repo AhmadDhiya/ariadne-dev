@@ -605,7 +605,7 @@ Pelajaran untuk fase berikutnya: audit paket harus dijalankan ulang di awal seti
 - Urutan daftar mengikuti mockup, bukan abjad: tim menurut waktu dibuat; anggota menurut peran (Supervisor/Pengelola dulu), lalu waktu ditambahkan, lalu nama. Data contoh memberi selisih waktu agar urutannya sama dengan mockup.
 - API `POST /api/me/change-password` sudah ada dan teruji, tetapi belum ada layar "ubah password" (di luar lingkup halaman Fase 2).
 - Tidak ada pelindung "admin terakhir": admin tidak bisa mencabut atau menonaktifkan dirinya sendiri, jadi selalu ada minimal satu admin aktif.
-- `Bootstrap` admin lewat `BOOTSTRAP_ADMIN_EMAIL/PASSWORD` (untuk database kosong di server; data contoh hanya di Development).
+- `Bootstrap` admin lewat `BOOTSTRAP_ADMIN_EMAIL/PASSWORD/NAME` (untuk database kosong, lokal maupun server; data contoh hanya di Development dan hanya bila `SEED_PASSWORD` diisi).
 
 **Keamanan yang ditegakkan di server (bukan hanya di tampilan)**
 - Cookie `ariadne.auth` HttpOnly + SameSite=Strict (Secure di luar Development); sesi lama langsung tidak berlaku saat pengguna dinonaktifkan atau dicabut hak adminnya (security stamp).
@@ -618,3 +618,12 @@ Pelajaran untuk fase berikutnya: audit paket harus dijalankan ulang di awal seti
 **Test:** 284 test backend (termasuk matriks 9 peran × semua endpoint, dan pemeriksaan mutasi: aturan sengaja dirusak untuk memastikan test benar-benar gagal), 114 test unit frontend, 10 test browser katalog (axe + screenshot), 44 test browser terhadap stack Docker sungguhan (login, peran Ahmad/Wiwiet/Pak Budi, Mailpit, tema terang dan gelap, axe).
 
 **Paket baru:** `MailKit` 4.18.1 (kirim email SMTP; dicek di NuGet), `Testcontainers.PostgreSql` (test), `EFCore.NamingConventions` 10.0.1, `@axe-core/playwright` sudah dari Fase 1. `System.Security.Cryptography.Pkcs` dikunci ke 10.0.13 karena versi bawaan MailKit rentan.
+
+### Tindak lanjut Fase 2 (27 Oktober 2026)
+
+Keputusan Ahmad setelah Fase 2: gabungkan ke `main`; **mulai dari data kosong**; tombol ubah nama dan arsip proyek dibuat sekarang.
+
+- **Mulai kosong:** database kerja tidak lagi berisi data contoh. Admin pertama dibuat dari `BOOTSTRAP_ADMIN_*` di `.env`. Data contoh tetap ada sebagai opsi (isi `SEED_PASSWORD`) karena dibutuhkan untuk membandingkan tampilan dengan mockup.
+- **Test browser terpisah dari data kerja:** `scripts/check.mjs` menyalakan stack Docker sementara (`-p ariadne-e2e`, port 28080/54322/28025/20251, password acak, data contoh aktif) lalu membongkarnya beserta databasenya. Port compose kini bisa diganti lewat `WEB_PORT`, `DB_PORT`, `MAILPIT_WEB_PORT`, `MAILPIT_SMTP_PORT`.
+- **Pengaturan > Proyek:** tombol *Ubah nama* dan *Arsipkan* (komponen baru `ProjectsTable`). Mengarsipkan membutuhkan konfirmasi dan ikut mengarsipkan semua sub-proyek. Data tidak dihapus, tetapi **belum ada tombol untuk memulihkan** proyek yang diarsipkan; kode proyeknya tetap terpakai.
+- **Admin dan keanggotaan:** admin yang membuat proyek **tidak otomatis menjadi anggota**; ia melihat dan mengelola semuanya, tetapi untuk menerima task ia perlu menambahkan dirinya di *Anggota* proyek. Bila ini terasa merepotkan, usulan: admin otomatis menjadi Pengelola proyek yang ia buat (keputusan belum diambil).

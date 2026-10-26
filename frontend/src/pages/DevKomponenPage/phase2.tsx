@@ -9,6 +9,7 @@ import { AddMemberBar, type Candidate } from '@/components/organisms/AddMemberBa
 import { ForgotPasswordForm } from '@/components/organisms/ForgotPasswordForm'
 import { FormDialog } from '@/components/organisms/FormDialog'
 import { LoginForm } from '@/components/organisms/LoginForm'
+import { ProjectsTable } from '@/components/organisms/ProjectsTable'
 import { ProjectMembersTable } from '@/components/organisms/ProjectMembersTable'
 import { ResetPasswordForm } from '@/components/organisms/ResetPasswordForm'
 import { Sidebar } from '@/components/organisms/Sidebar'
@@ -323,6 +324,9 @@ export function Phase2Organisms() {
           onChangeRole={noop}
           onRemove={noop}
         />
+      </Demo>
+      <Demo name="ProjectsTable" note={EXTRA} column>
+        <ProjectsTable projects={PROJECTS} onOpen={noop} onRename={noop} onArchive={noop} />
       </Demo>
       <Demo name="UsersTable" note={EXTRA} column>
         <UsersTable users={USERS} currentUserId="1" onToggleAdmin={noop} onToggleActive={noop} />

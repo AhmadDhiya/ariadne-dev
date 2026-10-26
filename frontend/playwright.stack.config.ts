@@ -2,7 +2,9 @@ import { defineConfig, devices } from '@playwright/test'
 
 /**
  * Test browser terhadap APLIKASI SUNGGUHAN di Docker (nginx + API + PostgreSQL + Mailpit), bukan data tiruan.
- * Butuh `docker compose up --build` sudah menyala dan data contoh (SEED_PASSWORD di .env).
+ * Butuh stack yang menyala DENGAN data contoh (SEED_PASSWORD terisi). `node scripts/check.mjs` membuat stack
+ * terpisah khusus untuk ini (port lain, database sementara), jadi data kerja Anda tidak tersentuh.
+ * Manual: isi SEED_PASSWORD di .env pada database kosong, lalu `docker compose up --build`.
  * Dijalankan satu per satu (workers: 1) karena memakai database yang sama.
  */
 export default defineConfig({

@@ -74,3 +74,21 @@ export function useRemoveProjectMember(projectId: string) {
     onSuccess: refresh,
   })
 }
+
+export function useRenameProject() {
+  const refresh = useRefreshProjects()
+  return useMutation({
+    mutationFn: (input: { id: string; name: string }) =>
+      apiPatch(`/api/projects/${input.id}`, { name: input.name }),
+    onSuccess: refresh,
+  })
+}
+
+/** Mengarsipkan proyek beserta seluruh sub-proyeknya (data tidak dihapus). */
+export function useArchiveProject() {
+  const refresh = useRefreshProjects()
+  return useMutation({
+    mutationFn: (id: string) => apiPost(`/api/projects/${id}/archive`),
+    onSuccess: refresh,
+  })
+}
