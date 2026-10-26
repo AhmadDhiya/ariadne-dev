@@ -131,6 +131,39 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Ariadne.Api.Domain.Label", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("normalized_name");
+
+                    b.Property<Guid>("RootProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("root_project_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_labels");
+
+                    b.HasIndex("RootProjectId", "NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("ix_labels_root_project_id_normalized_name");
+
+                    b.ToTable("labels", (string)null);
+                });
+
             modelBuilder.Entity("Ariadne.Api.Domain.Project", b =>
                 {
                     b.Property<Guid>("Id")
@@ -229,6 +262,179 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                         .HasDatabaseName("ix_project_members_user_id");
 
                     b.ToTable("project_members", (string)null);
+                });
+
+            modelBuilder.Entity("Ariadne.Api.Domain.ProjectTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by_id");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(5000)
+                        .HasColumnType("character varying(5000)")
+                        .HasColumnName("description");
+
+                    b.Property<DateOnly?>("DueDate")
+                        .HasColumnType("date")
+                        .HasColumnName("due_date");
+
+                    b.Property<DateTimeOffset?>("HeldSince")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("held_since");
+
+                    b.Property<string>("HoldReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("hold_reason");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<Guid?>("ParentTaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("parent_task_id");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("priority");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<Guid>("RootProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("root_project_id");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<DateOnly?>("StartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("WaitingOnText")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("waiting_on_text");
+
+                    b.Property<Guid?>("WaitingOnUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("waiting_on_user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tasks");
+
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_tasks_created_by_id");
+
+                    b.HasIndex("DueDate")
+                        .HasDatabaseName("ix_tasks_due_date");
+
+                    b.HasIndex("ParentTaskId")
+                        .HasDatabaseName("ix_tasks_parent_task_id");
+
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("ix_tasks_project_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_tasks_status");
+
+                    b.HasIndex("WaitingOnUserId")
+                        .HasDatabaseName("ix_tasks_waiting_on_user_id");
+
+                    b.HasIndex("RootProjectId", "Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_tasks_root_project_id_number");
+
+                    b.ToTable("tasks", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_tasks_dates", "start_date IS NULL OR due_date IS NULL OR start_date <= due_date");
+
+                            t.HasCheckConstraint("ck_tasks_hold_shape", "(status IN ('Blocked', 'OnHold', 'OnRequest') AND hold_reason IS NOT NULL AND length(btrim(hold_reason)) > 0 AND held_since IS NOT NULL) OR (status NOT IN ('Blocked', 'OnHold', 'OnRequest') AND hold_reason IS NULL AND waiting_on_user_id IS NULL AND waiting_on_text IS NULL AND held_since IS NULL)");
+
+                            t.HasCheckConstraint("ck_tasks_not_own_parent", "parent_task_id IS NULL OR parent_task_id <> id");
+
+                            t.HasCheckConstraint("ck_tasks_waiting_one", "waiting_on_user_id IS NULL OR waiting_on_text IS NULL");
+                        });
+                });
+
+            modelBuilder.Entity("Ariadne.Api.Domain.TaskAssignee", b =>
+                {
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("task_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("TaskId", "UserId")
+                        .HasName("pk_task_assignees");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_task_assignees_user_id");
+
+                    b.ToTable("task_assignees", (string)null);
+                });
+
+            modelBuilder.Entity("Ariadne.Api.Domain.TaskLabel", b =>
+                {
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("task_id");
+
+                    b.Property<Guid>("LabelId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("label_id");
+
+                    b.HasKey("TaskId", "LabelId")
+                        .HasName("pk_task_labels");
+
+                    b.HasIndex("LabelId")
+                        .HasDatabaseName("ix_task_labels_label_id");
+
+                    b.ToTable("task_labels", (string)null);
                 });
 
             modelBuilder.Entity("Ariadne.Api.Domain.Team", b =>
@@ -391,6 +597,16 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                     b.ToTable("user_tokens", (string)null);
                 });
 
+            modelBuilder.Entity("Ariadne.Api.Domain.Label", b =>
+                {
+                    b.HasOne("Ariadne.Api.Domain.Project", null)
+                        .WithMany()
+                        .HasForeignKey("RootProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_labels_projects_root_project_id");
+                });
+
             modelBuilder.Entity("Ariadne.Api.Domain.Project", b =>
                 {
                     b.HasOne("Ariadne.Api.Domain.Project", null)
@@ -426,6 +642,86 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                     b.Navigation("Project");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Ariadne.Api.Domain.ProjectTask", b =>
+                {
+                    b.HasOne("Ariadne.Api.Domain.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_tasks_users_created_by_id");
+
+                    b.HasOne("Ariadne.Api.Domain.ProjectTask", null)
+                        .WithMany()
+                        .HasForeignKey("ParentTaskId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_tasks_tasks_parent_task_id");
+
+                    b.HasOne("Ariadne.Api.Domain.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_tasks_projects_project_id");
+
+                    b.HasOne("Ariadne.Api.Domain.Project", null)
+                        .WithMany()
+                        .HasForeignKey("RootProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_tasks_projects_root_project_id");
+
+                    b.HasOne("Ariadne.Api.Domain.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("WaitingOnUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_tasks_users_waiting_on_user_id");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("Ariadne.Api.Domain.TaskAssignee", b =>
+                {
+                    b.HasOne("Ariadne.Api.Domain.ProjectTask", "Task")
+                        .WithMany("Assignees")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_task_assignees_tasks_task_id");
+
+                    b.HasOne("Ariadne.Api.Domain.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_task_assignees_users_user_id");
+
+                    b.Navigation("Task");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Ariadne.Api.Domain.TaskLabel", b =>
+                {
+                    b.HasOne("Ariadne.Api.Domain.Label", "Label")
+                        .WithMany()
+                        .HasForeignKey("LabelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_task_labels_labels_label_id");
+
+                    b.HasOne("Ariadne.Api.Domain.ProjectTask", "Task")
+                        .WithMany("Labels")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_task_labels_tasks_task_id");
+
+                    b.Navigation("Label");
+
+                    b.Navigation("Task");
                 });
 
             modelBuilder.Entity("Ariadne.Api.Domain.TeamMember", b =>
@@ -477,6 +773,13 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_user_tokens_users_user_id");
+                });
+
+            modelBuilder.Entity("Ariadne.Api.Domain.ProjectTask", b =>
+                {
+                    b.Navigation("Assignees");
+
+                    b.Navigation("Labels");
                 });
 
             modelBuilder.Entity("Ariadne.Api.Domain.Team", b =>

@@ -5,8 +5,26 @@ import type { ProjectNode } from '@/types/api'
 import { ProjectsTable } from './ProjectsTable'
 
 const PROJECTS: ProjectNode[] = [
-  { id: 'sen', parentId: null, rootId: 'sen', depth: 0, name: 'Sentul', code: 'SEN', sortOrder: 1 },
-  { id: 'slm', parentId: 'sen', rootId: 'sen', depth: 1, name: 'SLMS', code: null, sortOrder: 1 },
+  {
+    id: 'sen',
+    parentId: null,
+    rootId: 'sen',
+    depth: 0,
+    name: 'Sentul',
+    code: 'SEN',
+    sortOrder: 1,
+    taskCount: 0,
+  },
+  {
+    id: 'slm',
+    parentId: 'sen',
+    rootId: 'sen',
+    depth: 1,
+    name: 'SLMS',
+    code: null,
+    sortOrder: 1,
+    taskCount: 0,
+  },
 ]
 
 function setup(projects = PROJECTS) {

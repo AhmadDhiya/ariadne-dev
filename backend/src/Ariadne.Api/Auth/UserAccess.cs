@@ -44,6 +44,9 @@ public sealed class UserAccess(
     /// </summary>
     public bool CanViewProject(Guid rootProjectId) => IsAdmin || Projects.ContainsKey(rootProjectId);
 
+    /// <summary>Membuat, mengubah, dan menghapus task: hanya Pengelola dan Anggota proyek (bukan Tamu, bukan Admin yang tidak ikut proyek).</summary>
+    public bool CanEditTasks(Guid rootProjectId) => RoleIn(rootProjectId) is ProjectRole.Pengelola or ProjectRole.Anggota;
+
     public bool CanManageProject(Guid rootProjectId) => IsAdmin || RoleIn(rootProjectId) == ProjectRole.Pengelola;
 
     public bool CanViewTeam(Guid teamId) => IsAdmin || Teams.ContainsKey(teamId);
@@ -71,6 +74,15 @@ public sealed class UserAccess(
     {
         EnsureCanViewProject(rootProjectId);
         if (!CanManageProject(rootProjectId))
+        {
+            throw new ForbiddenException();
+        }
+    }
+
+    public void EnsureCanEditTasks(Guid rootProjectId)
+    {
+        EnsureCanViewProject(rootProjectId);
+        if (!CanEditTasks(rootProjectId))
         {
             throw new ForbiddenException();
         }

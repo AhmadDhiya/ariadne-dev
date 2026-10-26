@@ -100,7 +100,7 @@ const steps = [
 if (!quick) {
   steps.push(['Frontend: test browser katalog komponen (Playwright + axe)', () => run('npm run e2e', FRONTEND).ok])
   steps.push([
-    'Stack penuh: test browser login, peran, dan halaman Fase 2 (Docker + Mailpit, database sementara)',
+    'Stack penuh: test browser login, peran, Tim, dan tabel task (Docker + Mailpit, database sementara)',
     runStackE2E,
   ])
 }

@@ -627,3 +627,29 @@ Keputusan Ahmad setelah Fase 2: gabungkan ke `main`; **mulai dari data kosong**;
 - **Test browser terpisah dari data kerja:** `scripts/check.mjs` menyalakan stack Docker sementara (`-p ariadne-e2e`, port 28080/54322/28025/20251, password acak, data contoh aktif) lalu membongkarnya beserta databasenya. Port compose kini bisa diganti lewat `WEB_PORT`, `DB_PORT`, `MAILPIT_WEB_PORT`, `MAILPIT_SMTP_PORT`.
 - **Pengaturan > Proyek:** tombol *Ubah nama* dan *Arsipkan* (komponen baru `ProjectsTable`). Mengarsipkan membutuhkan konfirmasi dan ikut mengarsipkan semua sub-proyek. Data tidak dihapus, tetapi **belum ada tombol untuk memulihkan** proyek yang diarsipkan; kode proyeknya tetap terpakai.
 - **Admin dan keanggotaan:** admin yang membuat proyek **tidak otomatis menjadi anggota**; ia melihat dan mengelola semuanya, tetapi untuk menerima task ia perlu menambahkan dirinya di *Anggota* proyek. Bila ini terasa merepotkan, usulan: admin otomatis menjadi Pengelola proyek yang ia buat (keputusan belum diambil).
+
+### Fase 3 (27 Oktober 2026)
+
+**Yang dibuat:** tabel task per sub-proyek (mockup 03, terang dan gelap), nomor task otomatis per proyek (`SEN-115`), buat/ubah/hapus task dan sub-task, ubah status langsung dari baris (menu dengan keyboard), status tertahan wajib beralasan (dialog alasan + "menunggu siapa" + tooltip alasan), PIC banyak orang, label, filter lengkap (PIC, Status, Prioritas, Label, Terlambat, Minggu ini, Task saya, pencarian), progres proyek, angka task di sidebar, dan kolom "Task aktif" di halaman Tim. Admin yang membuat proyek otomatis menjadi Pengelolanya (keputusan Ahmad).
+
+**Perbedaan dari rencana dan mockup (sengaja)**
+- Kolom "Update terakhir" ada tetapi berisi "-" sampai Fase 4 (tabel aktivitas belum ada). Karena itu perubahan status, PIC, dan tanggal **belum menulis log aktivitas**; log mulai ditulis di Fase 4 dan tidak ada riwayat sebelumnya.
+- "58% · 41 dari 71 task selesai" di mockup tidak bisa ditiru tanpa 55 baris tambahan yang tidak tampak di gambar. Data contoh berisi 16 task induk (3 selesai, 19%) ditambah 3 sub-task; angka di layar dihitung sungguhan. Enam task Smartclassroom dan task Migrasi Data Center adalah contoh karangan (mockup tidak merinci).
+- Grup sub-proyek tanpa task disembunyikan (seperti mockup). Sub-proyek kosong tetap muncul di sidebar dan di pilihan sub-proyek saat menambah task.
+- Judul task membuka dialog **Ubah task** (judul, keterangan, sub-proyek, prioritas, tanggal, PIC, label, tambah sub-task, hapus) sampai drawer detail dibuat di Fase 4. Tamu tidak bisa membukanya.
+- Angka di sidebar = task induk yang belum Done di proyek itu dan semua sub-proyeknya; proyek yang sedang terbuka tidak menampilkan angka (angkanya ada di anak-anaknya, seperti mockup). "Task aktif" di halaman Tim = task (termasuk sub-task) yang jadi PIC orang itu dan belum Done; Pengelola tim melihat semuanya, anggota lain hanya dari proyek yang boleh ia lihat.
+- Hanya Pengelola dan Anggota proyek yang mengubah task (sesuai domain.md). Admin yang bukan anggota melihat tetapi tidak bisa mengubah (403); Admin yang membuat proyek adalah Pengelolanya, jadi bisa.
+- "Pindahkan ke…" dan ubah tanggal oleh Supervisor menunggu Fase 7. Filter tabel memakai DAN; sub-task yang cocok ikut menampilkan induknya.
+- Tampilan layar kecil (mobile) menunggu Fase 10.
+
+**Keamanan dan ketahanan**
+- Status tertahan tanpa alasan ditolak 400 di API **dan** dijaga constraint database (`ck_tasks_hold_shape`); keluar dari status tertahan mengosongkan alasan, "menunggu siapa", dan "sejak".
+- Nomor task diambil dalam transaksi yang sama dengan penyimpanan (test: 20 task dibuat bersamaan, nomor tidak kembar); penyimpanan bersamaan memakai penanda versi baris (xmin) dan menjawab 409 bila bentrok.
+- PIC harus anggota aktif proyek (bukan Tamu); orang yang dikeluarkan dari proyek atau dijadikan Tamu otomatis dicopot dari PIC-nya.
+- Task dihapus = disembunyikan (termasuk sub-task); semua query memakai filter global, dan test memastikan baris tetap ada di database.
+- Permintaan rusak (mis. parameter filter tidak terbaca) kini dijawab 400, bukan 500.
+- Matriks izin diperluas dengan 9 endpoint task; 3 aturan dirusak sengaja untuk membuktikan test-nya gagal (alasan tertahan, Rutin tidak terlambat, PIC dicopot).
+
+**Belum dilakukan:** uji beban dengan data seed ×10 (butir E7 pedoman); daftar task memakai query terpisah (split query) tanpa N+1, tetapi belum diukur dengan ribuan task.
+
+**Paket baru:** tidak ada. `vite` 8.3.5 dan `vitest` 5.0.5 (perbaikan keamanan dari `npm audit`, dilakukan di tindak lanjut Fase 2).

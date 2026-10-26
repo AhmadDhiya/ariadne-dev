@@ -1,0 +1,37 @@
+.ar-tasktable {
+  box-shadow: none;
+}
+.ar-tasktable table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.ar-tasktable th {
+  height: 36px;
+  padding: 0 4px;
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.ar-tasktable th:first-child {
+  padding-left: 12px;
+  border-top-left-radius: 6px;
+}
+.ar-tasktable th:last-child {
+  border-top-right-radius: 6px;
+}
+.ar-tasktable th.is-right {
+  text-align: right;
+  padding-right: 16px;
+}
+.ar-tasktable tbody tr:last-child td {
+  border-bottom: 0;
+}
+.ar-tasktable-empty {
+  box-shadow: none;
+}

@@ -146,6 +146,19 @@ public sealed class ProjectTests(WorldFixture fx) : IClassFixture<WorldFixture>
     // ---------- membuat proyek ----------
 
     [Fact]
+    public async Task The_admin_who_creates_a_project_becomes_its_manager()
+    {
+        var project = await NewRootAsync();
+        var admin = await App.ClientAsync(W.Admin);
+
+        var members = await (await admin.GetApiAsync($"/api/projects/{project.Id}/members")).ReadAsync<List<ProjectMemberItem>>();
+
+        var creator = Assert.Single(members);
+        Assert.Equal(W.Admin.Id, creator.UserId);
+        Assert.Equal(ProjectRole.Pengelola, creator.Role);
+    }
+
+    [Fact]
     public async Task Only_admins_create_root_projects()
     {
         foreach (var user in new[] { W.Supervisor, W.Member, W.Manager, W.Guest, W.Outsider })

@@ -45,3 +45,7 @@
   text-align: center;
   color: var(--ink-muted);
 }
+.ar-teampanel-active {
+  padding-right: var(--space-6, 24px);
+  font-variant-numeric: tabular-nums;
+}

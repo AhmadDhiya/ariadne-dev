@@ -14,3 +14,28 @@ public enum ProjectRole
     Anggota,
     Tamu,
 }
+
+/// <summary>
+/// Status task (docs/domain.md). Namanya WorkStatus karena TaskStatus sudah dipakai .NET.
+/// Urutan nilai = urutan tampil di menu status.
+/// </summary>
+public enum WorkStatus
+{
+    NotStarted,
+    OnProgress,
+    Fixing,
+    Blocked,
+    OnHold,
+    OnRequest,
+    Done,
+    Rutin,
+}
+
+/// <summary>Prioritas task; urutan nilai = urutan penting (Critical paling atas).</summary>
+public enum Priority
+{
+    Critical,
+    High,
+    Medium,
+    Low,
+}

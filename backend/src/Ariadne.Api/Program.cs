@@ -3,6 +3,7 @@ using Ariadne.Api.Auth;
 using Ariadne.Api.Features.Auth;
 using Ariadne.Api.Features.Health;
 using Ariadne.Api.Features.Projects;
+using Ariadne.Api.Features.Tasks;
 using Ariadne.Api.Features.Teams;
 using Ariadne.Api.Features.Users;
 using Ariadne.Api.Infrastructure.Clock;
@@ -38,6 +39,7 @@ app.MapAuthEndpoints();
 app.MapUserEndpoints();
 app.MapTeamEndpoints();
 app.MapProjectEndpoints();
+app.MapTaskEndpoints();
 
 await app.MigrateDatabaseIfConfiguredAsync();
 await app.CreateIfConfiguredAsync();

@@ -1,0 +1,122 @@
+.ar-taskrow td {
+  height: 36px;
+  padding: 0 4px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 18px;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ar-taskrow:hover {
+  background: var(--surface-muted);
+}
+.ar-taskrow.is-highlighted {
+  background: var(--primary-soft);
+}
+.ar-taskrow td:first-child {
+  padding-left: 12px;
+}
+.ar-taskrow.is-sub td:first-child {
+  padding-left: 22px;
+}
+.ar-taskrow-title {
+  padding-right: 12px !important;
+}
+.ar-taskrow-titlebox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.ar-taskrow.is-sub .ar-taskrow-titlebox {
+  padding-left: 14px;
+}
+.ar-taskrow-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 500;
+}
+.ar-taskrow.is-sub .ar-taskrow-name {
+  font-weight: 400;
+}
+button.ar-taskrow-name {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  line-height: inherit;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+button.ar-taskrow-name:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+.ar-taskrow-expand {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+.ar-taskrow-expand:hover {
+  background: var(--line);
+}
+.ar-taskrow-expand.is-collapsed svg {
+  transform: rotate(-90deg);
+}
+.ar-taskrow-count {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.ar-taskrow-status {
+  overflow: visible !important;
+}
+.ar-taskrow-statusbox {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.ar-taskrow-num {
+  text-align: right;
+  padding-right: 16px !important;
+  font-variant-numeric: tabular-nums;
+}
+.ar-taskrow-tab {
+  font-variant-numeric: tabular-nums;
+}
+.ar-taskrow-update {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-right: 8px;
+}
+.ar-taskrow-update-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 15px;
+}
+.ar-taskrow-update-meta {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--ink-muted);
+}
+.ar-taskrow-labels {
+  display: flex;
+  gap: 4px;
+  overflow: hidden;
+}
