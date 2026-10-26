@@ -17,6 +17,9 @@ public sealed class SecurityTests(PostgresFixture postgres)
     private static readonly string[] AnonymousAllowlist =
     [
         "GET /api/health",
+        "POST /api/auth/forgot-password",
+        "POST /api/auth/login",
+        "POST /api/auth/reset-password",
     ];
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;

@@ -21,6 +21,11 @@ export interface MenuProps {
   /** Esc ditekan. */
   onClose?: () => void
   autoFocus?: boolean
+  /**
+   * Id dasar dari luar. Berguna bila fokus tetap di input di luar Menu (mis. kotak "Tambah anggota"):
+   * input itu perlu merujuk daftar `${id}-list` dan opsi `${id}-opt-N` lewat aria-controls dan aria-activedescendant.
+   */
+  id?: string
 }
 
 /**
@@ -39,11 +44,19 @@ export function Menu({
   onSelect,
   onClose,
   autoFocus,
+  id,
 }: MenuProps) {
-  const baseId = useId()
+  const generatedId = useId()
+  const baseId = id ?? generatedId
   const listId = `${baseId}-list`
   const titleId = `${baseId}-title`
   const [active, setActive] = useState(activeIndex)
+  // Sorotan bisa dikendalikan dari luar: bila prop activeIndex berubah, ikuti (pola "menyesuaikan state saat render")
+  const [seenProp, setSeenProp] = useState(activeIndex)
+  if (activeIndex !== seenProp) {
+    setSeenProp(activeIndex)
+    setActive(activeIndex)
+  }
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const searchable = onQueryChange !== undefined

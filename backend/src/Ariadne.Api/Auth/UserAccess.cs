@@ -1,0 +1,113 @@
+using Ariadne.Api.Domain;
+using Ariadne.Api.Infrastructure.Web;
+
+namespace Ariadne.Api.Auth;
+
+/// <summary>
+/// Gambaran lengkap hak seorang pengguna pada saat ini (dibaca dari database setiap permintaan, jadi
+/// perubahan keanggotaan langsung berlaku). SEMUA aturan izin ada di sini (docs/domain.md, tabel
+/// "Peran dan izin"); endpoint hanya memanggil metode Ensure…, tidak punya aturan sendiri (pedoman B11).
+/// </summary>
+public sealed class UserAccess(
+    Guid userId,
+    bool isAdmin,
+    IReadOnlyDictionary<Guid, TeamRole> teams,
+    IReadOnlyDictionary<Guid, ProjectRole> projects)
+{
+    public Guid UserId { get; } = userId;
+
+    public bool IsAdmin { get; } = isAdmin;
+
+    /// <summary>Tim yang diikuti, beserta peran di tim itu.</summary>
+    public IReadOnlyDictionary<Guid, TeamRole> Teams { get; } = teams;
+
+    /// <summary>Proyek root yang diikuti, beserta peran di proyek itu.</summary>
+    public IReadOnlyDictionary<Guid, ProjectRole> Projects { get; } = projects;
+
+    public IReadOnlyList<Guid> SupervisedTeamIds =>
+        [.. Teams.Where(t => t.Value == TeamRole.Supervisor).Select(t => t.Key)];
+
+    public bool IsSupervisor => Teams.Any(t => t.Value == TeamRole.Supervisor);
+
+    /// <summary>
+    /// Tamu murni: hanya punya peran Tamu di proyek, bukan admin, tidak ikut tim mana pun. Tamu tidak
+    /// melihat daftar tim, pengguna lain, atau Pengaturan.
+    /// </summary>
+    public bool IsGuestOnly => !IsAdmin && Teams.Count == 0 && Projects.Count > 0 && Projects.Values.All(r => r == ProjectRole.Tamu);
+
+    /// <summary>Peran di proyek root; null bila bukan anggota.</summary>
+    public ProjectRole? RoleIn(Guid rootProjectId) => Projects.TryGetValue(rootProjectId, out var role) ? role : null;
+
+    /// <summary>
+    /// Admin melihat dan mengelola semua proyek (perlu untuk mengatur anggota), tetapi tidak otomatis
+    /// boleh mengubah task: itu hanya untuk Pengelola dan Anggota proyek.
+    /// </summary>
+    public bool CanViewProject(Guid rootProjectId) => IsAdmin || Projects.ContainsKey(rootProjectId);
+
+    public bool CanManageProject(Guid rootProjectId) => IsAdmin || RoleIn(rootProjectId) == ProjectRole.Pengelola;
+
+    public bool CanViewTeam(Guid teamId) => IsAdmin || Teams.ContainsKey(teamId);
+
+    public bool CanManageTeam(Guid teamId) => IsAdmin || (Teams.TryGetValue(teamId, out var role) && role == TeamRole.Supervisor);
+
+    public void EnsureAdmin()
+    {
+        if (!IsAdmin)
+        {
+            throw new ForbiddenException();
+        }
+    }
+
+    /// <summary>Tidak boleh melihat = 404 (keberadaannya dirahasiakan); boleh melihat tapi tidak boleh mengelola = 403.</summary>
+    public void EnsureCanViewProject(Guid rootProjectId)
+    {
+        if (!CanViewProject(rootProjectId))
+        {
+            throw new NotFoundException();
+        }
+    }
+
+    public void EnsureCanManageProject(Guid rootProjectId)
+    {
+        EnsureCanViewProject(rootProjectId);
+        if (!CanManageProject(rootProjectId))
+        {
+            throw new ForbiddenException();
+        }
+    }
+
+    public void EnsureCanViewTeam(Guid teamId)
+    {
+        if (!CanViewTeam(teamId))
+        {
+            throw new NotFoundException();
+        }
+    }
+
+    public void EnsureCanManageTeam(Guid teamId)
+    {
+        EnsureCanViewTeam(teamId);
+        if (!CanManageTeam(teamId))
+        {
+            throw new ForbiddenException();
+        }
+    }
+
+    /// <summary>Daftar tim, pencarian orang, dan sejenisnya hanya untuk orang internal, bukan Tamu.</summary>
+    public void EnsureNotGuestOnly()
+    {
+        if (IsGuestOnly)
+        {
+            throw new ForbiddenException();
+        }
+    }
+
+    /// <summary>Mencari orang untuk ditambahkan ke tim atau proyek: Admin, Supervisor, atau Pengelola.</summary>
+    public void EnsureCanLookupUsers()
+    {
+        if (!IsAdmin && !IsSupervisor && !Projects.Values.Any(r => r == ProjectRole.Pengelola))
+        {
+            throw new ForbiddenException();
+        }
+    }
+}

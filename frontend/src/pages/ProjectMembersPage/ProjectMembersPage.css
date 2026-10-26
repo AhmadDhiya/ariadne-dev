@@ -1,0 +1,19 @@
+.ar-pmpage-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.ar-pmpage-summary b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.ar-pmpage-add {
+  box-shadow: none;
+  overflow: visible;
+}
+.ar-pmpage-add .ar-addbar {
+  border-bottom: 0;
+}

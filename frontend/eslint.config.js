@@ -20,12 +20,15 @@ const forbid = (targets, message) => ({
   message,
 })
 
+// Folder src/api saja (alias "@/api/..." atau relatif "../api/..."), bukan "@/types/api": tipe data boleh dipakai semua tingkat
+const apiFolder = (message) => ({ regex: String.raw`^(@/|(\.{1,2}/)+)api(/|$)`, message })
+
 const dataAccess = [
   {
     regex: '^@tanstack/react-query$',
     message: 'Hanya pages/ yang mengambil data. Kirim data lewat props.',
   },
-  forbid(['api'], 'Hanya pages/ yang memanggil API. Kirim data lewat props.'),
+  apiFolder('Hanya pages/ yang memanggil API. Kirim data lewat props.'),
   forbid(['pages'], 'Komponen tidak boleh bergantung pada halaman.'),
 ]
 
@@ -89,7 +92,12 @@ export default defineConfig([
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: [forbid(['components', 'pages', 'api'], 'lib/ berisi fungsi murni saja.')] },
+        {
+          patterns: [
+            forbid(['components', 'pages'], 'lib/ berisi fungsi murni saja.'),
+            apiFolder('lib/ berisi fungsi murni saja.'),
+          ],
+        },
       ],
     },
   },

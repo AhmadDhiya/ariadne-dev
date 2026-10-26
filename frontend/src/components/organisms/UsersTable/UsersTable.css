@@ -1,0 +1,14 @@
+.ar-users {
+  box-shadow: none;
+  overflow: hidden;
+}
+.ar-users-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+.ar-users-actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}

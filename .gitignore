@@ -32,3 +32,6 @@ frontend/playwright/.cache/
 Thumbs.db
 .DS_Store
 .vitest/
+
+# Sesi login hasil global-setup test stack (berisi cookie; jangan di-commit)
+frontend/e2e-stack/.auth/

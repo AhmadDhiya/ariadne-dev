@@ -1,0 +1,13 @@
+.ar-pm {
+  box-shadow: none;
+  overflow: hidden;
+}
+.ar-pm-pending {
+  color: var(--status-fixing-ink);
+}
+.ar-pm-empty {
+  margin: 0;
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--ink-muted);
+}

@@ -1,0 +1,25 @@
+.ar-sidebar {
+  box-sizing: border-box;
+  width: var(--sidebar-width);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--canvas);
+  color: var(--ink);
+}
+.ar-sidebar-logo {
+  padding: 4px 8px 20px;
+}
+.ar-sidebar-heading {
+  padding: 20px 12px 6px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+.ar-sidebar-divider {
+  height: 1px;
+  background: var(--line);
+  margin: 16px 8px;
+}

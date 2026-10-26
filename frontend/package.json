@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "check:tokens": "node scripts/check-tokens.mjs"
+    "check:tokens": "node scripts/check-tokens.mjs",
+    "e2e:stack": "playwright test -c playwright.stack.config.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "5.104.0",

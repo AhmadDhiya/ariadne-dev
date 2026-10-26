@@ -8,9 +8,11 @@ internal static class WebSetup
     /// </summary>
     public static WebApplication UseAriadneErrorHandling(this WebApplication app)
     {
+        // ApiExceptionHandler menangani kesalahan yang disengaja (403, 404, 400, 409); selebihnya
+        // menjadi 500 tanpa detail teknis (pedoman A4).
+        app.UseExceptionHandler();
         if (!app.Environment.IsDevelopment())
         {
-            app.UseExceptionHandler();
             app.UseHsts();
         }
 

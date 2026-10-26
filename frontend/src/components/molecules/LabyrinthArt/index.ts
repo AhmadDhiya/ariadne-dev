@@ -1,0 +1,1 @@
+export { LabyrinthArt } from './LabyrinthArt'

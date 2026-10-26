@@ -591,3 +591,30 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 - **npm:** `source-map-js` 1.2.1 (High, denial-of-service), hanya alat build/test, tidak ikut ke browser. Diperbaiki ke 1.2.2 lewat `npm audit fix`; hanya 3 baris `package-lock.json` yang berubah.
 
 Pelajaran untuk fase berikutnya: audit paket harus dijalankan ulang di awal setiap fase, bukan hanya di akhir. Kerentanan baru bisa muncul kapan saja pada kode yang tidak kita ubah.
+
+### Fase 2 (14 Oktober 2026)
+
+**Yang dibuat:** login email + password dengan "Ingat saya", lupa/reset password (email lewat antrean latar ke Mailpit), kunci akun setelah 5 kali salah (15 menit), pengguna, tim, proyek bertingkat (maks. 3 level, dijaga API dan database), anggota proyek, halaman Login, Lupa password, Reset password, Tim (07), Anggota proyek (08), Pengaturan, sidebar + topbar, menu tersembunyi menurut peran, dan data contoh dari mockup.
+
+**Perbedaan dari rencana dan mockup (sengaja)**
+- Topbar belum punya kotak cari global (Fase 5) dan lonceng notifikasi (Fase 9): kontrol yang belum berfungsi tidak ditampilkan.
+- Kolom "Task aktif" di halaman Tim dan angka task di sidebar menunggu Fase 3 (task belum ada).
+- Tombol "Undang" dan status "Menunggu" di Anggota proyek menunggu Fase 8. Anggota proyek ditambahkan dari pengguna yang sudah ada.
+- Memindahkan proyek ke induk lain belum dibuat; ganti nama dan arsip proyek sudah ada di API tetapi belum punya tombol di UI (Pengaturan hanya membuat proyek). Arsip berlaku untuk seluruh sub-proyeknya.
+- Admin melihat dan mengelola semua proyek, tetapi **tidak otomatis menjadi anggota** (tidak otomatis muncul sebagai penerima task). Ahmad di data contoh anggota Sentul dan Migrasi Data Center secara eksplisit.
+- Urutan daftar mengikuti mockup, bukan abjad: tim menurut waktu dibuat; anggota menurut peran (Supervisor/Pengelola dulu), lalu waktu ditambahkan, lalu nama. Data contoh memberi selisih waktu agar urutannya sama dengan mockup.
+- API `POST /api/me/change-password` sudah ada dan teruji, tetapi belum ada layar "ubah password" (di luar lingkup halaman Fase 2).
+- Tidak ada pelindung "admin terakhir": admin tidak bisa mencabut atau menonaktifkan dirinya sendiri, jadi selalu ada minimal satu admin aktif.
+- `Bootstrap` admin lewat `BOOTSTRAP_ADMIN_EMAIL/PASSWORD` (untuk database kosong di server; data contoh hanya di Development).
+
+**Keamanan yang ditegakkan di server (bukan hanya di tampilan)**
+- Cookie `ariadne.auth` HttpOnly + SameSite=Strict (Secure di luar Development); sesi lama langsung tidak berlaku saat pengguna dinonaktifkan atau dicabut hak adminnya (security stamp).
+- Semua permintaan ubah ke `/api` wajib header `X-Requested-With: ariadne` (perlindungan CSRF); tanpa header = 403.
+- Pesan gagal login dan lupa password sama untuk akun ada atau tidak; token reset berlaku 24 jam, sekali pakai, dikirim di bagian `#` alamat (tidak masuk log server) dan langsung dihapus dari alamat browser.
+- Batas laju 20 permintaan/menit/IP untuk login, lupa, dan reset.
+- Aturan siapa-boleh-apa dipusatkan di `UserAccess`/`AccessService`: 404 bila pengguna tidak berhak tahu sebuah proyek ada, 403 bila boleh melihat tetapi tidak boleh mengubah. Tamu tidak pernah menerima email anggota.
+- Nilai peran dan enum divalidasi ketat berdasarkan nama (angka seperti `"0"` ditolak); ini ditemukan lewat test dan diperbaiki.
+
+**Test:** 284 test backend (termasuk matriks 9 peran × semua endpoint, dan pemeriksaan mutasi: aturan sengaja dirusak untuk memastikan test benar-benar gagal), 114 test unit frontend, 10 test browser katalog (axe + screenshot), 44 test browser terhadap stack Docker sungguhan (login, peran Ahmad/Wiwiet/Pak Budi, Mailpit, tema terang dan gelap, axe).
+
+**Paket baru:** `MailKit` 4.18.1 (kirim email SMTP; dicek di NuGet), `Testcontainers.PostgreSql` (test), `EFCore.NamingConventions` 10.0.1, `@axe-core/playwright` sudah dari Fase 1. `System.Security.Cryptography.Pkcs` dikunci ke 10.0.13 karena versi bawaan MailKit rentan.

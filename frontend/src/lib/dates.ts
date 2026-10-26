@@ -93,3 +93,18 @@ export function formatTime(isoDateTime: string): string {
   if (Number.isNaN(date.getTime())) throw new Error(`Waktu tidak valid: "${isoDateTime}"`)
   return timeFormatter.format(date).replace(':', '.')
 }
+
+const dateParts = new Intl.DateTimeFormat('en-GB', {
+  timeZone: TIME_ZONE,
+  day: 'numeric',
+  month: 'numeric',
+  year: 'numeric',
+})
+
+/** "2 Jun 2026": tanggal (dengan tahun) dari waktu ISO server, dalam Asia/Jakarta. Dipakai di kolom "Ditambahkan". */
+export function formatDateWithYear(isoDateTime: string): string {
+  const date = new Date(isoDateTime)
+  if (Number.isNaN(date.getTime())) throw new Error(`Waktu tidak valid: "${isoDateTime}"`)
+  const parts = Object.fromEntries(dateParts.formatToParts(date).map((p) => [p.type, p.value]))
+  return `${Number(parts.day)} ${monthShort(Number(parts.month))} ${parts.year}`
+}

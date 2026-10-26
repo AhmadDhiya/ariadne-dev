@@ -21,7 +21,7 @@ Aplikasi web internal untuk melacak task dan Gantt lintas proyek, menggantikan G
 cp .env.example .env
 ```
 
-Buka `.env` lalu isi `POSTGRES_PASSWORD` (huruf dan angka, minimal 16 karakter). File ini tidak pernah ikut di-commit.
+Buka `.env` lalu isi `POSTGRES_PASSWORD` (huruf dan angka, minimal 16 karakter) dan `SEED_PASSWORD` (password untuk semua akun contoh, minimal 12 karakter). File ini tidak pernah ikut di-commit.
 
 ```bash
 git config core.hooksPath .githooks
@@ -41,6 +41,18 @@ docker compose up --build
 
 - Aplikasi: http://localhost:18080
 - Kotak surat palsu (email yang dikirim aplikasi): http://localhost:18025
+
+## Masuk ke aplikasi
+
+Buka http://localhost:18080 lalu masuk dengan salah satu akun contoh. Passwordnya sama untuk semuanya: isi `SEED_PASSWORD` di `.env`.
+
+| Email | Peran |
+|---|---|
+| `ahmad@perusahaan.co.id` | Admin + Supervisor Tim Sentul dan Tim QA |
+| `wiwiet@perusahaan.co.id` | Anggota biasa |
+| `budi@klien.example` | Tamu klien (hanya melihat proyek Sentul) |
+
+Akun lain mengikuti pola `nama@perusahaan.co.id` (syaikhan, manto, rama, khalil, galih, bintang). Tombol "Lupa password?" mengirim email ke kotak surat palsu di http://localhost:18025. Data contoh dibuat sekali saat database masih kosong; untuk mengulang dari awal jalankan `docker compose down -v` (menghapus data) lalu `docker compose up --build`.
 
 Semua port hanya terbuka untuk komputer ini, tidak untuk jaringan. Nomor port sengaja dibuat tidak umum supaya tidak bentrok dengan program lain di komputer Anda:
 
@@ -89,7 +101,9 @@ Di mode pengembangan, "hari ini" dikunci ke **Senin, 28 September 2026** supaya 
 node scripts/check.mjs
 ```
 
-Perintah ini menjalankan build, format, lint, test backend dan frontend, pemeriksa token warna, audit paket rentan, pemindai rahasia, dan test browser (screenshot + aksesibilitas). Tambahkan `--cepat` untuk melewati test browser.
+Perintah ini menjalankan build, format, lint, test backend dan frontend, pemeriksa token warna, audit paket rentan, pemindai rahasia, dan test browser (katalog komponen, lalu seluruh aplikasi di Docker: login, peran, screenshot, aksesibilitas). Langkah terakhir menyalakan `docker compose` dan membutuhkan `.env`. Tambahkan `--cepat` untuk melewati semua test browser.
+
+Test browser terhadap aplikasi Docker bisa dijalankan sendiri (aplikasi harus sudah menyala): `cd frontend && npm run e2e:stack`.
 
 ## Struktur singkat
 
