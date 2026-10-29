@@ -50,6 +50,20 @@ internal static class TaskKit
         return await response.ReadAsync<TaskList>();
     }
 
+    public static async Task<ActivityItem> AddActivityAsync(HttpClient client, Guid taskId, string kind, string body, params Guid[] mentions)
+    {
+        var response = await client.PostApiAsync($"/api/tasks/{taskId}/activities", new { kind, body, mentionUserIds = mentions });
+        Assert.True(response.StatusCode == HttpStatusCode.Created, await response.TextAsync());
+        return await response.ReadAsync<ActivityItem>();
+    }
+
+    public static async Task<ActivityPage> ActivitiesAsync(HttpClient client, Guid taskId, string query = "")
+    {
+        var response = await client.GetApiAsync($"/api/tasks/{taskId}/activities{(query.Length > 0 ? "?" + query : "")}");
+        Assert.True(response.StatusCode == HttpStatusCode.OK, await response.TextAsync());
+        return await response.ReadAsync<ActivityPage>();
+    }
+
     public static async Task<IReadOnlyDictionary<string, string[]>> ErrorsAsync(HttpResponseMessage response)
     {
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

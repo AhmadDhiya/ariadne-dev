@@ -1,0 +1,210 @@
+.ar-taskdrawer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.ar-taskdrawer h3 {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+}
+.ar-taskdrawer-count {
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+.ar-taskdrawer-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+.ar-taskdrawer-error p {
+  margin: 0 0 var(--space-2);
+}
+.ar-taskdrawer-parent {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--link);
+  font: inherit;
+  cursor: pointer;
+}
+.ar-taskdrawer-parent:hover {
+  text-decoration: underline;
+}
+
+/* Bidang: label kiri 116px, nilai kanan (mockup 05) */
+.ar-taskdrawer-fields {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  column-gap: var(--space-3);
+  margin: 0;
+}
+.ar-taskdrawer-fields dt {
+  font-size: 13px;
+  line-height: 32px;
+  color: var(--ink-muted);
+}
+.ar-taskdrawer-fields dd {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-height: 32px;
+  margin: 0;
+  font-size: 14px;
+}
+.ar-taskdrawer-person {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.ar-taskdrawer-date {
+  font-variant-numeric: tabular-nums;
+}
+.ar-taskdrawer-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 28px;
+  margin-left: calc(var(--space-2) * -1);
+  padding: 0 var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.ar-taskdrawer-pick:hover,
+.ar-taskdrawer-pick[aria-expanded='true'] {
+  background: var(--surface-muted);
+}
+
+/* Kotak alasan tertahan: warna lembut sesuai status */
+.ar-hold-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--status-blocked-soft);
+}
+.ar-hold-block.is-hold {
+  background: var(--status-hold-soft);
+}
+.ar-hold-block.is-request {
+  background: var(--status-request-soft);
+}
+.ar-hold-block h3 {
+  color: var(--status-blocked-ink);
+}
+.ar-hold-block.is-hold h3 {
+  color: var(--status-hold-ink);
+}
+.ar-hold-block.is-request h3 {
+  color: var(--status-request-ink);
+}
+.ar-hold-reason {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+.ar-hold-meta {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.ar-hold-meta b {
+  font-weight: 500;
+  color: var(--ink);
+}
+.ar-hold-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.ar-hold-field .ar-textarea,
+.ar-hold-field .ar-editable-text.is-editable {
+  background: var(--surface);
+}
+.ar-hold-wait {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.ar-hold-since {
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.ar-taskdrawer-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ar-taskdrawer-section > p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.ar-taskdrawer-sectionhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ar-taskdrawer-subtask {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 32px;
+  border-bottom: 1px solid var(--line);
+}
+.ar-taskdrawer-subtitle {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.ar-taskdrawer-subtitle:hover {
+  text-decoration: underline;
+}
+
+/* Panel editor di dalam popover */
+.ar-taskdrawer-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 14px;
+}
+.ar-taskdrawer-editor legend {
+  padding: 0;
+  margin-bottom: var(--space-1);
+  font-size: 13px;
+  font-weight: 600;
+}
+.ar-taskdrawer-editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.ar-taskdrawer-editor-actions {
+  display: flex;
+  gap: var(--space-2);
+}

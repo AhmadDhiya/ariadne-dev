@@ -22,6 +22,81 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Ariadne.Api.Domain.Activity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("author_id");
+
+                    b.Property<string>("Body")
+                        .HasMaxLength(5000)
+                        .HasColumnType("character varying(5000)")
+                        .HasColumnName("body");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Data")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("data");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("LogKind")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("log_kind");
+
+                    b.Property<Guid>("RootProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("root_project_id");
+
+                    b.Property<long>("Seq")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("seq");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Seq"));
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("task_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_activities");
+
+                    b.HasIndex("AuthorId")
+                        .HasDatabaseName("ix_activities_author_id");
+
+                    b.HasIndex("RootProjectId")
+                        .HasDatabaseName("ix_activities_root_project_id");
+
+                    b.HasIndex("Seq")
+                        .IsUnique()
+                        .HasDatabaseName("ix_activities_seq");
+
+                    b.HasIndex("TaskId", "Seq")
+                        .HasDatabaseName("ix_activities_task_id_seq");
+
+                    b.HasIndex("TaskId", "Kind", "CreatedAt")
+                        .HasDatabaseName("ix_activities_task_id_kind_created_at");
+
+                    b.ToTable("activities", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_activities_shape", "(kind = 'Log' AND log_kind IS NOT NULL AND body IS NULL) OR (kind <> 'Log' AND log_kind IS NULL AND data IS NULL AND body IS NOT NULL AND length(btrim(body)) > 0)");
+                        });
+                });
+
             modelBuilder.Entity("Ariadne.Api.Domain.AppUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -162,6 +237,31 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                         .HasDatabaseName("ix_labels_root_project_id_normalized_name");
 
                     b.ToTable("labels", (string)null);
+                });
+
+            modelBuilder.Entity("Ariadne.Api.Domain.Mention", b =>
+                {
+                    b.Property<Guid>("ActivityId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("activity_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("display_name");
+
+                    b.HasKey("ActivityId", "UserId")
+                        .HasName("pk_mentions");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_mentions_user_id");
+
+                    b.ToTable("mentions", (string)null);
                 });
 
             modelBuilder.Entity("Ariadne.Api.Domain.Project", b =>
@@ -597,6 +697,34 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                     b.ToTable("user_tokens", (string)null);
                 });
 
+            modelBuilder.Entity("Ariadne.Api.Domain.Activity", b =>
+                {
+                    b.HasOne("Ariadne.Api.Domain.AppUser", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_activities_users_author_id");
+
+                    b.HasOne("Ariadne.Api.Domain.Project", null)
+                        .WithMany()
+                        .HasForeignKey("RootProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_activities_projects_root_project_id");
+
+                    b.HasOne("Ariadne.Api.Domain.ProjectTask", "Task")
+                        .WithMany()
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_activities_tasks_task_id");
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Task");
+                });
+
             modelBuilder.Entity("Ariadne.Api.Domain.Label", b =>
                 {
                     b.HasOne("Ariadne.Api.Domain.Project", null)
@@ -605,6 +733,27 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_labels_projects_root_project_id");
+                });
+
+            modelBuilder.Entity("Ariadne.Api.Domain.Mention", b =>
+                {
+                    b.HasOne("Ariadne.Api.Domain.Activity", "Activity")
+                        .WithMany("Mentions")
+                        .HasForeignKey("ActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_mentions_activities_activity_id");
+
+                    b.HasOne("Ariadne.Api.Domain.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_mentions_users_user_id");
+
+                    b.Navigation("Activity");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Ariadne.Api.Domain.Project", b =>
@@ -773,6 +922,11 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_user_tokens_users_user_id");
+                });
+
+            modelBuilder.Entity("Ariadne.Api.Domain.Activity", b =>
+                {
+                    b.Navigation("Mentions");
                 });
 
             modelBuilder.Entity("Ariadne.Api.Domain.ProjectTask", b =>

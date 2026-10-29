@@ -116,3 +116,28 @@ export function formatShortDateOfInstant(isoDateTime: string): string {
   const parts = Object.fromEntries(dateParts.formatToParts(date).map((p) => [p.type, p.value]))
   return `${Number(parts.day)} ${monthShort(Number(parts.month))}`
 }
+
+/** "2026-09-27": tanggal kalender (Asia/Jakarta) dari waktu ISO server. */
+export function jakartaDateOf(isoDateTime: string): string {
+  const date = new Date(isoDateTime)
+  if (Number.isNaN(date.getTime())) throw new Error(`Waktu tidak valid: "${isoDateTime}"`)
+  const parts = Object.fromEntries(dateParts.formatToParts(date).map((p) => [p.type, p.value]))
+  const two = (value: string | undefined) => String(Number(value)).padStart(2, '0')
+  return `${parts.year}-${two(parts.month)}-${two(parts.day)}`
+}
+
+function dayBefore(iso: string): string {
+  const { year, month, day } = parseDate(iso)
+  return new Date(Date.UTC(year, month - 1, day - 1)).toISOString().slice(0, 10)
+}
+
+/**
+ * Waktu entri aktivitas: "09.12" bila hari ini, "Kemarin", lalu "25 Sep" (dengan tahun bila bukan tahun ini).
+ * `today` dari server ("YYYY-MM-DD"), bukan jam komputer, supaya sama dengan hitungan "terlambat".
+ */
+export function formatActivityTime(isoDateTime: string, today: string): string {
+  const day = jakartaDateOf(isoDateTime)
+  if (day === today) return formatTime(isoDateTime)
+  if (day === dayBefore(today)) return 'Kemarin'
+  return formatShortDate(day, parseDate(today).year)
+}

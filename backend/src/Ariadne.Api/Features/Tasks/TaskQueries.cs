@@ -42,9 +42,20 @@ internal static class TaskQueries
                 .ToListAsync(ct))
             .ToDictionary(x => x.Parent);
 
+        // Update terbaru tiap task (hanya jenis Update; Internal tidak pernah ikut, jadi aman untuk Tamu).
+        // Nomor urut (Seq) dipakai, bukan waktu, supaya dua entri di detik yang sama tidak membingungkan.
+        var taskIds = tasks.Select(t => t.Id).ToList();
+        var lastUpdates = (await db.Activities.AsNoTracking()
+                .Where(a => taskIds.Contains(a.TaskId) && a.Kind == ActivityKind.Update)
+                .Where(a => a.Seq == db.Activities.Where(b => b.TaskId == a.TaskId && b.Kind == ActivityKind.Update).Max(b => b.Seq))
+                .Select(a => new TaskUpdateRow(a.TaskId, a.Body!.Length > 200 ? a.Body.Substring(0, 200) : a.Body, a.Author!.DisplayName, a.CreatedAt))
+                .ToListAsync(ct))
+            .ToDictionary(x => x.TaskId);
+
         TaskRow Row(ProjectTask t)
         {
             subtaskCounts.TryGetValue(t.Id, out var counts);
+            lastUpdates.TryGetValue(t.Id, out var update);
             return new TaskRow(
                 t.Id,
                 $"{rootCodes[t.RootProjectId]}-{t.Number}",
@@ -63,10 +74,12 @@ internal static class TaskQueries
                 t.HoldReason,
                 t.WaitingOnUserId is { } waitingId && waitingNames.TryGetValue(waitingId, out var name) ? name : t.WaitingOnText,
                 t.WaitingOnUserId is not null,
+                t.WaitingOnUserId,
                 t.HeldSince,
                 [.. t.Labels.Select(l => l.Label!.Name).Order(StringComparer.OrdinalIgnoreCase)],
                 counts?.Total ?? 0,
-                counts?.Done ?? 0);
+                counts?.Done ?? 0,
+                update is null ? null : new TaskUpdate(update.Text ?? "", update.AuthorName, update.CreatedAt));
         }
 
         var byParent = tasks.Where(t => t.ParentTaskId is not null).ToLookup(t => t.ParentTaskId!.Value);
@@ -100,6 +113,23 @@ internal static class TaskQueries
         var task = await db.Tasks.WithDetails().SingleOrDefaultAsync(t => t.Id == taskId, ct) ?? throw new NotFoundException();
         var codes = await RootCodesAsync(db, [task.RootProjectId], ct);
         return (await BuildRowsAsync(db, [task], codes, today, ct))[0];
+    }
+
+    private sealed record TaskUpdateRow(Guid TaskId, string? Text, string AuthorName, DateTimeOffset CreatedAt);
+
+    /// <summary>Nama proyek dari root sampai tempat task berada, mis. ["Sentul", "Dispatch"].</summary>
+    public static async Task<List<string>> ProjectPathAsync(AppDbContext db, Guid projectId, CancellationToken ct)
+    {
+        var current = await db.Projects.AsNoTracking().Where(p => p.Id == projectId).Select(p => new { p.RootId }).SingleAsync(ct);
+        var family = await db.Projects.AsNoTracking().Where(p => p.RootId == current.RootId).Select(p => new { p.Id, p.ParentId, p.Name }).ToListAsync(ct);
+        var byId = family.ToDictionary(p => p.Id);
+        var path = new List<string>();
+        for (Guid? id = projectId; id is { } at && byId.TryGetValue(at, out var node); id = node.ParentId)
+        {
+            path.Insert(0, node.Name);
+        }
+
+        return path;
     }
 
     /// <summary>Id proyek ini beserta semua sub-proyeknya yang belum diarsipkan.</summary>

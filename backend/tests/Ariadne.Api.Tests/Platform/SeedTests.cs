@@ -68,6 +68,16 @@ public sealed class SeedTests(PostgresFixture postgres)
         Assert.Equal(3, tasks.Tasks.Single(t => t.Key == "SEN-121").SubtaskCount);
         Assert.Equal(2, tasks.Tasks.Single(t => t.Key == "SEN-112").Assignees.Count);
         Assert.Equal(16, tasks.Tasks.Count(t => t.ParentTaskId is null));
+
+        // Kolom "Update terakhir" dan timeline drawer SEN-115 sama dengan mockup 03 dan 05
+        Assert.Equal("Runner gagal konek ke staging", blocked.LastUpdate?.Text);
+        Assert.Equal("Wiwiet", blocked.LastUpdate?.AuthorName);
+        var timeline = await (await ahmad.GetApiAsync($"/api/tasks/{blocked.Id}/activities")).ReadAsync<Ariadne.Api.Features.Tasks.ActivityPage>();
+        Assert.Equal(
+            ["Comment", "Internal", "Comment", "Update", "Log", "Log"],
+            timeline.Items.Select(a => a.Kind.ToString()));
+        Assert.True(timeline.Items[0].AuthorIsGuest); // Pak Budi, tamu klien
+        Assert.Equal("Ahmad", Assert.Single(timeline.Items[2].Mentions).Name);
     }
 
     [Fact]
@@ -85,6 +95,14 @@ public sealed class SeedTests(PostgresFixture postgres)
         Assert.Equal(7 + 1, tree.Count); // Sentul dan sub-proyeknya
         Assert.DoesNotContain(tree, p => p.Name == "Migrasi Data Center");
         Assert.Equal(HttpStatusCode.Forbidden, (await client.GetApiAsync("/api/teams")).StatusCode);
+
+        // Catatan internal di SEN-115 tidak sampai ke Tamu
+        var sentul = tree.Single(p => p.Code == "SEN");
+        var tasks = await (await client.GetApiAsync($"/api/projects/{sentul.Id}/tasks")).ReadAsync<Ariadne.Api.Features.Tasks.TaskList>();
+        var blocked = tasks.Tasks.Single(t => t.Key == "SEN-115");
+        var timeline = await (await client.GetApiAsync($"/api/tasks/{blocked.Id}/activities")).ReadAsync<Ariadne.Api.Features.Tasks.ActivityPage>();
+        Assert.DoesNotContain(timeline.Items, a => a.Kind == Ariadne.Api.Domain.ActivityKind.Internal);
+        Assert.Equal(5, timeline.Items.Count);
     }
 
     [Fact]

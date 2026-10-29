@@ -653,3 +653,25 @@ Keputusan Ahmad setelah Fase 2: gabungkan ke `main`; **mulai dari data kosong**;
 **Belum dilakukan:** uji beban dengan data seed ×10 (butir E7 pedoman); daftar task memakai query terpisah (split query) tanpa N+1, tetapi belum diukur dengan ribuan task.
 
 **Paket baru:** tidak ada. `vite` 8.3.5 dan `vitest` 5.0.5 (perbaikan keamanan dari `npm audit`, dilakukan di tindak lanjut Fase 2).
+
+### Fase 4 (30 Oktober 2026)
+
+**Yang dibuat:** drawer detail task 520px (mockup 05) yang terbuka dari mana pun lewat `?task=SEN-115` (bisa dibagikan, tombol Kembali menutupnya), semua bidang diubah di tempat (judul, keterangan, status, prioritas, PIC, tanggal, label, sub-proyek, alasan tertahan dan "menunggu siapa"), daftar sub-task yang bisa dibuka, timeline aktivitas empat jenis (Update, Komentar, Internal, Log otomatis), kotak menulis dengan daftar @mention yang bisa dipakai dengan keyboard, dan kolom "Update terakhir" di tabel. Dialog "Ubah task" dari Fase 3 diganti drawer; dialog "Tambah task" dan "Tambah sub-task" tetap.
+
+**Perbedaan dari rencana dan mockup (sengaja)**
+- Tamu boleh membuka drawer (judul menjadi tombol untuk semua orang). Kontrol ubah **disembunyikan**; kotak menulis Tamu hanya punya tab Komentar. Admin yang bukan anggota proyek melihat drawer tanpa kotak menulis (ia bukan anggota; sesuai tabel izin di domain.md).
+- Baris "Sub-proyek" di bidang drawer tidak ada di mockup; ditambahkan supaya kemampuan "pindah sub-proyek" dari dialog Fase 3 tidak hilang. Hanya tampil bagi yang boleh mengubah dan bila ada lebih dari satu sub-proyek.
+- Data contoh SEN-115 tidak punya tiga sub-task seperti di mockup 05 (SEN-116, 117, 119) karena mockup 03 menunjukkan SEN-115 tanpa sub-task; bagian sub-task diuji dengan data buatan test. Urutan PIC alfabetis (Ahmad, Wiwiet), bukan urutan penunjukan.
+- @mention **hanya disimpan** (tabel `mentions`); notifikasi dan email-nya Fase 9. Entri aktivitas tidak bisa diubah atau dihapus setelah dikirim (riwayat harus bisa dipercaya); bila perlu, ini dibuka di fase berikutnya.
+- Log otomatis: task dibuat, status, PIC, tanggal, sub-task ditambahkan (sesuai domain.md). Perubahan judul, keterangan, prioritas, dan label **tidak** dicatat. PIC yang dicopot otomatis karena orangnya dikeluarkan dari proyek juga tidak dicatat (aksi massal oleh sistem). Task yang sudah ada sebelum Fase 4 tidak punya riwayat; log mulai dari perubahan berikutnya.
+
+**Aturan dan keamanan**
+- Catatan Internal **tidak pernah** keluar ke Tamu: daftar aktivitas menyaringnya di server (termasuk halaman berikutnya), kolom "Update terakhir" hanya memuat jenis Update, dan Tamu ditolak 403 bila mencoba menulis Update atau Internal. Test menyerang tiap jalur; tiga aturan dirusak sengaja untuk membuktikan test-nya gagal (saringan Internal, Tamu di catatan Internal, "update terakhir" yang ikut jenis lain).
+- Orang yang ditandai harus anggota aktif proyek itu, "@Nama" harus benar-benar tertulis di teks, dan catatan Internal tidak boleh menandai Tamu; maksimal 20 orang per entri. Teks maksimal 5000 karakter, disimpan dan ditampilkan sebagai teks biasa (tidak pernah HTML).
+- Timeline dibaca bertahap (30 per halaman, penanda berupa nomor urut database, bukan waktu, jadi tidak ada entri terlewat atau ganda). Entri ikut tersembunyi bila task-nya dihapus. Bentuk entri dijaga juga oleh constraint database (`ck_activities_shape`).
+- Log dan perubahan task disimpan dalam satu penyimpanan: berhasil atau gagal bersama (permintaan yang ditolak tidak meninggalkan log).
+- Esc di dalam panel kecil (PIC, tanggal, menu) hanya menutup panel itu, bukan drawer.
+
+**Belum dilakukan:** uji beban dengan data seed ×10 (butir E7); tampilan drawer di layar kecil (Fase 10); notifikasi untuk @mention (Fase 9); mengubah atau menghapus komentar sendiri.
+
+**Paket baru:** tidak ada.

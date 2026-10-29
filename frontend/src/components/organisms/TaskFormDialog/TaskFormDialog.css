@@ -38,11 +38,7 @@
 .ar-taskform-footer {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--space-2);
   width: 100%;
-}
-.ar-taskform-extra {
-  display: inline-flex;
-  gap: var(--space-1);
-  margin-right: auto;
 }

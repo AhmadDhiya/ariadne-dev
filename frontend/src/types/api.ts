@@ -148,10 +148,21 @@ export interface TaskRow {
   holdReason: string | null
   waitingOn: string | null
   waitingOnIsPerson: boolean
+  /** Id orang yang ditunggu, bila yang ditunggu orang di proyek (bukan teks bebas). */
+  waitingOnUserId: string | null
   heldSince: string | null
   labels: string[]
   subtaskCount: number
   subtaskDoneCount: number
+  lastUpdate: TaskUpdate | null
+}
+
+/** Update (laporan progres) terbaru sebuah task; catatan internal tidak pernah ikut. */
+export interface TaskUpdate {
+  text: string
+  authorName: string
+  /** Waktu ISO (UTC). */
+  createdAt: string
 }
 
 export interface TaskProgress {
@@ -165,12 +176,72 @@ export interface TaskList {
   canEdit: boolean
   progress: TaskProgress
   tasks: TaskRow[]
+  /** Hari ini menurut server ("YYYY-MM-DD", Asia/Jakarta); dasar tulisan "Kemarin". */
+  today: string
+}
+
+export interface TaskParent {
+  id: string
+  key: string
+  title: string
 }
 
 export interface TaskDetail {
   task: TaskRow
   description: string | null
+  /** Boleh mengubah task dan menulis Update / Internal. */
   canEdit: boolean
+  /** Boleh menulis komentar biasa (termasuk Tamu). */
+  canComment: boolean
+  rootProjectId: string
+  /** Nama proyek dari root sampai tempat task berada, mis. ["Sentul", "Dispatch"]. */
+  projectPath: string[]
+  parent: TaskParent | null
+  subtasks: TaskRow[]
+  today: string
+}
+
+export type ActivityKindName = 'Update' | 'Comment' | 'Internal' | 'Log'
+export type LogKindName =
+  'TaskCreated' | 'StatusChanged' | 'AssigneesChanged' | 'DatesChanged' | 'SubtaskAdded'
+
+export interface ActivityMention {
+  userId: string
+  name: string
+}
+
+/** Isi terstruktur entri Log; hanya bagian yang relevan dengan jenisnya yang ada. */
+export interface ActivityData {
+  from?: string
+  to?: string
+  reason?: string
+  added?: string[]
+  removed?: string[]
+  fromStart?: string
+  fromDue?: string
+  toStart?: string
+  toDue?: string
+  key?: string
+  title?: string
+}
+
+export interface ActivityItem {
+  id: string
+  kind: ActivityKindName
+  authorId: string
+  authorName: string
+  authorIsGuest: boolean
+  body: string | null
+  mentions: ActivityMention[]
+  logKind: LogKindName | null
+  data: ActivityData | null
+  createdAt: string
+}
+
+export interface ActivityPage {
+  items: ActivityItem[]
+  /** Penanda untuk halaman yang lebih lama; null bila sudah habis. */
+  nextBefore: number | null
 }
 
 export interface LabelItem {

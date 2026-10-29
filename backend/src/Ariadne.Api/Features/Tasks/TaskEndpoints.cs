@@ -83,7 +83,7 @@ internal static partial class TaskEndpoints
 
         var codes = await TaskQueries.RootCodesAsync(db, [project.RootId], ct);
         var rows = await TaskQueries.BuildRowsAsync(db, matched, codes, today, ct);
-        return Results.Ok(new TaskList(id, access.CanEditTasks(project.RootId), new TaskProgress(done, total, TaskRules.ProgressPercent(done, total)), rows));
+        return Results.Ok(new TaskList(id, access.CanEditTasks(project.RootId), new TaskProgress(done, total, TaskRules.ProgressPercent(done, total)), rows, today));
     }
 
     private static async Task<IResult> Get(string key, HttpContext http, AccessService accessService, AppDbContext db, IClock clock, CancellationToken ct)
@@ -92,8 +92,30 @@ internal static partial class TaskEndpoints
         var task = await FindByKeyAsync(db, key, ct);
         access.EnsureCanViewProject(task.RootProjectId);
 
-        var row = await TaskQueries.RowAsync(db, task.Id, clock.Today, ct);
-        return Results.Ok(new TaskDetail(row, task.Description, access.CanEditTasks(task.RootProjectId)));
+        var today = clock.Today;
+        var codes = await TaskQueries.RootCodesAsync(db, [task.RootProjectId], ct);
+        var row = await TaskQueries.RowAsync(db, task.Id, today, ct);
+        var children = await db.Tasks.WithDetails().Where(t => t.ParentTaskId == task.Id).ToListAsync(ct);
+        var subtasks = await TaskQueries.BuildRowsAsync(db, children, codes, today, ct);
+
+        TaskParent? parent = null;
+        if (task.ParentTaskId is { } parentId)
+        {
+            var found = await db.Tasks.AsNoTracking().SingleAsync(t => t.Id == parentId, ct);
+            parent = new TaskParent(found.Id, $"{codes[found.RootProjectId]}-{found.Number}", found.Title);
+        }
+
+        var path = await TaskQueries.ProjectPathAsync(db, task.ProjectId, ct);
+        return Results.Ok(new TaskDetail(
+            row,
+            task.Description,
+            access.CanEditTasks(task.RootProjectId),
+            access.CanComment(task.RootProjectId),
+            task.RootProjectId,
+            path,
+            parent,
+            subtasks,
+            today));
     }
 
     private static async Task<IResult> Labels(Guid id, HttpContext http, AccessService accessService, AppDbContext db, CancellationToken ct)
@@ -188,6 +210,13 @@ internal static partial class TaskEndpoints
             .SqlQuery<int>($"UPDATE projects SET next_task_number = next_task_number + 1 WHERE id = {rootId} RETURNING next_task_number - 1 AS \"Value\"")
             .ToListAsync(ct)).Single();
         db.Tasks.Add(task);
+        db.Activities.Add(ActivityLog.Create(task, access.UserId, LogKind.TaskCreated, now));
+        if (parentTaskId is { } parentId)
+        {
+            var code = await db.Projects.AsNoTracking().Where(p => p.Id == rootId).Select(p => p.Code).SingleAsync(ct);
+            db.Activities.Add(ActivityLog.Create(parentId, rootId, access.UserId, LogKind.SubtaskAdded, now, new ActivityData { Key = $"{code}-{task.Number}", Title = title }));
+        }
+
         await db.SaveOrConflictAsync("Task tidak bisa disimpan karena bentrok. Coba lagi.", ct);
         await transaction.CommitAsync(ct);
 
@@ -262,7 +291,13 @@ internal static partial class TaskEndpoints
 
         var status = Validate.Enum<WorkStatus>("status", request.Status, "Status");
         var now = clock.UtcNow;
+        var before = task.Status;
         await ApplyStatusAsync(db, task, task.RootProjectId, status, request.HoldReason, request.WaitingOnUserId, request.WaitingOnText, now, ct);
+        if (before != task.Status)
+        {
+            db.Activities.Add(ActivityLog.StatusChanged(task, access.UserId, before, now));
+        }
+
         task.UpdatedAt = now;
         await db.SaveOrConflictAsync("Task tidak bisa disimpan karena bentrok. Coba lagi.", ct);
         return Results.Ok(await TaskQueries.RowAsync(db, id, clock.Today, ct));
@@ -275,9 +310,16 @@ internal static partial class TaskEndpoints
         access.EnsureCanEditTasks(task.RootProjectId);
 
         CheckDates(request.StartDate, request.DueDate);
+        var now = clock.UtcNow;
+        var (fromStart, fromDue) = (task.StartDate, task.DueDate);
         task.StartDate = request.StartDate;
         task.DueDate = request.DueDate;
-        task.UpdatedAt = clock.UtcNow;
+        if (fromStart != task.StartDate || fromDue != task.DueDate)
+        {
+            db.Activities.Add(ActivityLog.DatesChanged(task, access.UserId, fromStart, fromDue, now));
+        }
+
+        task.UpdatedAt = now;
         await db.SaveOrConflictAsync("Task tidak bisa disimpan karena bentrok. Coba lagi.", ct);
         return Results.Ok(await TaskQueries.RowAsync(db, id, clock.Today, ct));
     }
@@ -289,13 +331,24 @@ internal static partial class TaskEndpoints
         access.EnsureCanEditTasks(task.RootProjectId);
 
         var wanted = await CheckAssigneesAsync(db, task.RootProjectId, request.UserIds, ct);
+        var removedIds = task.Assignees.Where(a => !wanted.Contains(a.UserId)).Select(a => a.UserId).ToList();
+        var addedIds = wanted.Where(w => task.Assignees.All(a => a.UserId != w)).ToList();
         task.Assignees.RemoveAll(a => !wanted.Contains(a.UserId));
-        foreach (var userId in wanted.Where(w => task.Assignees.All(a => a.UserId != w)))
+        foreach (var userId in addedIds)
         {
             task.Assignees.Add(new TaskAssignee { TaskId = task.Id, UserId = userId });
         }
 
-        task.UpdatedAt = clock.UtcNow;
+        var now = clock.UtcNow;
+        if (removedIds.Count + addedIds.Count > 0)
+        {
+            var changed = removedIds.Concat(addedIds).ToList();
+            var names = await db.Users.AsNoTracking().Where(u => changed.Contains(u.Id)).ToDictionaryAsync(u => u.Id, u => u.DisplayName, ct);
+            string[] Named(IEnumerable<Guid> ids) => [.. ids.Select(i => names.GetValueOrDefault(i, "?")).Order(StringComparer.Ordinal)];
+            db.Activities.Add(ActivityLog.AssigneesChanged(task, access.UserId, Named(addedIds), Named(removedIds), now));
+        }
+
+        task.UpdatedAt = now;
         await db.SaveOrConflictAsync("Task tidak bisa disimpan karena bentrok. Coba lagi.", ct);
         return Results.Ok(await TaskQueries.RowAsync(db, id, clock.Today, ct));
     }

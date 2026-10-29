@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Ariadne.Api.Domain;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -31,6 +33,15 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Label> Labels => Set<Label>();
 
     public DbSet<TaskLabel> TaskLabels => Set<TaskLabel>();
+
+    public DbSet<Activity> Activities => Set<Activity>();
+
+    public DbSet<Mention> Mentions => Set<Mention>();
+
+    private static readonly JsonSerializerOptions DataJson = new(JsonSerializerDefaults.Web)
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -162,6 +173,47 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             taskLabel.HasOne(l => l.Label).WithMany().HasForeignKey(l => l.LabelId).OnDelete(DeleteBehavior.Cascade);
             taskLabel.HasIndex(l => l.LabelId);
             taskLabel.HasQueryFilter(l => l.Task!.DeletedAt == null);
+        });
+
+        builder.Entity<Activity>(activity =>
+        {
+            activity.ToTable("activities", t =>
+            {
+                // Log: punya jenis log dan tanpa teks. Selain Log: punya teks, tanpa jenis log dan data (aturan domain, dijaga juga di database)
+                t.HasCheckConstraint(
+                    "ck_activities_shape",
+                    "(kind = 'Log' AND log_kind IS NOT NULL AND body IS NULL) "
+                    + "OR (kind <> 'Log' AND log_kind IS NULL AND data IS NULL AND body IS NOT NULL AND length(btrim(body)) > 0)");
+            });
+            activity.HasKey(a => a.Id);
+            activity.Property(a => a.Seq).ValueGeneratedOnAdd().UseIdentityByDefaultColumn();
+            activity.HasIndex(a => a.Seq).IsUnique();
+            activity.Property(a => a.Kind).HasConversion<string>().HasMaxLength(20);
+            activity.Property(a => a.LogKind).HasConversion<string>().HasMaxLength(30);
+            activity.Property(a => a.Body).HasMaxLength(5000);
+            activity.Property(a => a.Data)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    data => JsonSerializer.Serialize(data, DataJson),
+                    json => JsonSerializer.Deserialize<ActivityData>(json, DataJson));
+            // Timeline satu task, terbaru dulu, tanpa mengurutkan ulang
+            activity.HasIndex(a => new { a.TaskId, a.Seq });
+            activity.HasIndex(a => new { a.TaskId, a.Kind, a.CreatedAt });
+            activity.HasOne(a => a.Task).WithMany().HasForeignKey(a => a.TaskId).OnDelete(DeleteBehavior.Cascade);
+            activity.HasOne<Project>().WithMany().HasForeignKey(a => a.RootProjectId).OnDelete(DeleteBehavior.Restrict);
+            activity.HasOne(a => a.Author).WithMany().HasForeignKey(a => a.AuthorId).OnDelete(DeleteBehavior.Restrict);
+            activity.HasQueryFilter(a => a.Task!.DeletedAt == null);
+        });
+
+        builder.Entity<Mention>(mention =>
+        {
+            mention.ToTable("mentions");
+            mention.HasKey(m => new { m.ActivityId, m.UserId });
+            mention.Property(m => m.DisplayName).HasMaxLength(100).IsRequired();
+            mention.HasOne(m => m.Activity).WithMany(a => a.Mentions).HasForeignKey(m => m.ActivityId).OnDelete(DeleteBehavior.Cascade);
+            mention.HasOne(m => m.User).WithMany().HasForeignKey(m => m.UserId).OnDelete(DeleteBehavior.Restrict);
+            mention.HasIndex(m => m.UserId);
+            mention.HasQueryFilter(m => m.Activity!.Task!.DeletedAt == null);
         });
     }
 }

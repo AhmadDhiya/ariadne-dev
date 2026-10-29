@@ -85,38 +85,19 @@ describe('TaskFormDialog', () => {
     expect(within(dialog).queryByLabelText('Sub-proyek')).not.toBeInTheDocument()
   })
 
-  it('isian awal terisi saat mengubah task, dan tombol hapus serta tambah sub-task tersedia', async () => {
-    const user = userEvent.setup()
-    const onDelete = vi.fn()
-    const onAddSubtask = vi.fn()
+  it('isian awal terisi dari data yang diberikan', () => {
     const { dialog } = setup({
-      title: 'Ubah SEN-115',
       initial: {
         title: 'Pipeline GitLab',
         priority: 'High',
         assigneeIds: ['u1'],
         labels: 'DevOps',
       },
-      onDelete,
-      onAddSubtask,
     })
 
     expect(within(dialog).getByLabelText(/^Judul/)).toHaveValue('Pipeline GitLab')
     expect(within(dialog).getByLabelText('Prioritas')).toHaveValue('High')
     expect(within(dialog).getByRole('checkbox', { name: 'Ahmad' })).toBeChecked()
-    await user.click(within(dialog).getByRole('button', { name: 'Hapus task' }))
-    await user.click(within(dialog).getByRole('button', { name: 'Tambah sub-task' }))
-    expect(onDelete).toHaveBeenCalled()
-    expect(onAddSubtask).toHaveBeenCalled()
-  })
-
-  it('tombol hapus dan tambah sub-task tidak ada saat membuat task baru', () => {
-    const { dialog } = setup()
-
-    expect(within(dialog).queryByRole('button', { name: 'Hapus task' })).not.toBeInTheDocument()
-    expect(
-      within(dialog).queryByRole('button', { name: 'Tambah sub-task' }),
-    ).not.toBeInTheDocument()
   })
 
   it('menampilkan pesan dari server per kolom dan pesan umum', () => {

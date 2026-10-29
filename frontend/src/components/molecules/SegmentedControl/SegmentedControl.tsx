@@ -1,8 +1,9 @@
+import { Icon, type IconName } from '@/components/atoms/Icon'
 import { cx } from '@/lib/cx'
 import './SegmentedControl.css'
 
 export interface SegmentedControlProps<T extends string> {
-  options: { value: T; label: string }[]
+  options: { value: T; label: string; icon?: IconName }[]
   value: T
   onChange: (value: T) => void
   /** Nama grup untuk pembaca layar, mis. "Skala waktu". */
@@ -31,6 +32,7 @@ export function SegmentedControl<T extends string>({
             aria-pressed={selected}
             onClick={() => onChange(option.value)}
           >
+            {option.icon ? <Icon name={option.icon} size={14} /> : null}
             {option.label}
           </button>
         )

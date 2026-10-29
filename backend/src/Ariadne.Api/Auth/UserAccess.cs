@@ -47,6 +47,15 @@ public sealed class UserAccess(
     /// <summary>Membuat, mengubah, dan menghapus task: hanya Pengelola dan Anggota proyek (bukan Tamu, bukan Admin yang tidak ikut proyek).</summary>
     public bool CanEditTasks(Guid rootProjectId) => RoleIn(rootProjectId) is ProjectRole.Pengelola or ProjectRole.Anggota;
 
+    /// <summary>Komentar biasa dan @mention: semua anggota proyek termasuk Tamu (Admin yang tidak ikut proyek hanya melihat).</summary>
+    public bool CanComment(Guid rootProjectId) => RoleIn(rootProjectId) is not null;
+
+    /// <summary>
+    /// Catatan Internal tidak pernah ditunjukkan ke Tamu proyek itu, di endpoint mana pun. Admin yang tidak ikut
+    /// proyek boleh melihatnya (ia bukan Tamu); Admin yang kebetulan Tamu di proyek itu diperlakukan sebagai Tamu.
+    /// </summary>
+    public bool CanSeeInternal(Guid rootProjectId) => RoleIn(rootProjectId) is not ProjectRole.Tamu;
+
     public bool CanManageProject(Guid rootProjectId) => IsAdmin || RoleIn(rootProjectId) == ProjectRole.Pengelola;
 
     public bool CanViewTeam(Guid teamId) => IsAdmin || Teams.ContainsKey(teamId);
@@ -83,6 +92,15 @@ public sealed class UserAccess(
     {
         EnsureCanViewProject(rootProjectId);
         if (!CanEditTasks(rootProjectId))
+        {
+            throw new ForbiddenException();
+        }
+    }
+
+    public void EnsureCanComment(Guid rootProjectId)
+    {
+        EnsureCanViewProject(rootProjectId);
+        if (!CanComment(rootProjectId))
         {
             throw new ForbiddenException();
         }

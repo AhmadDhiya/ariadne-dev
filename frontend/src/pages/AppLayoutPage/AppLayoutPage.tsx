@@ -10,6 +10,7 @@ import { Sidebar, type TopLevelKey } from '@/components/organisms/Sidebar'
 import { Topbar } from '@/components/organisms/Topbar'
 import { AppShell } from '@/components/templates/AppShell'
 import { useTheme } from '@/hooks/useTheme'
+import { TaskDrawerPage } from '@/pages/TaskDrawerPage'
 import { roleSubtitle } from '@/lib/roles'
 
 function topLevelKey(pathname: string): TopLevelKey | null {
@@ -108,6 +109,7 @@ export function AppLayoutPage() {
       }
     >
       <Outlet context={context} />
+      <TaskDrawerPage />
     </AppShell>
   )
 }
