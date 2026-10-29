@@ -108,3 +108,11 @@ export function formatDateWithYear(isoDateTime: string): string {
   const parts = Object.fromEntries(dateParts.formatToParts(date).map((p) => [p.type, p.value]))
   return `${Number(parts.day)} ${monthShort(Number(parts.month))} ${parts.year}`
 }
+
+/** "24 Sep": tanggal (tanpa tahun) dari waktu ISO server, dalam Asia/Jakarta. Dipakai untuk "sejak 24 Sep". */
+export function formatShortDateOfInstant(isoDateTime: string): string {
+  const date = new Date(isoDateTime)
+  if (Number.isNaN(date.getTime())) throw new Error(`Waktu tidak valid: "${isoDateTime}"`)
+  const parts = Object.fromEntries(dateParts.formatToParts(date).map((p) => [p.type, p.value]))
+  return `${Number(parts.day)} ${monthShort(Number(parts.month))}`
+}

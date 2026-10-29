@@ -4,6 +4,7 @@ import {
   formatDateWithYear,
   formatLongDate,
   formatShortDate,
+  formatShortDateOfInstant,
   formatTime,
   parseDate,
 } from './dates'
@@ -47,5 +48,17 @@ describe('format tanggal Indonesia', () => {
     expect(() => parseDate('28-09-2026')).toThrow()
     expect(() => parseDate('2026-02-30')).toThrow()
     expect(() => formatTime('bukan-waktu')).toThrow()
+  })
+})
+
+describe('formatShortDateOfInstant', () => {
+  it('memakai tanggal Asia/Jakarta, bukan UTC', () => {
+    // 17.00 UTC = 00.00 WIB hari berikutnya
+    expect(formatShortDateOfInstant('2026-09-24T16:59:00Z')).toBe('24 Sep')
+    expect(formatShortDateOfInstant('2026-09-24T17:00:00Z')).toBe('25 Sep')
+  })
+
+  it('menolak waktu yang rusak', () => {
+    expect(() => formatShortDateOfInstant('kemarin')).toThrow()
   })
 })

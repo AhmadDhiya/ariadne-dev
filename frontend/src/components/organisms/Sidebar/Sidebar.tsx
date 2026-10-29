@@ -68,6 +68,8 @@ export function Sidebar({
           expandable={node.children.length > 0}
           expanded={open}
           active={node.id === activeProjectId}
+          // Proyek yang terbuka tidak menampilkan angka; angkanya ada di anak-anaknya (mockup 03)
+          count={open && node.children.length > 0 ? undefined : node.taskCount || undefined}
           href={href}
           onNavigate={go(href)}
           onToggle={() => setToggled((t) => ({ ...t, [node.id]: !open }))}

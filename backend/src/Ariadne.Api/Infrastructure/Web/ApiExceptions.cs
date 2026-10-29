@@ -42,7 +42,14 @@ internal sealed class ApiExceptionHandler(IProblemDetailsService problemDetails)
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken)
     {
-        if (exception is not ApiException api)
+        // Permintaan rusak (mis. parameter wajib hilang, JSON tidak terbaca) = salah pemanggil, bukan server (400)
+        var api = exception switch
+        {
+            ApiException known => known,
+            BadHttpRequestException => new ApiException(StatusCodes.Status400BadRequest, "Permintaan tidak dapat dibaca."),
+            _ => null,
+        };
+        if (api is null)
         {
             return false; // kesalahan tak terduga: ditangani penanganan umum (tanpa detail teknis di luar Development)
         }

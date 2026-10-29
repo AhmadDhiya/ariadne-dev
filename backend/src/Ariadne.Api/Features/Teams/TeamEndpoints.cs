@@ -75,6 +75,17 @@ internal static class TeamEndpoints
             .GroupBy(m => m.UserId)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)[.. g.Select(m => m.TeamName).Order(StringComparer.Ordinal)]);
 
+        // Task aktif = task yang jadi PIC-nya dan belum Done. Pengelola tim melihat semuanya; yang lain hanya dari proyek yang boleh ia lihat.
+        var assigned = await db.TaskAssignees.AsNoTracking()
+            .Where(a => memberIds.Contains(a.UserId) && a.Task!.Status != WorkStatus.Done)
+            .Select(a => new { a.UserId, a.Task!.RootProjectId })
+            .ToListAsync(ct);
+        var seeAllTasks = access.CanManageTeam(id);
+        var activeTasks = assigned
+            .Where(a => seeAllTasks || access.CanViewProject(a.RootProjectId))
+            .GroupBy(a => a.UserId)
+            .ToDictionary(g => g.Key, g => g.Count());
+
         // Proyek tim = proyek tempat anggota tim bekerja, hanya yang boleh dilihat oleh yang bertanya
         var projectNames = await db.ProjectMembers.AsNoTracking()
             .Where(m => memberIds.Contains(m.UserId) && m.Project!.ArchivedAt == null)
@@ -89,7 +100,7 @@ internal static class TeamEndpoints
 
         var items = members
             .OrderBy(m => m.Role).ThenBy(m => m.AddedAt).ThenBy(m => m.DisplayName, StringComparer.Ordinal)
-            .Select(m => new TeamMemberItem(m.UserId, m.DisplayName, m.Email ?? "", m.Role, otherTeams.GetValueOrDefault(m.UserId) ?? []))
+            .Select(m => new TeamMemberItem(m.UserId, m.DisplayName, m.Email ?? "", m.Role, otherTeams.GetValueOrDefault(m.UserId) ?? [], activeTasks.GetValueOrDefault(m.UserId)))
             .ToList();
 
         return Results.Ok(new TeamDetail(

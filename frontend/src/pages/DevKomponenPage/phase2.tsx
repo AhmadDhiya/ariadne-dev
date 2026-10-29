@@ -30,7 +30,16 @@ const EXTRA = 'tambahan, tidak ada di design system'
 const noop = () => undefined
 
 const PROJECTS: ProjectNode[] = [
-  { id: 'sen', parentId: null, rootId: 'sen', depth: 0, name: 'Sentul', code: 'SEN', sortOrder: 1 },
+  {
+    id: 'sen',
+    parentId: null,
+    rootId: 'sen',
+    depth: 0,
+    name: 'Sentul',
+    code: 'SEN',
+    sortOrder: 1,
+    taskCount: 0,
+  },
   {
     id: 'dis',
     parentId: 'sen',
@@ -39,8 +48,18 @@ const PROJECTS: ProjectNode[] = [
     name: 'Dispatch',
     code: null,
     sortOrder: 1,
+    taskCount: 0,
   },
-  { id: 'slm', parentId: 'sen', rootId: 'sen', depth: 1, name: 'SLMS', code: null, sortOrder: 2 },
+  {
+    id: 'slm',
+    parentId: 'sen',
+    rootId: 'sen',
+    depth: 1,
+    name: 'SLMS',
+    code: null,
+    sortOrder: 2,
+    taskCount: 0,
+  },
   {
     id: 'tem',
     parentId: 'slm',
@@ -49,6 +68,7 @@ const PROJECTS: ProjectNode[] = [
     name: 'Temuan UAT & API',
     code: null,
     sortOrder: 1,
+    taskCount: 0,
   },
   {
     id: 'mdc',
@@ -58,6 +78,7 @@ const PROJECTS: ProjectNode[] = [
     name: 'Migrasi Data Center',
     code: 'MDC',
     sortOrder: 2,
+    taskCount: 0,
   },
 ]
 
@@ -91,6 +112,7 @@ const TEAM_DETAIL: TeamDetail = {
       email: 'ahmad@perusahaan.co.id',
       role: 'Supervisor',
       otherTeams: ['Tim QA'],
+      activeTasks: 0,
     },
     {
       userId: '2',
@@ -98,6 +120,7 @@ const TEAM_DETAIL: TeamDetail = {
       email: 'wiwiet@perusahaan.co.id',
       role: 'Anggota',
       otherTeams: ['Tim Infrastruktur'],
+      activeTasks: 0,
     },
     {
       userId: '3',
@@ -105,6 +128,7 @@ const TEAM_DETAIL: TeamDetail = {
       email: 'rama@perusahaan.co.id',
       role: 'Anggota',
       otherTeams: ['Tim QA'],
+      activeTasks: 0,
     },
   ],
 }

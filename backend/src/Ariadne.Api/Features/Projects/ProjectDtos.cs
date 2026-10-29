@@ -3,7 +3,8 @@ using Ariadne.Api.Domain;
 namespace Ariadne.Api.Features.Projects;
 
 /// <summary>Satu simpul pohon proyek untuk sidebar (daftar datar; frontend menyusunnya lewat ParentId).</summary>
-public sealed record ProjectNode(Guid Id, Guid? ParentId, Guid RootId, int Depth, string Name, string? Code, int SortOrder);
+/// <summary>TaskCount = task yang belum Done (tanpa sub-task) di proyek ini dan semua sub-proyeknya.</summary>
+public sealed record ProjectNode(Guid Id, Guid? ParentId, Guid RootId, int Depth, string Name, string? Code, int SortOrder, int TaskCount = 0);
 
 public sealed record ProjectCrumb(Guid Id, string Name);
 

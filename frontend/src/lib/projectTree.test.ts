@@ -10,6 +10,7 @@ const node = (id: string, parentId: string | null, depth: number, name = id): Pr
   name,
   code: null,
   sortOrder: 0,
+  taskCount: 0,
 })
 
 const sample = [

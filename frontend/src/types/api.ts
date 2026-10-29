@@ -56,6 +56,7 @@ export interface TeamMemberItem {
   email: string
   role: TeamRole
   otherTeams: string[]
+  activeTasks: number
 }
 
 export interface TeamDetail {
@@ -75,6 +76,8 @@ export interface ProjectNode {
   name: string
   code: string | null
   sortOrder: number
+  /** Task belum selesai (tanpa sub-task) di proyek ini dan sub-proyeknya. */
+  taskCount: number
 }
 
 export interface ProjectCrumb {
@@ -112,4 +115,65 @@ export interface ProjectMemberItem {
   isGuest: boolean
   status: string
   addedAt: string
+}
+
+/** Nama status dan prioritas persis seperti yang dikirim dan diterima API. */
+export type WorkStatusName =
+  'NotStarted' | 'OnProgress' | 'Fixing' | 'Blocked' | 'OnHold' | 'OnRequest' | 'Done' | 'Rutin'
+export type PriorityName = 'Critical' | 'High' | 'Medium' | 'Low'
+
+export interface TaskPerson {
+  id: string
+  name: string
+}
+
+export interface TaskRow {
+  id: string
+  /** ID tampilan, mis. "SEN-115". */
+  key: string
+  number: number
+  projectId: string
+  parentTaskId: string | null
+  title: string
+  status: WorkStatusName
+  priority: PriorityName
+  assignees: TaskPerson[]
+  /** "YYYY-MM-DD" */
+  startDate: string | null
+  dueDate: string | null
+  /** Hari kerja Senin–Jumat, dihitung server. */
+  durationDays: number | null
+  isOverdue: boolean
+  lateDays: number
+  holdReason: string | null
+  waitingOn: string | null
+  waitingOnIsPerson: boolean
+  heldSince: string | null
+  labels: string[]
+  subtaskCount: number
+  subtaskDoneCount: number
+}
+
+export interface TaskProgress {
+  done: number
+  total: number
+  percent: number
+}
+
+export interface TaskList {
+  projectId: string
+  canEdit: boolean
+  progress: TaskProgress
+  tasks: TaskRow[]
+}
+
+export interface TaskDetail {
+  task: TaskRow
+  description: string | null
+  canEdit: boolean
+}
+
+export interface LabelItem {
+  id: string
+  name: string
 }

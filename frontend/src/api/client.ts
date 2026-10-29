@@ -76,4 +76,6 @@ export const apiPost = <T = void>(path: `/api/${string}`, body?: unknown) =>
   request<T>('POST', path, body ?? {})
 export const apiPatch = <T = void>(path: `/api/${string}`, body: unknown) =>
   request<T>('PATCH', path, body)
+export const apiPut = <T = void>(path: `/api/${string}`, body: unknown) =>
+  request<T>('PUT', path, body)
 export const apiDelete = <T = void>(path: `/api/${string}`) => request<T>('DELETE', path)

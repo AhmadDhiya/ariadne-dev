@@ -56,6 +56,18 @@ public sealed class SeedTests(PostgresFixture postgres)
         Assert.Equal(2, temuan.Depth);
         Assert.Equal("SLMS", tree.Single(p => p.Id == temuan.ParentId).Name);
         Assert.Equal(["SEN", "MDC"], tree.Where(p => p.Depth == 0).Select(p => p.Code));
+
+        Assert.Equal(23, await CountAsync(app, db => db.Tasks)); // 19 di Sentul (3 sub-task) + 4 di Migrasi Data Center
+
+        var sentul = tree.Single(p => p.Code == "SEN");
+        var tasks = await (await ahmad.GetApiAsync($"/api/projects/{sentul.Id}/tasks")).ReadAsync<Ariadne.Api.Features.Tasks.TaskList>();
+        var blocked = tasks.Tasks.Single(t => t.Key == "SEN-115");
+        Assert.Equal("Blocked", blocked.Status.ToString());
+        Assert.Equal("Manto", blocked.WaitingOn);
+        Assert.Equal(["Ahmad", "Wiwiet"], blocked.Assignees.Select(a => a.Name));
+        Assert.Equal(3, tasks.Tasks.Single(t => t.Key == "SEN-121").SubtaskCount);
+        Assert.Equal(2, tasks.Tasks.Single(t => t.Key == "SEN-112").Assignees.Count);
+        Assert.Equal(16, tasks.Tasks.Count(t => t.ParentTaskId is null));
     }
 
     [Fact]

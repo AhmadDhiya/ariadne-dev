@@ -9,7 +9,7 @@ public sealed record TeamSummary(
     IReadOnlyList<string> Supervisors,
     IReadOnlyList<string> MemberNames);
 
-public sealed record TeamMemberItem(Guid UserId, string DisplayName, string Email, TeamRole Role, IReadOnlyList<string> OtherTeams);
+public sealed record TeamMemberItem(Guid UserId, string DisplayName, string Email, TeamRole Role, IReadOnlyList<string> OtherTeams, int ActiveTasks);
 
 public sealed record TeamDetail(
     Guid Id,

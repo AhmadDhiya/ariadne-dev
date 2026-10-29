@@ -15,8 +15,8 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         <div className="ar-auth-copy">
           <p className="ar-auth-headline">Benang merah setiap proyek.</p>
           <p className="ar-auth-text">
-            Semua task, tenggat, dan beban kerja tim dalam satu tempat — dari Sentul sampai Migrasi
-            Data Center.
+            Semua task, tenggat, dan beban kerja tim dalam satu tempat, dari proyek pertama sampai
+            yang terakhir.
           </p>
         </div>
       </aside>

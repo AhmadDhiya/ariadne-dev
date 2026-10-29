@@ -7,6 +7,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { ProjectMembersPage } from '@/pages/ProjectMembersPage'
 import { ProjectPage } from '@/pages/ProjectPage'
+import { ProjectTablePage } from '@/pages/ProjectTablePage'
 import { ProjectSoonPage } from '@/pages/ProjectSoonPage'
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
 import { SettingsPage } from '@/pages/SettingsPage'
@@ -47,7 +48,7 @@ const router = createBrowserRouter([
         Component: ProjectPage,
         children: [
           { index: true, element: <Navigate to="tabel" replace /> },
-          { path: 'tabel', Component: ProjectSoonPage },
+          { path: 'tabel', Component: ProjectTablePage },
           { path: 'gantt', Component: ProjectSoonPage },
           { path: 'milestone', Component: ProjectSoonPage },
           { path: 'anggota', Component: ProjectMembersPage },

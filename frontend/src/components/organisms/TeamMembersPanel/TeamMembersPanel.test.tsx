@@ -17,6 +17,7 @@ const TEAM: TeamDetail = {
       email: 'ahmad@perusahaan.co.id',
       role: 'Supervisor',
       otherTeams: ['Tim QA'],
+      activeTasks: 0,
     },
     {
       userId: '2',
@@ -24,6 +25,7 @@ const TEAM: TeamDetail = {
       email: 'rama@perusahaan.co.id',
       role: 'Anggota',
       otherTeams: [],
+      activeTasks: 0,
     },
   ],
 }

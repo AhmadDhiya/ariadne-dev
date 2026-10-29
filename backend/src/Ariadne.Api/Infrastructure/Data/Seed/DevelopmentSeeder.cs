@@ -172,6 +172,139 @@ internal static partial class DevelopmentSeeder
             Pm(migrasi, rama, ProjectRole.Anggota, 2026, 6, 15),
             Pm(migrasi, galih, ProjectRole.Anggota, 2026, 6, 15));
 
+
+        SeedTasks(db, now, sentulProject, migrasi, dispatch, slms, temuan, smartclassroom, faq, menagih, testing, ahmad, syaikhan, wiwiet, manto, rama, khalil, galih, bintang);
+
         await db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Task contoh dari mockup 03 (Sentul): nomor, judul, PIC, dan tanggalnya sama dengan gambar. Smartclassroom (enam task,
+    /// dilipat di mockup) dan Migrasi Data Center hanya berupa contoh karena mockup tidak merinci isinya.
+    /// </summary>
+    private static void SeedTasks(
+        AppDbContext db,
+        DateTimeOffset now,
+        Project sentul,
+        Project migrasi,
+        Project dispatch,
+        Project slms,
+        Project temuan,
+        Project smartclassroom,
+        Project faq,
+        Project menagih,
+        Project testing,
+        AppUser ahmad,
+        AppUser syaikhan,
+        AppUser wiwiet,
+        AppUser manto,
+        AppUser rama,
+        AppUser khalil,
+        AppUser galih,
+        AppUser bintang)
+    {
+        var labels = new Dictionary<(Guid Root, string Name), Label>();
+        var sort = new Dictionary<(Guid Project, Guid? Parent), int>();
+
+        ProjectTask Add(
+            Project root,
+            Project project,
+            int number,
+            string title,
+            Priority priority,
+            WorkStatus status,
+            string start,
+            string due,
+            AppUser[] pic,
+            string[] tags,
+            ProjectTask? parent = null,
+            string? holdReason = null,
+            AppUser? waitingOn = null,
+            string? waitingText = null,
+            string? heldSince = null)
+        {
+            var key = (project.Id, parent?.Id);
+            sort[key] = sort.GetValueOrDefault(key) + 1;
+            var task = new ProjectTask
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = project.Id,
+                RootProjectId = root.Id,
+                Number = number,
+                ParentTaskId = parent?.Id,
+                Title = title,
+                Status = status,
+                Priority = priority,
+                StartDate = DateOnly.Parse(start, System.Globalization.CultureInfo.InvariantCulture),
+                DueDate = DateOnly.Parse(due, System.Globalization.CultureInfo.InvariantCulture),
+                HoldReason = holdReason,
+                WaitingOnUserId = waitingOn?.Id,
+                WaitingOnText = waitingText,
+                HeldSince = heldSince is null ? null : new DateTimeOffset(DateOnly.Parse(heldSince, System.Globalization.CultureInfo.InvariantCulture).ToDateTime(new TimeOnly(1, 0)), TimeSpan.Zero),
+                SortOrder = sort[key],
+                CreatedById = ahmad.Id,
+                CreatedAt = now,
+                UpdatedAt = now,
+            };
+            foreach (var person in pic)
+            {
+                task.Assignees.Add(new TaskAssignee { TaskId = task.Id, UserId = person.Id });
+            }
+
+            foreach (var name in tags)
+            {
+                if (!labels.TryGetValue((root.Id, name), out var label))
+                {
+                    label = new Label { Id = Guid.NewGuid(), RootProjectId = root.Id, Name = name, NormalizedName = name.ToLowerInvariant() };
+                    labels[(root.Id, name)] = label;
+                    db.Labels.Add(label);
+                }
+
+                task.Labels.Add(new TaskLabel { TaskId = task.Id, LabelId = label.Id });
+            }
+
+            db.Tasks.Add(task);
+            return task;
+        }
+
+        // Dispatch
+        Add(sentul, dispatch, 101, "Pengisian Kebutuhan Server", Priority.High, WorkStatus.Done, "2026-09-14", "2026-09-18", [ahmad], ["Infra"]);
+        Add(sentul, dispatch, 104, "Integrasi log & metrics", Priority.Medium, WorkStatus.OnProgress, "2026-09-28", "2026-10-02", [ahmad, rama], ["Monitoring"]);
+        Add(sentul, dispatch, 115, "Pipeline GitLab IRS", Priority.Critical, WorkStatus.Blocked, "2026-09-21", "2026-09-25", [wiwiet, ahmad], ["DevOps"],
+            holdReason: "Runner GitLab belum bisa mengakses server staging; port 22 dan 443 masih ditutup firewall.", waitingOn: manto, heldSince: "2026-09-24");
+
+        // SLMS
+        Add(sentul, slms, 112, "Paket PenTest whitebox", Priority.Critical, WorkStatus.OnProgress, "2026-09-21", "2026-09-28", [ahmad, khalil], ["Keamanan"]);
+        Add(sentul, slms, 118, "Dokumentasi API absensi", Priority.Medium, WorkStatus.OnProgress, "2026-09-24", "2026-09-29", [manto], ["Dokumentasi"]);
+
+        // SLMS / Temuan UAT & API (satu task dengan tiga sub-task)
+        var uat = Add(sentul, temuan, 121, "Perbaikan temuan UAT modul absensi", Priority.High, WorkStatus.Fixing, "2026-09-23", "2026-09-26", [ahmad], ["UAT"]);
+        Add(sentul, temuan, 122, "Validasi jam masuk shift malam", Priority.High, WorkStatus.Fixing, "2026-09-23", "2026-09-26", [ahmad], ["UAT"], uat);
+        Add(sentul, temuan, 123, "Pesan error saat token kedaluwarsa", Priority.Medium, WorkStatus.Done, "2026-09-23", "2026-09-24", [manto], ["UAT"], uat);
+        Add(sentul, temuan, 124, "Uji ulang oleh klien", Priority.Medium, WorkStatus.NotStarted, "2026-09-29", "2026-09-30", [ahmad], ["UAT"], uat);
+        Add(sentul, temuan, 126, "Endpoint rekap kehadiran lambat", Priority.High, WorkStatus.OnProgress, "2026-09-25", "2026-10-01", [manto, galih], ["API"]);
+
+        // Smartclassroom (enam task; mockup hanya menunjukkan grup ini dilipat)
+        Add(sentul, smartclassroom, 105, "Inventaris perangkat kelas", Priority.Medium, WorkStatus.Done, "2026-09-14", "2026-09-18", [galih], ["Infra"]);
+        Add(sentul, smartclassroom, 106, "Pasang access point lantai 2", Priority.High, WorkStatus.Done, "2026-09-15", "2026-09-22", [galih], ["Infra"]);
+        Add(sentul, smartclassroom, 107, "Konfigurasi proyektor interaktif", Priority.Medium, WorkStatus.OnProgress, "2026-09-24", "2026-10-02", [galih, bintang], ["Infra"]);
+        Add(sentul, smartclassroom, 127, "Uji koneksi tiap ruang kelas", Priority.Medium, WorkStatus.NotStarted, "2026-10-05", "2026-10-09", [bintang], ["QA"]);
+        Add(sentul, smartclassroom, 128, "Pelatihan guru", Priority.Low, WorkStatus.NotStarted, "2026-10-12", "2026-10-16", [wiwiet], ["Konten"]);
+        Add(sentul, smartclassroom, 129, "Dokumentasi instalasi", Priority.Low, WorkStatus.NotStarted, "2026-10-07", "2026-10-09", [galih], ["Dokumentasi"]);
+
+        // FAQ, Menagih Pihak Lain, Testing Oktober
+        Add(sentul, faq, 130, "Penyusunan FAQ", Priority.Low, WorkStatus.NotStarted, "2026-10-01", "2026-10-07", [bintang], ["Konten"]);
+        Add(sentul, menagih, 133, "Menunggu akses VPN dari klien", Priority.High, WorkStatus.OnRequest, "2026-09-22", "2026-09-30", [ahmad], ["Klien"],
+            holdReason: "Akun VPN untuk tim belum dibuatkan oleh klien.", waitingText: "Klien — tim IT", heldSince: "2026-09-22");
+        Add(sentul, testing, 145, "Skenario uji Oktober", Priority.Medium, WorkStatus.OnHold, "2026-10-01", "2026-10-09", [rama], ["QA"],
+            holdReason: "Menunggu jadwal UAT final dari klien.", waitingOn: syaikhan, heldSince: "2026-09-25");
+        sentul.NextTaskNumber = 146;
+
+        // Migrasi Data Center: contoh kecil
+        Add(migrasi, migrasi, 1, "Inventaris server lama", Priority.High, WorkStatus.Done, "2026-09-14", "2026-09-18", [syaikhan, manto], ["Infra"]);
+        Add(migrasi, migrasi, 2, "Migrasi database utama", Priority.Critical, WorkStatus.OnProgress, "2026-09-24", "2026-10-02", [syaikhan, galih], ["Database"]);
+        Add(migrasi, migrasi, 3, "Uji failover", Priority.High, WorkStatus.NotStarted, "2026-10-05", "2026-10-09", [rama], ["QA"]);
+        Add(migrasi, migrasi, 4, "Cutover akhir pekan", Priority.Critical, WorkStatus.NotStarted, "2026-10-10", "2026-10-11", [syaikhan, wiwiet], ["Infra"]);
+        migrasi.NextTaskNumber = 5;
     }
 }

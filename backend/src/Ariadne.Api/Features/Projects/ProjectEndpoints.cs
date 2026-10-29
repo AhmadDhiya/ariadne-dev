@@ -44,9 +44,27 @@ internal static partial class ProjectEndpoints
 
         var nodes = await query
             .OrderBy(p => p.Depth).ThenBy(p => p.SortOrder).ThenBy(p => p.Name)
-            .Select(p => new ProjectNode(p.Id, p.ParentId, p.RootId, p.Depth, p.Name, p.Code, p.SortOrder))
+            .Select(p => new ProjectNode(p.Id, p.ParentId, p.RootId, p.Depth, p.Name, p.Code, p.SortOrder, 0))
             .ToListAsync(ct);
-        return Results.Ok(nodes);
+
+        // Angka di sidebar: task belum selesai di proyek itu dan seluruh sub-proyeknya
+        var ids = nodes.Select(n => n.Id).ToList();
+        var own = await db.Tasks.AsNoTracking()
+            .Where(t => t.ParentTaskId == null && t.Status != WorkStatus.Done && ids.Contains(t.ProjectId))
+            .GroupBy(t => t.ProjectId)
+            .Select(g => new { ProjectId = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+        var parents = nodes.ToDictionary(n => n.Id, n => n.ParentId);
+        var totals = new Dictionary<Guid, int>();
+        foreach (var (projectId, count) in own.Select(o => (o.ProjectId, o.Count)))
+        {
+            for (Guid? current = projectId; current is { } id && parents.ContainsKey(id); current = parents[id])
+            {
+                totals[id] = totals.GetValueOrDefault(id) + count;
+            }
+        }
+
+        return Results.Ok(nodes.Select(n => n with { TaskCount = totals.GetValueOrDefault(n.Id) }));
     }
 
     private static async Task<IResult> Get(Guid id, HttpContext http, AccessService accessService, AppDbContext db, CancellationToken ct)
@@ -93,7 +111,8 @@ internal static partial class ProjectEndpoints
 
     private static async Task<IResult> CreateRoot(CreateProjectRequest request, HttpContext http, AccessService accessService, AppDbContext db, IClock clock, CancellationToken ct)
     {
-        (await accessService.CurrentAsync(http.User, ct)).EnsureAdmin();
+        var access = await accessService.CurrentAsync(http.User, ct);
+        access.EnsureAdmin();
         var name = Validate.Text("name", request.Name, 100, "Nama proyek");
         var code = (request.Code ?? "").Trim().ToUpperInvariant();
         if (!CodePattern().IsMatch(code))
@@ -113,6 +132,10 @@ internal static partial class ProjectEndpoints
             SortOrder = nextOrder + 1,
             CreatedAt = clock.UtcNow,
         });
+
+        // Pembuat proyek langsung menjadi Pengelolanya (satu transaksi), supaya ia bisa menerima task dan tidak
+        // perlu menambahkan dirinya sendiri. Admin tetap bisa melihat dan mengelola proyek yang bukan miliknya.
+        db.ProjectMembers.Add(new ProjectMember { ProjectId = id, UserId = access.UserId, Role = ProjectRole.Pengelola, AddedAt = clock.UtcNow });
         await db.SaveOrConflictAsync("Kode proyek sudah dipakai.", ct);
         return Results.Created($"/api/projects/{id}", new ProjectNode(id, null, id, 0, name, code, nextOrder + 1));
     }
@@ -247,8 +270,16 @@ internal static partial class ProjectEndpoints
         var role = Validate.Enum<ProjectRole>("role", request.Role, "Peran");
 
         var member = await db.ProjectMembers.SingleOrDefaultAsync(m => m.ProjectId == project.RootId && m.UserId == userId, ct) ?? throw new NotFoundException();
+        // Perubahan peran dan pencopotan PIC terjadi bersamaan: Tamu tidak boleh menjadi PIC task
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
         member.Role = role;
         await db.SaveChangesAsync(ct);
+        if (role == ProjectRole.Tamu)
+        {
+            await UnassignAsync(db, project.RootId, userId, ct);
+        }
+
+        await transaction.CommitAsync(ct);
         return Results.NoContent();
     }
 
@@ -259,10 +290,18 @@ internal static partial class ProjectEndpoints
         access.EnsureCanManageProject(project.RootId);
 
         var member = await db.ProjectMembers.SingleOrDefaultAsync(m => m.ProjectId == project.RootId && m.UserId == userId, ct) ?? throw new NotFoundException();
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
         db.ProjectMembers.Remove(member);
         await db.SaveChangesAsync(ct);
+        await UnassignAsync(db, project.RootId, userId, ct); // orang yang keluar tidak lagi menjadi PIC task mana pun di proyek ini
+        await transaction.CommitAsync(ct);
         return Results.NoContent();
     }
+
+    private static Task<int> UnassignAsync(AppDbContext db, Guid rootProjectId, Guid userId, CancellationToken ct) =>
+        db.TaskAssignees.IgnoreQueryFilters()
+            .Where(a => a.UserId == userId && a.Task!.RootProjectId == rootProjectId)
+            .ExecuteDeleteAsync(ct);
 
     private static async Task<Project> FindAsync(Guid id, AppDbContext db, CancellationToken ct) =>
         await db.Projects.AsNoTracking().SingleOrDefaultAsync(p => p.Id == id, ct) ?? throw new NotFoundException();

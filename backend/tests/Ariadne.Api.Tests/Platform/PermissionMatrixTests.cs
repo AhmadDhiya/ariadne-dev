@@ -32,6 +32,7 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
     private static string Fill(string pattern, World w) => pattern
         .Replace("{teamA}", w.TeamA.ToString(), StringComparison.Ordinal)
         .Replace("{alpha}", w.ProjectAlpha.ToString(), StringComparison.Ordinal)
+        .Replace("{task}", w.TaskAlpha.ToString(), StringComparison.Ordinal)
         .Replace("{member}", w.Member.Id.ToString(), StringComparison.Ordinal)
         .Replace("{outsider}", w.Outsider.Id.ToString(), StringComparison.Ordinal);
 
@@ -58,6 +59,15 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
         Get("/api/projects/{alpha}/members",                        "UANNAAANN"),
         Req(HttpMethod.Post,  "/api/projects/{alpha}/members",      "UANNFAFNN", _ => new { userId = Guid.NewGuid(), role = "Anggota" }),
         Req(HttpMethod.Patch, "/api/projects/{alpha}/members/{member}", "UANNFAFNN", _ => new { role = "Anggota" }),
+        Get("/api/projects/{alpha}/tasks",                          "UANNAAANN"),
+        Req(HttpMethod.Post,  "/api/projects/{alpha}/tasks",        "UFNNAAFNN", _ => new { title = "   " }),
+        Get("/api/projects/{alpha}/labels",                         "UANNAAANN"),
+        Get("/api/tasks/{task}",                                    "UANNAAANN"),
+        Req(HttpMethod.Patch, "/api/tasks/{task}",                  "UFNNAAFNN", _ => new { }),
+        Req(HttpMethod.Put,   "/api/tasks/{task}/status",           "UFNNAAFNN", _ => new { status = "Bukan Status" }),
+        Req(HttpMethod.Put,   "/api/tasks/{task}/dates",            "UFNNAAFNN", _ => new { startDate = "2030-01-02", dueDate = "2030-01-01" }),
+        Req(HttpMethod.Put,   "/api/tasks/{task}/assignees",        "UFNNAAFNN", _ => new { userIds = new[] { Guid.NewGuid() } }),
+        Req(HttpMethod.Post,  "/api/tasks/{task}/subtasks",         "UFNNAAFNN", _ => new { title = "   " }),
     ];
 
     public static IEnumerable<object[]> Cases()
@@ -140,6 +150,7 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
             "DELETE /api/teams/{id}/members/{userId}", // merusak data; diuji di TeamTests
             "POST /api/projects/{id}/archive", // merusak data; diuji di ProjectTests
             "DELETE /api/projects/{id}/members/{userId}", // merusak data; diuji di ProjectMemberTests
+            "DELETE /api/tasks/{id}", // merusak data; diuji di TaskTests (semua peran)
         ];
 
         var routes = fx.App.Factory.Services.GetRequiredService<EndpointDataSource>().Endpoints

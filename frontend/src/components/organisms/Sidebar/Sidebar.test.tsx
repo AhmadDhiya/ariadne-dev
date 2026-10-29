@@ -18,6 +18,7 @@ const node = (
   rootId: parentId ? 'sen' : id,
   code: depth === 0 ? name.slice(0, 3).toUpperCase() : null,
   sortOrder,
+  taskCount: 0,
 })
 const PROJECTS = [
   node('sen', 'Sentul', 0, null),

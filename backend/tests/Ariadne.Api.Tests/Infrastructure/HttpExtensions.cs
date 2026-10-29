@@ -23,6 +23,9 @@ internal static class HttpExtensions
     public static Task<HttpResponseMessage> PatchApiAsync(this HttpClient client, string url, object body) =>
         client.PatchAsJsonAsync(Rel(url), body, Json, Ct);
 
+    public static Task<HttpResponseMessage> PutApiAsync(this HttpClient client, string url, object body) =>
+        client.PutAsJsonAsync(Rel(url), body, Json, Ct);
+
     public static Task<HttpResponseMessage> DeleteApiAsync(this HttpClient client, string url) => client.DeleteAsync(Rel(url), Ct);
 
     public static async Task<T> ReadAsync<T>(this HttpResponseMessage response)

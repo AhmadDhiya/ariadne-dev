@@ -40,7 +40,8 @@ public sealed record World(
     Guid ProjectAlpha,
     Guid ProjectAlphaChild,
     Guid ProjectAlphaGrandchild,
-    Guid ProjectBeta);
+    Guid ProjectBeta,
+    Guid TaskAlpha);
 
 /// <summary>
 /// Satu aplikasi uji (database sendiri) untuk satu kelas test. Setiap peran login sekali dan kliennya
@@ -137,10 +138,27 @@ public sealed class TestApp : IAsyncDisposable
             new ProjectMember { ProjectId = alpha.Id, UserId = member.Id, Role = ProjectRole.Anggota, AddedAt = now },
             new ProjectMember { ProjectId = alpha.Id, UserId = guest.Id, Role = ProjectRole.Tamu, AddedAt = now },
             new ProjectMember { ProjectId = beta.Id, UserId = otherManager.Id, Role = ProjectRole.Pengelola, AddedAt = now });
+        // Satu task di Alpha (nomor 1), dipegang Anggota; dipakai test izin dan test yang butuh task siap pakai
+        alpha.NextTaskNumber = 2;
+        var task = new ProjectTask
+        {
+            Id = Guid.NewGuid(),
+            ProjectId = alpha.Id,
+            RootProjectId = alpha.Id,
+            Number = 1,
+            Title = "Task contoh",
+            Status = WorkStatus.OnProgress,
+            Priority = Priority.Medium,
+            CreatedById = manager.Id,
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+        task.Assignees.Add(new TaskAssignee { TaskId = task.Id, UserId = member.Id });
+        db.Tasks.Add(task);
         await db.SaveChangesAsync();
 
         World = new World(admin, supervisor, otherSupervisor, member, manager, guest, outsider, otherManager,
-            teamA.Id, teamB.Id, alpha.Id, child.Id, grandchild.Id, beta.Id);
+            teamA.Id, teamB.Id, alpha.Id, child.Id, grandchild.Id, beta.Id, task.Id);
     }
 
     /// <summary>Klien yang tidak login (tetap membawa header anti-CSRF seperti frontend).</summary>

@@ -68,6 +68,13 @@ export function TeamMembersPanel({
         </span>
       ),
     },
+    {
+      key: 'active',
+      header: 'Task aktif',
+      width: 110,
+      align: 'right',
+      render: (m) => <span className="ar-teampanel-active">{m.activeTasks}</span>,
+    },
     ...(team.canManage
       ? [
           {

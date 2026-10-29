@@ -181,7 +181,12 @@ export function SettingsPage() {
         title="Buat proyek"
         description="Kode dipakai sebagai awalan ID task (mis. SEN-142) dan tidak bisa diubah nanti."
         fields={[
-          { name: 'name', label: 'Nama proyek', maxLength: 100, placeholder: 'mis. Sentul' },
+          {
+            name: 'name',
+            label: 'Nama proyek',
+            maxLength: 100,
+            placeholder: 'mis. Peluncuran Aplikasi',
+          },
           {
             name: 'code',
             label: 'Kode',

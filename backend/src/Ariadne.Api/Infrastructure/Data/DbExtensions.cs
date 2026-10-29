@@ -20,5 +20,10 @@ internal static class DbExtensions
         {
             throw new ConflictException(conflictMessage);
         }
+        catch (DbUpdateConcurrencyException)
+        {
+            // Baris diubah orang lain di antara dibaca dan disimpan (xmin berbeda): jangan menimpa diam-diam
+            throw new ConflictException("Data baru saja diubah orang lain. Muat ulang halaman lalu coba lagi.");
+        }
     }
 }
