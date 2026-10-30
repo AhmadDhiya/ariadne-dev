@@ -38,6 +38,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Mention> Mentions => Set<Mention>();
 
+    public DbSet<Milestone> Milestones => Set<Milestone>();
+
     private static readonly JsonSerializerOptions DataJson = new(JsonSerializerDefaults.Web)
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -203,6 +205,17 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             activity.HasOne<Project>().WithMany().HasForeignKey(a => a.RootProjectId).OnDelete(DeleteBehavior.Restrict);
             activity.HasOne(a => a.Author).WithMany().HasForeignKey(a => a.AuthorId).OnDelete(DeleteBehavior.Restrict);
             activity.HasQueryFilter(a => a.Task!.DeletedAt == null && a.DeletedAt == null);
+        });
+
+        builder.Entity<Milestone>(milestone =>
+        {
+            milestone.ToTable("milestones");
+            milestone.HasKey(m => m.Id);
+            milestone.Property(m => m.Name).HasMaxLength(100).IsRequired();
+            milestone.HasIndex(m => new { m.RootProjectId, m.Date });
+            milestone.HasIndex(m => m.ProjectId);
+            milestone.HasOne<Project>().WithMany().HasForeignKey(m => m.ProjectId).OnDelete(DeleteBehavior.Restrict);
+            milestone.HasOne<Project>().WithMany().HasForeignKey(m => m.RootProjectId).OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<Mention>(mention =>

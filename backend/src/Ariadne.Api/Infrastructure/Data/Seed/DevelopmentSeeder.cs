@@ -342,6 +342,7 @@ internal static partial class DevelopmentSeeder
         Add(sentul, smartclassroom, 127, "Uji koneksi tiap ruang kelas", Priority.Medium, WorkStatus.NotStarted, "2026-10-05", "2026-10-09", [bintang], ["QA"]);
         Add(sentul, smartclassroom, 128, "Pelatihan guru", Priority.Low, WorkStatus.NotStarted, "2026-10-12", "2026-10-16", [wiwiet], ["Konten"]);
         Add(sentul, smartclassroom, 129, "Dokumentasi instalasi", Priority.Low, WorkStatus.NotStarted, "2026-10-07", "2026-10-09", [galih], ["Dokumentasi"]);
+        Add(sentul, smartclassroom, 140, "Backup harian server kelas", Priority.Medium, WorkStatus.Rutin, "2026-09-14", "2026-12-31", [galih], ["Infra"]);
 
         // FAQ, Menagih Pihak Lain, Testing Oktober
         Add(sentul, faq, 130, "Penyusunan FAQ", Priority.Low, WorkStatus.NotStarted, "2026-10-01", "2026-10-07", [bintang], ["Konten"]);
@@ -378,6 +379,21 @@ internal static partial class DevelopmentSeeder
         var cutover = Add(migrasi, migrasi, 24, "Rencana cut-over", Priority.Medium, WorkStatus.NotStarted, "2026-10-05", "2026-10-09", [ahmad], ["Infra"]);
         Log(cutover, wiwiet, "2026-09-28T08:30", LogKind.TaskCreated, new ActivityData { Added = ["Ahmad"], AddedIds = [ahmad.Id] });
         migrasi.NextTaskNumber = 25;
+
+        // Milestone dari mockup 02 dan 04
+        void Milestone(Project root, Project project, string name, string date) =>
+            db.Milestones.Add(new Milestone
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = project.Id,
+                RootProjectId = root.Id,
+                Name = name,
+                Date = DateOnly.Parse(date, System.Globalization.CultureInfo.InvariantCulture),
+                CreatedAt = now,
+            });
+        Milestone(sentul, slms, "UAT SLMS", "2026-10-05");
+        Milestone(sentul, sentul, "Go-Live Sentul", "2026-10-30");
+        Milestone(migrasi, migrasi, "Freeze jaringan", "2026-10-07");
 
         return timeline;
     }

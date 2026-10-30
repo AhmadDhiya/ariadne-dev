@@ -1,4 +1,5 @@
 using Ariadne.Api.Domain;
+using Ariadne.Api.Features.Milestones;
 using Ariadne.Api.Features.Tasks;
 
 namespace Ariadne.Api.Features.Dashboard;
@@ -62,7 +63,7 @@ public sealed record TimelineTask(
     bool IsOverdue,
     IReadOnlyList<string> Path);
 
-public sealed record TimelineGroup(Guid ProjectId, string Name, string Code, IReadOnlyList<TimelineTask> Tasks);
+public sealed record TimelineGroup(Guid ProjectId, string Name, string Code, IReadOnlyList<TimelineTask> Tasks, IReadOnlyList<MilestoneItem> Milestones);
 
 /// <summary>Timeline pribadi: rentang tanggal sesuai zoom, task per proyek, dan beban kerja (task aktif) per hari.</summary>
 public sealed record TimelineResponse(

@@ -312,6 +312,21 @@ public sealed class DashboardTests(FakeTodayWorldFixture fx) : IClassFixture<Fak
     }
 
     [Fact]
+    public async Task The_timeline_shows_the_milestones_of_my_projects_that_fall_in_the_range()
+    {
+        var w = await NewWorkerAsync();
+        await MineAsync(w, "ada", "2026-09-24", "2026-10-02");
+        await w.Site.Manager.PostApiAsync($"/api/projects/{w.Site.Root}/milestones", new { name = "UAT", date = "2026-10-05" });
+        await w.Site.Manager.PostApiAsync($"/api/projects/{w.Site.Root}/milestones", new { name = "Di luar rentang", date = "2027-03-01" });
+        var elsewhere = await TaskKit.NewSiteAsync(App, W);
+        await elsewhere.Manager.PostApiAsync($"/api/projects/{elsewhere.Root}/milestones", new { name = "Proyek orang lain", date = "2026-10-05" });
+
+        var group = Assert.Single((await TimelineAsync(w.Client)).Groups);
+
+        Assert.Equal(["UAT"], group.Milestones.Select(m => m.Name));
+    }
+
+    [Fact]
     public async Task An_unknown_zoom_is_rejected()
     {
         var w = await NewWorkerAsync();

@@ -42,7 +42,8 @@ public sealed record World(
     Guid ProjectAlphaGrandchild,
     Guid ProjectBeta,
     Guid TaskAlpha,
-    Guid ActivityAlpha);
+    Guid ActivityAlpha,
+    Guid MilestoneAlpha);
 
 /// <summary>
 /// Satu aplikasi uji (database sendiri) untuk satu kelas test. Setiap peran login sekali dan kliennya
@@ -168,10 +169,12 @@ public sealed class TestApp : IAsyncDisposable
             CreatedAt = now,
         };
         db.Activities.Add(comment);
+        var milestone = new Milestone { Id = Guid.NewGuid(), ProjectId = alpha.Id, RootProjectId = alpha.Id, Name = "Milestone contoh", Date = new DateOnly(2030, 1, 1), CreatedAt = now };
+        db.Milestones.Add(milestone);
         await db.SaveChangesAsync();
 
         World = new World(admin, supervisor, otherSupervisor, member, manager, guest, outsider, otherManager,
-            teamA.Id, teamB.Id, alpha.Id, child.Id, grandchild.Id, beta.Id, task.Id, comment.Id);
+            teamA.Id, teamB.Id, alpha.Id, child.Id, grandchild.Id, beta.Id, task.Id, comment.Id, milestone.Id);
     }
 
     /// <summary>Klien yang tidak login (tetap membawa header anti-CSRF seperti frontend).</summary>

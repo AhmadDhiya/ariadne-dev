@@ -34,6 +34,7 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
         .Replace("{alpha}", w.ProjectAlpha.ToString(), StringComparison.Ordinal)
         .Replace("{task}", w.TaskAlpha.ToString(), StringComparison.Ordinal)
         .Replace("{activity}", w.ActivityAlpha.ToString(), StringComparison.Ordinal)
+        .Replace("{milestone}", w.MilestoneAlpha.ToString(), StringComparison.Ordinal)
         .Replace("{member}", w.Member.Id.ToString(), StringComparison.Ordinal)
         .Replace("{outsider}", w.Outsider.Id.ToString(), StringComparison.Ordinal);
 
@@ -73,6 +74,11 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
         // Komentar biasa boleh ditulis Tamu; Update dan Internal tidak (diuji per jenis di ActivityTests)
         Req(HttpMethod.Post,  "/api/tasks/{task}/activities",       "UFNNAAANN", _ => new { kind = "Comment", body = "   " }),
         // Hanya penulis (Anggota) yang boleh mengubah; yang bisa melihat tetapi bukan penulis mendapat 403
+        // Milestone: semua anggota melihat; hanya Pengelola dan Admin yang mengelola (Admin boleh walau bukan anggota)
+        Get("/api/projects/{alpha}/milestones",                     "UANNAAANN"),
+        Req(HttpMethod.Post,  "/api/projects/{alpha}/milestones",   "UANNFAFNN", _ => new { name = "   " }),
+        Req(HttpMethod.Patch, "/api/milestones/{milestone}",        "UANNFAFNN", _ => new { }),
+        Get("/api/projects/{alpha}/gantt",                          "UANNAAANN"),
         // Dashboard dan pencarian milik pengguna yang login sendiri: hasilnya hanya yang boleh ia lihat (diuji di DashboardTests dan SearchTests)
         Get("/api/dashboard",                                       "UAAAAAAAA"),
         Get("/api/dashboard/timeline",                              "UAAAAAAAA"),
@@ -162,6 +168,7 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
             "DELETE /api/projects/{id}/members/{userId}", // merusak data; diuji di ProjectMemberTests
             "DELETE /api/tasks/{id}", // merusak data; diuji di TaskTests (semua peran)
             "DELETE /api/tasks/{id}/activities/{activityId}", // merusak data; diuji di ActivityTests (semua peran)
+            "DELETE /api/milestones/{id}", // merusak data; diuji di MilestoneTests (semua peran)
         ];
 
         var routes = fx.App.Factory.Services.GetRequiredService<EndpointDataSource>().Endpoints

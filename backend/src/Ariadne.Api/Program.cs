@@ -2,7 +2,9 @@ using System.Text.Json.Serialization;
 using Ariadne.Api.Auth;
 using Ariadne.Api.Features.Auth;
 using Ariadne.Api.Features.Dashboard;
+using Ariadne.Api.Features.Gantt;
 using Ariadne.Api.Features.Health;
+using Ariadne.Api.Features.Milestones;
 using Ariadne.Api.Features.Projects;
 using Ariadne.Api.Features.Search;
 using Ariadne.Api.Features.Tasks;
@@ -45,6 +47,8 @@ app.MapTaskEndpoints();
 app.MapActivityEndpoints();
 app.MapDashboardEndpoints();
 app.MapSearchEndpoints();
+app.MapMilestoneEndpoints();
+app.MapGanttEndpoints();
 
 await app.MigrateDatabaseIfConfiguredAsync();
 await app.CreateIfConfiguredAsync();
