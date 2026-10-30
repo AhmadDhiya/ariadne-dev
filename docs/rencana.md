@@ -735,3 +735,29 @@ Atas permintaan Ahmad: update, komentar, dan catatan internal bisa diubah dan di
 **Pembuktian:** 16 test baru (backend); empat aturan dirusak sengaja (penulis saja, Pengelola saja yang boleh menghapus tulisan orang lain, Internal tidak terlihat Tamu, hapus = sembunyikan) dan test-nya gagal seperti seharusnya. Test browser mencakup ubah, batal hapus, hapus, dan sudut pandang Tamu.
 
 **Belum dilakukan:** riwayat versi tulisan (yang lama tidak bisa dilihat lagi).
+
+### Fase 5 (30 Oktober 2026)
+
+**Yang dibuat:** dashboard pribadi (mockup 02, terang dan gelap): sapaan menurut jam Jakarta, empat kartu ringkasan yang bisa diklik untuk menyaring daftar, daftar "Hari Ini" (Terlambat, Jatuh tempo hari ini, Sedang berjalan, urut prioritas) dengan ubah status dan "Tambah update" langsung dari baris, panel "Perlu perhatian", "Timeline saya" (Gantt pribadi lintas proyek, zoom Hari/Minggu/Bulan) dengan baris "Beban kerja saya", tombol "Tambah task" (pilih proyek dulu), dan pencarian global di topbar (task, proyek, orang; tombol `/`). Tema terang/gelap yang tersimpan di akun sudah ada sejak Fase 2.
+
+**Aturan yang dipakai (semuanya dihitung di server, `Domain/TaskRules`, dengan test unit)**
+- Semua yang tampil adalah task yang saya menjadi PIC-nya, belum Done, di proyek yang belum diarsipkan (sub-task ikut, karena bisa punya PIC sendiri). Tidak ada parameter "pengguna": dashboard orang lain tidak bisa dibuka lewat endpoint ini (dashboard anggota untuk supervisor: Fase 7).
+- Kartu: Terlambat; Jatuh tempo minggu ini (hari ini s.d. Jumat, belum Done); Sedang dikerjakan (On Progress + Fixing); Tertahan (Blocked + On Hold + On Request). Kartu yang diklik hanya menyaring daftar; angka di semua kartu tetap dihitung dari seluruh task saya.
+- Hari Ini: Terlambat → jatuh tempo hari ini → sedang berjalan (mulai ≤ hari ini). **Keputusan saya:** task tanpa tanggal mulai tetapi punya tenggat dianggap sudah berjalan; task tanpa tanggal sama sekali tidak masuk daftar. Saat daftar disaring kartu, kelompok "Mendatang" (belum mulai) ikut tampil supaya task tertahan yang belum mulai tidak "hilang".
+- Beban kerja: jumlah task aktif per hari (mulai ≤ hari ≤ selesai, bukan Done, Rutin ikut); task dengan satu tanggal dihitung di hari itu saja. Akhir pekan dihitung juga bila ada task yang melintasinya (di mockup semua angka akhir pekan 0; kami mengikuti definisi di domain.md).
+- Rentang timeline: Hari 21 hari (7 sebelum hari ini), Minggu 10 pekan (mulai Senin pekan lalu), Bulan 210 hari (mulai tanggal 1 bulan lalu). Lebar per hari 40/12/4 px.
+
+**Perbedaan dari rencana dan mockup (sengaja)**
+- "Perlu perhatian" dihitung dari data yang ada (di-mention, ditugaskan orang lain lewat catatan otomatis, tenggat besok, terlambat; 14 hari terakhir, maksimal 8 butir), **bukan** dari tabel notifikasi (Fase 9), jadi belum ada tanda "sudah dibaca" dan tautan "Lihat semua" belum ditampilkan; tombol lonceng dan badge juga menunggu Fase 9. Hak melihat diperiksa lagi saat membaca: orang yang sudah dikeluarkan dari proyek, atau kini hanya Tamu, tidak melihat kutipan (apalagi dari catatan Internal).
+- Membuat task dengan PIC awal kini tercatat di catatan "membuat task ini dan menugaskan …" (satu entri, dengan id orangnya), dasar butir "ditugaskan" di atas. Task yang dibuat sebelum Fase 5 tidak punya data itu.
+- Milestone di Timeline saya belum ada (tabelnya Fase 6). Panah/dependensi tidak dibuat (di luar MVP).
+- ID task tidak diberi angka nol di depan ("MDC-18", bukan "MDC-018" seperti mockup): ID adalah kode + nomor berjalan. Data contoh Migrasi Data Center diganti agar cocok dengan dashboard di mockup (MDC-18, MDC-21, MDC-24).
+- "Tambah update" dari baris memakai dialog kecil tanpa @mention; untuk komentar, catatan internal, dan @mention buka drawer (klik judul).
+- Pencarian orang membuka tabel proyek bersama yang disaring ke PIC itu (nama proyek pertama menurut abjad bila ada beberapa). Pencarian hanya menampilkan task dan proyek yang boleh dilihat pemanggil (Admin: semua); orang hanya rekan di proyek yang sama; Tamu tidak mencari orang; email tidak pernah ikut.
+- Gantt dibuat sebagai komponen `GanttChart` yang bisa dipakai ulang di Fase 6 dan 7.
+
+**Pembuktian:** test unit aturan (kelompok Hari Ini, aktif per hari, beban kerja, sapaan), test API dashboard (hanya milik saya, urutan, kartu, saringan, arsip, perlu perhatian, izin saat peran berubah), test pencarian (proyek orang lain, arsip, Tamu, wildcard), matriks izin untuk tiga endpoint baru, dan test browser (data contoh Ahmad, kartu, status, "Tambah update", "Tambah task", zoom, pencarian, Tamu) dengan screenshot terang dan gelap.
+
+**Belum dilakukan:** uji beban dengan data seed ×10 (butir E7); tampilan layar kecil (Fase 10); lonceng dan halaman notifikasi (Fase 9).
+
+**Paket baru:** tidak ada.

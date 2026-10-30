@@ -73,6 +73,10 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
         // Komentar biasa boleh ditulis Tamu; Update dan Internal tidak (diuji per jenis di ActivityTests)
         Req(HttpMethod.Post,  "/api/tasks/{task}/activities",       "UFNNAAANN", _ => new { kind = "Comment", body = "   " }),
         // Hanya penulis (Anggota) yang boleh mengubah; yang bisa melihat tetapi bukan penulis mendapat 403
+        // Dashboard dan pencarian milik pengguna yang login sendiri: hasilnya hanya yang boleh ia lihat (diuji di DashboardTests dan SearchTests)
+        Get("/api/dashboard",                                       "UAAAAAAAA"),
+        Get("/api/dashboard/timeline",                              "UAAAAAAAA"),
+        Get("/api/search?q=alpha",                                  "UAAAAAAAA"),
         Req(HttpMethod.Patch, "/api/tasks/{task}/activities/{activity}", "UFNNAFFNN", _ => new { body = "   " }),
     ];
 

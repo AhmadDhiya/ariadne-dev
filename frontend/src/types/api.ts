@@ -250,3 +250,122 @@ export interface LabelItem {
   id: string
   name: string
 }
+
+// ---------- Dashboard pribadi ----------
+
+export type DashboardCard = 'terlambat' | 'minggu' | 'dikerjakan' | 'tertahan'
+export type TodayGroupName = 'Overdue' | 'DueToday' | 'InProgress' | 'Upcoming'
+
+export interface DashboardSummary {
+  late: number
+  lateByPriority: { priority: PriorityName; count: number }[]
+  dueThisWeek: number
+  /** Jumat pekan ini ("YYYY-MM-DD"). */
+  weekEnd: string
+  inProgress: number
+  inProgressProjects: number
+  held: number
+  heldByStatus: { status: WorkStatusName; count: number }[]
+}
+
+export interface DashboardTask {
+  task: TaskRow
+  /** Nama proyek dari root sampai tempat task berada. */
+  path: string[]
+}
+
+export interface DashboardGroup {
+  kind: TodayGroupName
+  tasks: DashboardTask[]
+}
+
+export type AttentionKind = 'Mention' | 'Assigned' | 'DueTomorrow' | 'Overdue'
+
+export interface AttentionItem {
+  kind: AttentionKind
+  taskKey: string
+  taskTitle: string
+  actorName: string | null
+  detail: string | null
+  at: string | null
+  startDate: string | null
+  dueDate: string | null
+  lateDays: number
+}
+
+export interface ProjectOption {
+  id: string
+  name: string
+  code: string
+}
+
+export interface DashboardResponse {
+  today: string
+  dayPart: 'pagi' | 'siang' | 'sore' | 'malam'
+  summary: DashboardSummary
+  card: DashboardCard | null
+  groups: DashboardGroup[]
+  attention: AttentionItem[]
+  editableProjects: ProjectOption[]
+}
+
+export type TimelineZoom = 'day' | 'week' | 'month'
+
+export interface TimelineTask {
+  id: string
+  key: string
+  title: string
+  status: WorkStatusName
+  priority: PriorityName
+  startDate: string | null
+  dueDate: string | null
+  isOverdue: boolean
+  path: string[]
+}
+
+export interface TimelineGroup {
+  projectId: string
+  name: string
+  code: string
+  tasks: TimelineTask[]
+}
+
+export interface TimelineResponse {
+  zoom: TimelineZoom
+  start: string
+  dayCount: number
+  today: string
+  groups: TimelineGroup[]
+  /** Task aktif per hari, mulai dari `start`. */
+  workload: number[]
+}
+
+// ---------- Pencarian global ----------
+
+export interface SearchTask {
+  id: string
+  key: string
+  title: string
+  status: WorkStatusName
+  projectId: string
+  path: string
+}
+
+export interface SearchProject {
+  id: string
+  name: string
+  path: string
+}
+
+export interface SearchPerson {
+  id: string
+  name: string
+  projectId: string
+  projectName: string
+}
+
+export interface SearchResults {
+  tasks: SearchTask[]
+  projects: SearchProject[]
+  people: SearchPerson[]
+}

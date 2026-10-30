@@ -43,8 +43,16 @@ function assignees(data: ActivityData): string {
 export function logLine(item: Pick<ActivityItem, 'logKind' | 'data'>): LogLine {
   const data = item.data ?? {}
   switch (item.logKind) {
-    case 'TaskCreated':
-      return { text: 'membuat task ini', icon: 'plus' }
+    case 'TaskCreated': {
+      const people = data.added ?? []
+      return {
+        text:
+          people.length > 0
+            ? `membuat task ini dan menugaskan ${joinNames(people)}`
+            : 'membuat task ini',
+        icon: 'plus',
+      }
+    }
     case 'StatusChanged':
       return {
         text: `mengubah status ${statusLabel(data.from)} → ${statusLabel(data.to)}`,

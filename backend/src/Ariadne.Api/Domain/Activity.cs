@@ -96,10 +96,13 @@ public sealed record ActivityData
     /// <summary>StatusChanged ke status tertahan: alasan yang dicatat.</summary>
     public string? Reason { get; init; }
 
-    /// <summary>AssigneesChanged: nama PIC yang ditambahkan dan dicopot.</summary>
+    /// <summary>AssigneesChanged: nama PIC yang ditambahkan dan dicopot. TaskCreated: PIC awal (di Added).</summary>
     public IReadOnlyList<string>? Added { get; init; }
 
     public IReadOnlyList<string>? Removed { get; init; }
+
+    /// <summary>AssigneesChanged: id orang yang ditambahkan (untuk "task baru ditugaskan ke saya"; nama bisa kembar).</summary>
+    public IReadOnlyList<Guid>? AddedIds { get; init; }
 
     /// <summary>DatesChanged: tanggal (yyyy-MM-dd) sebelum dan sesudah; null = kosong.</summary>
     public string? FromStart { get; init; }

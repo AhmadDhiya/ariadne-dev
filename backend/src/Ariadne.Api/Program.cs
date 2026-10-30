@@ -1,8 +1,10 @@
 using System.Text.Json.Serialization;
 using Ariadne.Api.Auth;
 using Ariadne.Api.Features.Auth;
+using Ariadne.Api.Features.Dashboard;
 using Ariadne.Api.Features.Health;
 using Ariadne.Api.Features.Projects;
+using Ariadne.Api.Features.Search;
 using Ariadne.Api.Features.Tasks;
 using Ariadne.Api.Features.Teams;
 using Ariadne.Api.Features.Users;
@@ -41,6 +43,8 @@ app.MapTeamEndpoints();
 app.MapProjectEndpoints();
 app.MapTaskEndpoints();
 app.MapActivityEndpoints();
+app.MapDashboardEndpoints();
+app.MapSearchEndpoints();
 
 await app.MigrateDatabaseIfConfiguredAsync();
 await app.CreateIfConfiguredAsync();
