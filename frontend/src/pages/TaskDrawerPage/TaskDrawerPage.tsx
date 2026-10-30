@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useLocation } from 'react-router'
-import { useCreateActivity, useTaskActivities } from '@/api/activities'
+import {
+  useCreateActivity,
+  useDeleteActivity,
+  useTaskActivities,
+  useUpdateActivity,
+} from '@/api/activities'
+import { useMe } from '@/api/auth'
 import { ApiError } from '@/api/client'
 import { fieldErrorsOf, messageOf } from '@/api/errors'
 import { useProjectMembers, useProjectTree } from '@/api/projects'
@@ -25,6 +31,7 @@ import { useToast } from '@/hooks/useToast'
 import { isHeld, statusToApi, type HeldStatusKey, type StatusKey } from '@/lib/status'
 import { toTaskPayload } from '@/lib/taskForm'
 import { projectOptions } from '@/lib/taskGroups'
+import type { ActivityItem } from '@/types/api'
 
 /**
  * Drawer detail task, dibuka dari halaman mana pun lewat ?task=SEN-115 (tabel proyek sekarang, dashboard nanti).
@@ -44,6 +51,9 @@ export function TaskDrawerPage() {
   const saveTask = useSaveTask()
   const setStatus = useSetTaskStatus()
   const createActivity = useCreateActivity()
+  const updateActivity = useUpdateActivity()
+  const deleteActivity = useDeleteActivity()
+  const me = useMe().data
   const createSubtask = useCreateSubtask()
   const deleteTask = useDeleteTask()
   const [hold, setHold] = useState<HeldStatusKey | null>(null)
@@ -66,6 +76,8 @@ export function TaskDrawerPage() {
     saveTask.reset()
     setStatus.reset()
     createActivity.reset()
+    updateActivity.reset()
+    deleteActivity.reset()
     open(next)
   }
 
@@ -73,6 +85,8 @@ export function TaskDrawerPage() {
     saveTask.reset()
     setStatus.reset()
     createActivity.reset()
+    updateActivity.reset()
+    deleteActivity.reset()
     close()
   }
 
@@ -113,6 +127,14 @@ export function TaskDrawerPage() {
     })
   }
 
+  // Penulis mengubah dan menghapus tulisannya sendiri (selama masih boleh menulis jenis itu); Pengelola boleh menghapus tulisan siapa pun
+  const isManager = people.some((p) => p.id === me?.id && p.role === 'Pengelola')
+  function permissionsOf(item: ActivityItem) {
+    const mayWrite = item.kind === 'Comment' ? detail.data?.canComment : detail.data?.canEdit
+    const canEdit = Boolean(mayWrite) && item.authorId === me?.id
+    return { canEdit, canDelete: canEdit || isManager }
+  }
+
   async function copyLink() {
     if (!task) return
     const url = `${window.location.origin}${location.pathname}?task=${task.key}`
@@ -151,6 +173,22 @@ export function TaskDrawerPage() {
           hasMore: activities.hasNextPage,
           loadingMore: activities.isFetchingNextPage,
           onLoadMore: () => void activities.fetchNextPage(),
+          people,
+          permissionsOf,
+          onEdit: (item, body, mentionUserIds) =>
+            updateActivity.mutateAsync({
+              taskId: task?.id ?? '',
+              activityId: item.id,
+              body,
+              mentionUserIds,
+            }),
+          onDelete: (item) =>
+            deleteActivity.mutateAsync({ taskId: task?.id ?? '', activityId: item.id }),
+          entryError: updateActivity.isError
+            ? messageOf(updateActivity.error)
+            : deleteActivity.isError
+              ? messageOf(deleteActivity.error)
+              : undefined,
         }}
         fieldErrors={{ ...saveFieldErrors, ...statusFieldErrors }}
         formError={formError}

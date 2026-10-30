@@ -104,6 +104,7 @@ const entry = (over: Partial<ActivityItem>): ActivityItem => ({
   logKind: null,
   data: null,
   createdAt: '2026-09-28T02:12:00Z',
+  editedAt: null,
   ...over,
 })
 
@@ -231,7 +232,19 @@ export function Phase4Organisms() {
     <>
       <Demo name="ActivityTimeline" note={EXTRA} column surface>
         <div style={{ width: 460 }}>
-          <ActivityTimeline items={ITEMS} today="2026-09-28" hasMore onLoadMore={noop} />
+          <ActivityTimeline
+            items={ITEMS}
+            today="2026-09-28"
+            hasMore
+            onLoadMore={noop}
+            people={PEOPLE}
+            permissionsOf={(item) => ({
+              canEdit: item.authorName === 'Syaikhan',
+              canDelete: item.authorName === 'Syaikhan',
+            })}
+            onEdit={resolved}
+            onDelete={resolved}
+          />
         </div>
       </Demo>
       <Demo name="CommentComposer" note={EXTRA} column surface>

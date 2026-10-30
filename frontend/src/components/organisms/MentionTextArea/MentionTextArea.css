@@ -1,0 +1,13 @@
+.ar-mentionarea {
+  position: relative;
+}
+.ar-mentionarea .ar-textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+.ar-mentionarea-popup {
+  position: absolute;
+  z-index: 30;
+  left: var(--space-6);
+  bottom: calc(100% + var(--space-1));
+}

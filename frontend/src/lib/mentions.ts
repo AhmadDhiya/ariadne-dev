@@ -17,6 +17,11 @@ export interface MentionToken {
 
 const MAX_QUERY = 30
 
+/** Catatan Internal tidak boleh menandai Tamu: Tamu akan tahu ada catatan yang tidak boleh ia lihat. */
+export function withoutGuests<T extends { role: string }>(people: readonly T[]): T[] {
+  return people.filter((p) => p.role !== 'Tamu')
+}
+
 /**
  * "@" yang sedang diketik di dekat kursor, bila ada: "@" harus di awal teks atau setelah spasi/baris baru
  * (jadi alamat email tidak memunculkan daftar), dan antara "@" dan kursor tidak boleh ada baris baru.
@@ -61,13 +66,21 @@ export function insertMention(
   }
 }
 
-/** Hanya yang namanya masih tertulis sebagai "@Nama" di teks akhir (orang bisa menghapusnya setelah memilih). */
-export function mentionedIn(text: string, picks: readonly MentionCandidate[]): string[] {
-  return [...new Set(picks.filter((p) => hasMention(text, p.name)).map((p) => p.id))]
-}
-
-function hasMention(text: string, name: string): boolean {
-  return splitMentions(text, [name]).some((part) => part.mention)
+/**
+ * Orang yang "@Nama"-nya tertulis di teks akhir (orang bisa menghapus atau mengetiknya sendiri setelah memilih).
+ * Dibaca dari teksnya, bukan dari pilihan di daftar, jadi mengubah komentar lama juga benar. "@Pak Budi" hanya menandai
+ * Pak Budi, bukan "Pak".
+ */
+export function mentionedIn(text: string, people: readonly MentionCandidate[]): string[] {
+  const written = new Set(
+    splitMentions(
+      text,
+      people.map((p) => p.name),
+    )
+      .filter((part) => part.mention)
+      .map((part) => part.text),
+  )
+  return [...new Set(people.filter((p) => written.has(p.name)).map((p) => p.id))]
 }
 
 export interface TextPart {

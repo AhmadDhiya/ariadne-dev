@@ -12,12 +12,12 @@ Istilah yang sering muncul:
 
 ## Kondisi mesin saat ini
 
-| Alat | Status |
-|---|---|
-| Node.js | v24.16 terpasang |
-| Docker | 29.5 terpasang |
-| .NET SDK | 10.0.401 (LTS) terpasang lewat winget |
-| Git | repo sudah dibuat (`git init`), belum ada commit dan belum ada remote |
+| Alat     | Status                                                                |
+| -------- | --------------------------------------------------------------------- |
+| Node.js  | v24.16 terpasang                                                      |
+| Docker   | 29.5 terpasang                                                        |
+| .NET SDK | 10.0.401 (LTS) terpasang lewat winget                                 |
+| Git      | repo sudah dibuat (`git init`), belum ada commit dan belum ada remote |
 
 ---
 
@@ -72,11 +72,11 @@ ariadne/
 
 **Isi `docker compose up`:**
 
-| Layanan | Isi |
-|---|---|
-| `db` | PostgreSQL 17, data disimpan di volume |
-| `api` | backend .NET; saat start menjalankan migrasi dan (di mode dev) seed |
-| `web` | nginx berisi hasil build frontend, dibuka di port 18080 |
+| Layanan   | Isi                                                                                                      |
+| --------- | -------------------------------------------------------------------------------------------------------- |
+| `db`      | PostgreSQL 17, data disimpan di volume                                                                   |
+| `api`     | backend .NET; saat start menjalankan migrasi dan (di mode dev) seed                                      |
+| `web`     | nginx berisi hasil build frontend, dibuka di port 18080                                                  |
 | `mailpit` | "kotak surat palsu" untuk melihat email yang dikirim aplikasi saat pengembangan (http://localhost:18025) |
 
 ---
@@ -88,70 +88,79 @@ Semua ID memakai UUID. Status, prioritas, dan peran disimpan sebagai teks (`'OnP
 ### Pengguna dan tim
 
 **users** (tabel pengguna dari ASP.NET Core Identity, ditambah kolom kita)
-| Kolom | Keterangan |
-|---|---|
-| id, email, password_hash, … | kolom standar Identity |
-| display_name | "Wiwiet" |
-| is_admin | admin aplikasi |
-| theme | `light` / `dark` / kosong (ikuti sistem) |
-| is_active | nonaktifkan tanpa menghapus |
-| created_at | |
+
+| Kolom                       | Keterangan                               |
+| --------------------------- | ---------------------------------------- |
+| id, email, password_hash, … | kolom standar Identity                   |
+| display_name                | "Wiwiet"                                 |
+| is_admin                    | admin aplikasi                           |
+| theme                       | `light` / `dark` / kosong (ikuti sistem) |
+| is_active                   | nonaktifkan tanpa menghapus              |
+| created_at                  |                                          |
 
 **teams**: id, name, created_at
 
 **team_members**: team_id → teams, user_id → users, role (`Supervisor` / `Anggota`)
+
 - kunci utama (team_id, user_id); index user_id (untuk "tim saya")
 
 ### Proyek
 
 **projects**
-| Kolom | Keterangan |
-|---|---|
-| id | |
-| parent_id → projects | kosong untuk proyek root |
-| root_id → projects | proyek root-nya (untuk dirinya sendiri = id sendiri). Mempercepat cek izin karena izin berlaku per proyek root |
-| depth | 0, 1, atau 2 (maksimal 3 level; dicek di API dan di database) |
-| name | "SLMS" |
-| code | hanya untuk root, unik: `SEN`, `MDC` |
-| next_task_number | hanya untuk root: nomor berikutnya untuk `SEN-146` |
-| sort_order | urutan di sidebar |
-| archived_at | arsip, bukan hapus |
+
+| Kolom                | Keterangan                                                                                                     |
+| -------------------- | -------------------------------------------------------------------------------------------------------------- |
+| id                   |                                                                                                                |
+| parent_id → projects | kosong untuk proyek root                                                                                       |
+| root_id → projects   | proyek root-nya (untuk dirinya sendiri = id sendiri). Mempercepat cek izin karena izin berlaku per proyek root |
+| depth                | 0, 1, atau 2 (maksimal 3 level; dicek di API dan di database)                                                  |
+| name                 | "SLMS"                                                                                                         |
+| code                 | hanya untuk root, unik: `SEN`, `MDC`                                                                           |
+| next_task_number     | hanya untuk root: nomor berikutnya untuk `SEN-146`                                                             |
+| sort_order           | urutan di sidebar                                                                                              |
+| archived_at          | arsip, bukan hapus                                                                                             |
+
 - index parent_id, root_id
 
 **project_members**: project_id (root) → projects, user_id → users, role (`Pengelola` / `Anggota` / `Tamu`), added_at
+
 - kunci utama (project_id, user_id); index user_id
 
 **invitations**
-| Kolom | Keterangan |
-|---|---|
-| id, project_id (root), email, role | |
-| token_hash | token di tautan email; yang disimpan hanya hash-nya |
-| message | pesan opsional |
-| invited_by → users, created_at, expires_at | kedaluwarsa (usul: 14 hari) |
-| status | `Menunggu` / `Diterima` / `Dibatalkan` |
-| accepted_user_id → users | |
+
+| Kolom                                      | Keterangan                                          |
+| ------------------------------------------ | --------------------------------------------------- |
+| id, project_id (root), email, role         |                                                     |
+| token_hash                                 | token di tautan email; yang disimpan hanya hash-nya |
+| message                                    | pesan opsional                                      |
+| invited_by → users, created_at, expires_at | kedaluwarsa (usul: 14 hari)                         |
+| status                                     | `Menunggu` / `Diterima` / `Dibatalkan`              |
+| accepted_user_id → users                   |                                                     |
+
 - index unik token_hash; index (project_id, status)
 
 ### Task
 
 **tasks**
-| Kolom | Keterangan |
-|---|---|
-| id | |
-| project_id → projects | sub-proyek tempat task berada |
-| root_project_id → projects | untuk izin dan nomor |
-| number | 115 → ditampilkan `SEN-115`; unik per (root_project_id, number) |
-| parent_task_id → tasks | sub-task, hanya 1 level (sub-task tidak boleh punya sub-task) |
-| title, description | |
-| status | 8 status |
-| priority | `Critical` / `High` / `Medium` / `Low` |
-| start_date, due_date | tanggal |
-| hold_reason | wajib jika status tertahan |
-| waiting_on_user_id → users / waiting_on_text | "Manto" atau "Klien, tim IT" |
-| held_since | diisi otomatis saat masuk status tertahan |
-| sort_order | urutan di tabel |
-| created_by, created_at, updated_at | |
-| deleted_at | hapus = disembunyikan (lihat Keputusan 10) |
+
+| Kolom                                        | Keterangan                                                      |
+| -------------------------------------------- | --------------------------------------------------------------- |
+| id                                           |                                                                 |
+| project_id → projects                        | sub-proyek tempat task berada                                   |
+| root_project_id → projects                   | untuk izin dan nomor                                            |
+| number                                       | 115 → ditampilkan `SEN-115`; unik per (root_project_id, number) |
+| parent_task_id → tasks                       | sub-task, hanya 1 level (sub-task tidak boleh punya sub-task)   |
+| title, description                           |                                                                 |
+| status                                       | 8 status                                                        |
+| priority                                     | `Critical` / `High` / `Medium` / `Low`                          |
+| start_date, due_date                         | tanggal                                                         |
+| hold_reason                                  | wajib jika status tertahan                                      |
+| waiting_on_user_id → users / waiting_on_text | "Manto" atau "Klien, tim IT"                                    |
+| held_since                                   | diisi otomatis saat masuk status tertahan                       |
+| sort_order                                   | urutan di tabel                                                 |
+| created_by, created_at, updated_at           |                                                                 |
+| deleted_at                                   | hapus = disembunyikan (lihat Keputusan 10)                      |
+
 - index (project_id), (root_project_id, number) unik, (parent_task_id), (due_date), (status)
 
 **task_assignees** (PIC): task_id, user_id; kunci utama keduanya; index user_id
@@ -165,23 +174,27 @@ Semua ID memakai UUID. Status, prioritas, dan peran disimpan sebagai teks (`'OnP
 ### Aktivitas dan notifikasi
 
 **activities**
-| Kolom | Keterangan |
-|---|---|
-| id, task_id, author_id (kosong untuk log sistem), created_at | |
-| kind | `Update` / `Comment` / `Internal` / `Log` |
-| body | teks komentar/update |
-| log_type | untuk `Log`: `Created`, `SubtaskAdded`, `StatusChanged`, `AssigneesChanged`, `Moved`, `DatesChanged` |
-| data (jsonb) | data terstruktur log, mis. `{"from":"OnProgress","to":"Blocked","holdReason":"…"}` |
+
+| Kolom                                                        | Keterangan                                                                                           |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| id, task_id, author_id (kosong untuk log sistem), created_at |                                                                                                      |
+| kind                                                         | `Update` / `Comment` / `Internal` / `Log`                                                            |
+| body                                                         | teks komentar/update                                                                                 |
+| log_type                                                     | untuk `Log`: `Created`, `SubtaskAdded`, `StatusChanged`, `AssigneesChanged`, `Moved`, `DatesChanged` |
+| data (jsonb)                                                 | data terstruktur log, mis. `{"from":"OnProgress","to":"Blocked","holdReason":"…"}`                   |
+
 - index (task_id, created_at), (task_id, kind, created_at) untuk "Update terakhir"
 
 **mentions**: activity_id, user_id; kunci utama keduanya; index user_id
 
 **notifications**
-| Kolom | Keterangan |
-|---|---|
-| id, recipient_id, kind, task_id, actor_id, activity_id | kind: `Mention`, `Assigned`, `Moved`, `DueTomorrow`, `Overdue` |
-| created_at, read_at, emailed_at | |
-| dedupe_key | mencegah notifikasi "tenggat besok"/"terlambat" dobel di hari yang sama |
+
+| Kolom                                                  | Keterangan                                                              |
+| ------------------------------------------------------ | ----------------------------------------------------------------------- |
+| id, recipient_id, kind, task_id, actor_id, activity_id | kind: `Mention`, `Assigned`, `Moved`, `DueTomorrow`, `Overdue`          |
+| created_at, read_at, emailed_at                        |                                                                         |
+| dedupe_key                                             | mencegah notifikasi "tenggat besok"/"terlambat" dobel di hari yang sama |
+
 - index (recipient_id, read_at, created_at), unik (recipient_id, dedupe_key)
 
 Tambahan teknis kecil: tabel `data_protection_keys` supaya login tidak ter-logout setiap container di-restart.
@@ -199,118 +212,130 @@ Keterangan izin: **Adm** = Admin aplikasi, **Sup** = supervisor tim (hanya untuk
 **Aturan tetap untuk Tamu di semua endpoint:** Activity `Internal` tidak pernah dikirim, termasuk lewat daftar aktivitas, notifikasi, pencarian, jumlah komentar, dan "Update terakhir". Email anggota lain juga tidak ditampilkan ke Tamu.
 
 ### Auth dan akun
-| Endpoint | Guna | Izin |
-|---|---|---|
-| `POST /api/auth/login` | email + password + "Ingat saya" | publik |
-| `POST /api/auth/logout` | keluar | Masuk |
-| `GET /api/auth/me` | data diri, admin?, tim yang dipegang, tema | Masuk |
-| `POST /api/auth/forgot-password` | kirim email reset | publik |
-| `POST /api/auth/reset-password` | simpan password baru dari tautan | publik (token) |
-| `PATCH /api/me` | ubah nama, tema, password | Masuk |
+
+| Endpoint                         | Guna                                       | Izin           |
+| -------------------------------- | ------------------------------------------ | -------------- |
+| `POST /api/auth/login`           | email + password + "Ingat saya"            | publik         |
+| `POST /api/auth/logout`          | keluar                                     | Masuk          |
+| `GET /api/auth/me`               | data diri, admin?, tim yang dipegang, tema | Masuk          |
+| `POST /api/auth/forgot-password` | kirim email reset                          | publik         |
+| `POST /api/auth/reset-password`  | simpan password baru dari tautan           | publik (token) |
+| `PATCH /api/me`                  | ubah nama, tema, password                  | Masuk          |
 
 ### Pengguna (Pengaturan)
-| Endpoint | Guna | Izin |
-|---|---|---|
-| `GET /api/users` | daftar semua pengguna | Adm |
-| `POST /api/users` | tambah pengguna internal (email berisi tautan buat password) | Adm |
-| `PATCH /api/users/{id}` | ubah nama, admin, nonaktifkan | Adm |
+
+| Endpoint                   | Guna                                                         | Izin          |
+| -------------------------- | ------------------------------------------------------------ | ------------- |
+| `GET /api/users`           | daftar semua pengguna                                        | Adm           |
+| `POST /api/users`          | tambah pengguna internal (email berisi tautan buat password) | Adm           |
+| `PATCH /api/users/{id}`    | ubah nama, admin, nonaktifkan                                | Adm           |
 | `GET /api/users/lookup?q=` | cari orang internal untuk kolom pilih (tambah anggota, dll.) | Adm, Sup, Pgl |
 
 ### Tim
-| Endpoint | Guna | Izin |
-|---|---|---|
-| `GET /api/teams` | daftar tim (Admin: semua; lainnya: tim tempat ia berada) | Masuk (non-Tamu) |
-| `GET /api/teams/{id}` | detail tim + anggota + task aktif per orang | Adm, anggota tim |
-| `POST /api/teams` | buat tim | Adm |
-| `PATCH /api/teams/{id}` | ubah nama | Adm, Sup |
-| `POST /api/teams/{id}/members` | tambah anggota (peran Supervisor/Anggota) | Adm, Sup |
-| `PATCH /api/teams/{id}/members/{userId}` | ubah peran | Adm, Sup |
-| `DELETE /api/teams/{id}/members/{userId}` | keluarkan | Adm, Sup |
+
+| Endpoint                                  | Guna                                                     | Izin             |
+| ----------------------------------------- | -------------------------------------------------------- | ---------------- |
+| `GET /api/teams`                          | daftar tim (Admin: semua; lainnya: tim tempat ia berada) | Masuk (non-Tamu) |
+| `GET /api/teams/{id}`                     | detail tim + anggota + task aktif per orang              | Adm, anggota tim |
+| `POST /api/teams`                         | buat tim                                                 | Adm              |
+| `PATCH /api/teams/{id}`                   | ubah nama                                                | Adm, Sup         |
+| `POST /api/teams/{id}/members`            | tambah anggota (peran Supervisor/Anggota)                | Adm, Sup         |
+| `PATCH /api/teams/{id}/members/{userId}`  | ubah peran                                               | Adm, Sup         |
+| `DELETE /api/teams/{id}/members/{userId}` | keluarkan                                                | Adm, Sup         |
 
 ### Proyek
-| Endpoint | Guna | Izin |
-|---|---|---|
-| `GET /api/projects/tree` | pohon sidebar + jumlah task terbuka | Masuk (hanya proyek yang boleh dilihat) |
-| `GET /api/projects/{id}` | header: breadcrumb, nama, progres, avatar anggota | Pgl, Ang, Tmu |
-| `POST /api/projects` | buat proyek root (+ kode) | Adm |
-| `POST /api/projects/{id}/children` | buat sub-proyek (tolak jika > 3 level) | Adm, Pgl |
-| `PATCH /api/projects/{id}` | ubah nama/urutan/pindah induk | Adm, Pgl |
-| `POST /api/projects/{id}/archive` | arsipkan | Adm, Pgl |
+
+| Endpoint                           | Guna                                              | Izin                                    |
+| ---------------------------------- | ------------------------------------------------- | --------------------------------------- |
+| `GET /api/projects/tree`           | pohon sidebar + jumlah task terbuka               | Masuk (hanya proyek yang boleh dilihat) |
+| `GET /api/projects/{id}`           | header: breadcrumb, nama, progres, avatar anggota | Pgl, Ang, Tmu                           |
+| `POST /api/projects`               | buat proyek root (+ kode)                         | Adm                                     |
+| `POST /api/projects/{id}/children` | buat sub-proyek (tolak jika > 3 level)            | Adm, Pgl                                |
+| `PATCH /api/projects/{id}`         | ubah nama/urutan/pindah induk                     | Adm, Pgl                                |
+| `POST /api/projects/{id}/archive`  | arsipkan                                          | Adm, Pgl                                |
 
 ### Anggota proyek dan undangan
-| Endpoint | Guna | Izin |
-|---|---|---|
-| `GET /api/projects/{id}/members` | daftar anggota + peran (email disembunyikan untuk Tamu) | Pgl, Ang, Tmu |
-| `POST /api/projects/{id}/members` | tambah pengguna internal langsung | Adm, Pgl |
-| `PATCH /api/projects/{id}/members/{userId}` | ubah peran | Adm, Pgl |
-| `DELETE /api/projects/{id}/members/{userId}` | keluarkan | Adm, Pgl |
-| `GET /api/projects/{id}/invitations` | undangan yang masih menunggu | Adm, Pgl |
-| `POST /api/projects/{id}/invitations` | undang beberapa email + peran + pesan | Adm, Pgl |
-| `DELETE /api/invitations/{id}` | batalkan | Adm, Pgl |
-| `GET /api/invitations/{token}` | info undangan (nama proyek, pengundang) | publik (token) |
-| `POST /api/invitations/{token}/accept` | terima: buat akun (nama + password) atau gabungkan ke akun yang ada | publik (token) |
+
+| Endpoint                                     | Guna                                                                | Izin           |
+| -------------------------------------------- | ------------------------------------------------------------------- | -------------- |
+| `GET /api/projects/{id}/members`             | daftar anggota + peran (email disembunyikan untuk Tamu)             | Pgl, Ang, Tmu  |
+| `POST /api/projects/{id}/members`            | tambah pengguna internal langsung                                   | Adm, Pgl       |
+| `PATCH /api/projects/{id}/members/{userId}`  | ubah peran                                                          | Adm, Pgl       |
+| `DELETE /api/projects/{id}/members/{userId}` | keluarkan                                                           | Adm, Pgl       |
+| `GET /api/projects/{id}/invitations`         | undangan yang masih menunggu                                        | Adm, Pgl       |
+| `POST /api/projects/{id}/invitations`        | undang beberapa email + peran + pesan                               | Adm, Pgl       |
+| `DELETE /api/invitations/{id}`               | batalkan                                                            | Adm, Pgl       |
+| `GET /api/invitations/{token}`               | info undangan (nama proyek, pengundang)                             | publik (token) |
+| `POST /api/invitations/{token}/accept`       | terima: buat akun (nama + password) atau gabungkan ke akun yang ada | publik (token) |
 
 ### Task
-| Endpoint | Guna | Izin |
-|---|---|---|
-| `GET /api/projects/{id}/tasks` | isi tabel, dikelompokkan per sub-proyek; filter `pic, status, priority, label, overdue, thisWeek, mine, q` | Pgl, Ang, Tmu |
-| `POST /api/projects/{id}/tasks` | buat task | Pgl, Ang |
-| `GET /api/tasks/{key}` | detail untuk drawer (`key` = id atau `SEN-115`) | Pgl, Ang, Tmu |
-| `PATCH /api/tasks/{id}` | ubah judul, keterangan, prioritas, label, sub-proyek | Pgl, Ang |
-| `PUT /api/tasks/{id}/status` | ubah status; **tolak 400 jika status tertahan tanpa alasan** | Pgl, Ang |
-| `PUT /api/tasks/{id}/dates` | ubah tanggal mulai/selesai | Pgl, Ang, Sup (jika PIC anggota timnya) |
-| `PUT /api/tasks/{id}/assignees` | ubah PIC | Pgl, Ang |
-| `POST /api/tasks/{id}/move` | "Pindahkan ke…" dari satu PIC ke orang lain, opsi kabari lewat notifikasi | Pgl, Sup (jika PIC lama anggota timnya) |
-| `POST /api/tasks/{id}/subtasks` | tambah sub-task | Pgl, Ang |
-| `DELETE /api/tasks/{id}` | hapus | Pgl, Ang |
-| `GET /api/projects/{id}/labels`, `POST …/labels` | daftar & tambah label | lihat: Pgl, Ang, Tmu; tambah: Pgl, Ang |
+
+| Endpoint                                         | Guna                                                                                                       | Izin                                    |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `GET /api/projects/{id}/tasks`                   | isi tabel, dikelompokkan per sub-proyek; filter `pic, status, priority, label, overdue, thisWeek, mine, q` | Pgl, Ang, Tmu                           |
+| `POST /api/projects/{id}/tasks`                  | buat task                                                                                                  | Pgl, Ang                                |
+| `GET /api/tasks/{key}`                           | detail untuk drawer (`key` = id atau `SEN-115`)                                                            | Pgl, Ang, Tmu                           |
+| `PATCH /api/tasks/{id}`                          | ubah judul, keterangan, prioritas, label, sub-proyek                                                       | Pgl, Ang                                |
+| `PUT /api/tasks/{id}/status`                     | ubah status; **tolak 400 jika status tertahan tanpa alasan**                                               | Pgl, Ang                                |
+| `PUT /api/tasks/{id}/dates`                      | ubah tanggal mulai/selesai                                                                                 | Pgl, Ang, Sup (jika PIC anggota timnya) |
+| `PUT /api/tasks/{id}/assignees`                  | ubah PIC                                                                                                   | Pgl, Ang                                |
+| `POST /api/tasks/{id}/move`                      | "Pindahkan ke…" dari satu PIC ke orang lain, opsi kabari lewat notifikasi                                  | Pgl, Sup (jika PIC lama anggota timnya) |
+| `POST /api/tasks/{id}/subtasks`                  | tambah sub-task                                                                                            | Pgl, Ang                                |
+| `DELETE /api/tasks/{id}`                         | hapus                                                                                                      | Pgl, Ang                                |
+| `GET /api/projects/{id}/labels`, `POST …/labels` | daftar & tambah label                                                                                      | lihat: Pgl, Ang, Tmu; tambah: Pgl, Ang  |
 
 Setiap perubahan status, PIC, tanggal, pembuatan task, dan penambahan sub-task otomatis menulis Activity `Log`.
 
 ### Aktivitas
-| Endpoint | Guna | Izin |
-|---|---|---|
-| `GET /api/tasks/{id}/activities` | timeline, terbaru di atas; tanpa `Internal` untuk Tamu | Pgl, Ang, Tmu |
-| `POST /api/tasks/{id}/activities` | kirim `Update` / `Comment` / `Internal` + daftar mention | Update & Internal: Pgl, Ang; Comment: Pgl, Ang, Tmu |
-| `GET /api/tasks/{id}/mentionable?q=` | daftar orang untuk popup @ | Pgl, Ang, Tmu |
+
+| Endpoint                             | Guna                                                     | Izin                                                |
+| ------------------------------------ | -------------------------------------------------------- | --------------------------------------------------- |
+| `GET /api/tasks/{id}/activities`     | timeline, terbaru di atas; tanpa `Internal` untuk Tamu   | Pgl, Ang, Tmu                                       |
+| `POST /api/tasks/{id}/activities`    | kirim `Update` / `Comment` / `Internal` + daftar mention | Update & Internal: Pgl, Ang; Comment: Pgl, Ang, Tmu |
+| `GET /api/tasks/{id}/mentionable?q=` | daftar orang untuk popup @                               | Pgl, Ang, Tmu                                       |
 
 Catatan: komentar `Internal` yang me-mention seorang Tamu tidak membuat notifikasi untuk Tamu itu.
 
 ### Dashboard
-| Endpoint | Guna | Izin |
-|---|---|---|
-| `GET /api/dashboard?userId=` | 4 kartu, daftar Hari Ini, panel Perlu perhatian | diri sendiri; Sup untuk anggota timnya |
-| `GET /api/dashboard/timeline?userId=&from=&to=` | Timeline saya (per proyek) + milestone + beban kerja pribadi | sama |
+
+| Endpoint                                        | Guna                                                         | Izin                                   |
+| ----------------------------------------------- | ------------------------------------------------------------ | -------------------------------------- |
+| `GET /api/dashboard?userId=`                    | 4 kartu, daftar Hari Ini, panel Perlu perhatian              | diri sendiri; Sup untuk anggota timnya |
+| `GET /api/dashboard/timeline?userId=&from=&to=` | Timeline saya (per proyek) + milestone + beban kerja pribadi | sama                                   |
 
 Saat supervisor melihat dashboard orang lain, hanya task dari proyek yang **boleh dilihat supervisor** yang tampil (lihat Keputusan 8).
 
 ### Gantt dan milestone
-| Endpoint | Guna | Izin |
-|---|---|---|
-| `GET /api/projects/{id}/gantt?from=&to=` | baris task, milestone, beban kerja per orang | Pgl, Ang, Tmu |
-| `GET /api/projects/{id}/milestones` | daftar milestone (tab Milestone) | Pgl, Ang, Tmu |
-| `POST /api/projects/{id}/milestones` | tambah | Adm, Pgl |
-| `PATCH /api/milestones/{id}`, `DELETE /api/milestones/{id}` | ubah, tandai selesai, hapus | Adm, Pgl |
+
+| Endpoint                                                    | Guna                                         | Izin          |
+| ----------------------------------------------------------- | -------------------------------------------- | ------------- |
+| `GET /api/projects/{id}/gantt?from=&to=`                    | baris task, milestone, beban kerja per orang | Pgl, Ang, Tmu |
+| `GET /api/projects/{id}/milestones`                         | daftar milestone (tab Milestone)             | Pgl, Ang, Tmu |
+| `POST /api/projects/{id}/milestones`                        | tambah                                       | Adm, Pgl      |
+| `PATCH /api/milestones/{id}`, `DELETE /api/milestones/{id}` | ubah, tandai selesai, hapus                  | Adm, Pgl      |
 
 ### Timeline Tim
-| Endpoint | Guna | Izin |
-|---|---|---|
-| `GET /api/team-timeline?teamId=&from=&to=&project=&status=&priority=&overdueOnly=` | satu baris per orang + heatmap + task per orang | Sup (tim sendiri) |
-| `GET /api/tasks/{id}/move-candidates` | calon penerima + beban hari per hari di rentang task | Sup, Pgl |
+
+| Endpoint                                                                           | Guna                                                 | Izin              |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------- | ----------------- |
+| `GET /api/team-timeline?teamId=&from=&to=&project=&status=&priority=&overdueOnly=` | satu baris per orang + heatmap + task per orang      | Sup (tim sendiri) |
+| `GET /api/tasks/{id}/move-candidates`                                              | calon penerima + beban hari per hari di rentang task | Sup, Pgl          |
 
 Pindahkan dan ubah tanggal memakai `POST /api/tasks/{id}/move` dan `PUT /api/tasks/{id}/dates` di atas.
 
 ### Notifikasi dan pencarian
-| Endpoint | Guna | Izin |
-|---|---|---|
-| `GET /api/notifications?filter=all\|unread\|mentions` | isi panel & halaman "Lihat semua" | Masuk (hanya miliknya) |
-| `GET /api/notifications/unread-count` | angka di lonceng | Masuk |
-| `POST /api/notifications/{id}/read`, `POST /api/notifications/read-all` | tandai dibaca | Masuk |
-| `GET /api/search?q=` | pencarian global: task, proyek, orang | Masuk (hanya yang boleh dilihat) |
+
+| Endpoint                                                                | Guna                                  | Izin                             |
+| ----------------------------------------------------------------------- | ------------------------------------- | -------------------------------- |
+| `GET /api/notifications?filter=all\|unread\|mentions`                   | isi panel & halaman "Lihat semua"     | Masuk (hanya miliknya)           |
+| `GET /api/notifications/unread-count`                                   | angka di lonceng                      | Masuk                            |
+| `POST /api/notifications/{id}/read`, `POST /api/notifications/read-all` | tandai dibaca                         | Masuk                            |
+| `GET /api/search?q=`                                                    | pencarian global: task, proyek, orang | Masuk (hanya yang boleh dilihat) |
 
 ### Lain-lain
-| Endpoint | Guna |
-|---|---|
+
+| Endpoint          | Guna                           |
+| ----------------- | ------------------------------ |
 | `GET /api/health` | cek API hidup (dipakai Docker) |
 
 **Test:** setiap endpoint punya test xUnit + WebApplicationFactory yang berjalan pada PostgreSQL sungguhan di Docker (Testcontainers). Setiap aturan izin punya test "Tamu ditolak / Tamu tidak melihat Internal".
@@ -344,100 +369,100 @@ Tanda ★ = komponen asli design system (di-port dari `bundle.js`). Tanpa tanda 
 
 **Atom** (`components/atoms/`)
 
-| Komponen | Dipakai untuk |
-|---|---|
-| ★ `Icon` | semua ikon line + 8 ikon status + 4 ikon prioritas |
-| ★ `Mark` | logo tanpa tulisan (header mobile, favicon) |
-| ★ `Button` | primary / secondary / ghost, ukuran md & sm |
-| ★ `IconButton` | tombol ikon, termasuk lonceng dengan badge |
-| ★ `Avatar` | inisial; versi bergaris untuk Tamu |
-| ★ `Label` | label abu-abu (Infra, UAT) |
-| ★ `StatusPill` | pill status, termasuk mode `select` |
-| ★ `PriorityIcon` | chevron prioritas |
-| ★ `DueDate` | tanggal selesai, merah bila terlambat |
-| ★ `Mention` | @nama di dalam komentar |
-| `TextInput`, `TextArea`, `Checkbox`, `Radio`, `Select` | elemen form dasar |
-| `ProgressBar` | progres proyek (58%) |
-| `HeatCell` | satu kotak angka di heatmap |
-| `Kbd` | petunjuk tombol keyboard (`/`) |
-| `VisuallyHidden` | teks khusus pembaca layar |
+| Komponen                                               | Dipakai untuk                                      |
+| ------------------------------------------------------ | -------------------------------------------------- |
+| ★ `Icon`                                               | semua ikon line + 8 ikon status + 4 ikon prioritas |
+| ★ `Mark`                                               | logo tanpa tulisan (header mobile, favicon)        |
+| ★ `Button`                                             | primary / secondary / ghost, ukuran md & sm        |
+| ★ `IconButton`                                         | tombol ikon, termasuk lonceng dengan badge         |
+| ★ `Avatar`                                             | inisial; versi bergaris untuk Tamu                 |
+| ★ `Label`                                              | label abu-abu (Infra, UAT)                         |
+| ★ `StatusPill`                                         | pill status, termasuk mode `select`                |
+| ★ `PriorityIcon`                                       | chevron prioritas                                  |
+| ★ `DueDate`                                            | tanggal selesai, merah bila terlambat              |
+| ★ `Mention`                                            | @nama di dalam komentar                            |
+| `TextInput`, `TextArea`, `Checkbox`, `Radio`, `Select` | elemen form dasar                                  |
+| `ProgressBar`                                          | progres proyek (58%)                               |
+| `HeatCell`                                             | satu kotak angka di heatmap                        |
+| `Kbd`                                                  | petunjuk tombol keyboard (`/`)                     |
+| `VisuallyHidden`                                       | teks khusus pembaca layar                          |
 
 **Molekul** (`components/molecules/`)
 
-| Komponen | Isi |
-|---|---|
-| ★ `Logo` | Mark + nama "Ariadne" + subjudul |
-| ★ `AvatarStack` | beberapa Avatar bertumpuk + "+N" |
-| ★ `SearchField` | ikon + input + Kbd |
-| ★ `FilterChip` | chip filter dropdown / toggle |
-| ★ `Tabs` | Tabel / Gantt / Milestone / Anggota |
-| ★ `NavItem` | satu baris sidebar / pohon proyek |
-| ★ `HoldTooltip` | tombol info + kartu alasan tertahan |
-| ★ `SummaryCard` | satu kartu angka dashboard |
-| ★ `Banner` | "Anda melihat sebagai Tamu" / "Melihat dashboard: …" |
-| ★ `ActivityItem` | satu entri timeline aktivitas (4 jenis) |
-| ★ `GanttTrack`, `GanttBar`, `Milestone`, `TodayMarker` | potongan Gantt |
-| ★ `WorkloadRow` | satu baris heatmap (kumpulan HeatCell) |
-| `MenuItem` | satu baris di Menu (status / orang / ikon + meta) |
-| `FormField` | label + input + pesan error |
-| `RadioCard` | pilihan peran di dialog undang |
-| `EmailChipsInput` | input banyak email |
-| `DateRangeField` | tanggal mulai – selesai |
-| `SegmentedControl` | Hari / Minggu / Bulan |
-| `Breadcrumb` | Proyek / Sentul |
-| `Popover` | wadah melayang untuk Menu dan dropdown |
-| `Toast`, `EmptyState` | pesan berhasil/gagal, tampilan kosong |
-| `TaskRow`, `GroupRow` | satu baris task / baris grup sub-proyek (dipakai tabel, Hari Ini, Timeline Tim). **Dibuat di Fase 3** bersama tabelnya |
+| Komponen                                               | Isi                                                                                                                    |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| ★ `Logo`                                               | Mark + nama "Ariadne" + subjudul                                                                                       |
+| ★ `AvatarStack`                                        | beberapa Avatar bertumpuk + "+N"                                                                                       |
+| ★ `SearchField`                                        | ikon + input + Kbd                                                                                                     |
+| ★ `FilterChip`                                         | chip filter dropdown / toggle                                                                                          |
+| ★ `Tabs`                                               | Tabel / Gantt / Milestone / Anggota                                                                                    |
+| ★ `NavItem`                                            | satu baris sidebar / pohon proyek                                                                                      |
+| ★ `HoldTooltip`                                        | tombol info + kartu alasan tertahan                                                                                    |
+| ★ `SummaryCard`                                        | satu kartu angka dashboard                                                                                             |
+| ★ `Banner`                                             | "Anda melihat sebagai Tamu" / "Melihat dashboard: …"                                                                   |
+| ★ `ActivityItem`                                       | satu entri timeline aktivitas (4 jenis)                                                                                |
+| ★ `GanttTrack`, `GanttBar`, `Milestone`, `TodayMarker` | potongan Gantt                                                                                                         |
+| ★ `WorkloadRow`                                        | satu baris heatmap (kumpulan HeatCell)                                                                                 |
+| `MenuItem`                                             | satu baris di Menu (status / orang / ikon + meta)                                                                      |
+| `FormField`                                            | label + input + pesan error                                                                                            |
+| `RadioCard`                                            | pilihan peran di dialog undang                                                                                         |
+| `EmailChipsInput`                                      | input banyak email                                                                                                     |
+| `DateRangeField`                                       | tanggal mulai – selesai                                                                                                |
+| `SegmentedControl`                                     | Hari / Minggu / Bulan                                                                                                  |
+| `Breadcrumb`                                           | Proyek / Sentul                                                                                                        |
+| `Popover`                                              | wadah melayang untuk Menu dan dropdown                                                                                 |
+| `Toast`, `EmptyState`                                  | pesan berhasil/gagal, tampilan kosong                                                                                  |
+| `TaskRow`, `GroupRow`                                  | satu baris task / baris grup sub-proyek (dipakai tabel, Hari Ini, Timeline Tim). **Dibuat di Fase 3** bersama tabelnya |
 
 **Organisme** (`components/organisms/`)
 
-| Komponen | Dipakai di |
-|---|---|
-| ★ `Menu` + variannya `StatusMenu`, `MentionMenu`, `MemberPicker` | dropdown status, popup @, "Pindahkan ke…" |
-| `Dialog`, `Drawer` | wadah dialog dan panel samping |
-| `Sidebar`, `Topbar`, `NotificationPanel` | semua halaman |
-| `LoginForm` | Login |
-| `SummaryCards`, `TodayList`, `AttentionPanel` | Dashboard |
-| `ProjectHeader`, `FilterBar`, `TaskTable` | Proyek, Tabel |
-| `GanttChart`, `WorkloadGrid` | Proyek, Gantt; Timeline saya; Timeline Tim |
-| `TaskDetail` (+ `HoldReasonPanel`, `SubtaskList`, `ActivityTimeline`, `CommentComposer`) | Drawer detail task |
-| `TeamTimelineGrid`, `MoveTaskDialog` | Timeline Tim |
-| `TeamList`, `TeamMemberTable` | Tim |
-| `MemberTable`, `InviteDialog` | Anggota proyek |
-| `MilestoneList`, `UserTable` | Milestone, Pengaturan |
+| Komponen                                                                                 | Dipakai di                                 |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------ |
+| ★ `Menu` + variannya `StatusMenu`, `MentionMenu`, `MemberPicker`                         | dropdown status, popup @, "Pindahkan ke…"  |
+| `Dialog`, `Drawer`                                                                       | wadah dialog dan panel samping             |
+| `Sidebar`, `Topbar`, `NotificationPanel`                                                 | semua halaman                              |
+| `LoginForm`                                                                              | Login                                      |
+| `SummaryCards`, `TodayList`, `AttentionPanel`                                            | Dashboard                                  |
+| `ProjectHeader`, `FilterBar`, `TaskTable`                                                | Proyek, Tabel                              |
+| `GanttChart`, `WorkloadGrid`                                                             | Proyek, Gantt; Timeline saya; Timeline Tim |
+| `TaskDetail` (+ `HoldReasonPanel`, `SubtaskList`, `ActivityTimeline`, `CommentComposer`) | Drawer detail task                         |
+| `TeamTimelineGrid`, `MoveTaskDialog`                                                     | Timeline Tim                               |
+| `TeamList`, `TeamMemberTable`                                                            | Tim                                        |
+| `MemberTable`, `InviteDialog`                                                            | Anggota proyek                             |
+| `MilestoneList`, `UserTable`                                                             | Milestone, Pengaturan                      |
 
 **Template** (`components/templates/`)
 
-| Template | Isi |
-|---|---|
-| `AppShell` | Sidebar + Topbar + (Banner opsional) + konten |
-| `AuthLayout` | panel labirin kiri + form kanan (Login, lupa password, undangan) |
-| `ProjectLayout` | ProjectHeader + Tabs + isi tab |
-| `MobileShell` | header mobile + sidebar sebagai drawer |
+| Template        | Isi                                                              |
+| --------------- | ---------------------------------------------------------------- |
+| `AppShell`      | Sidebar + Topbar + (Banner opsional) + konten                    |
+| `AuthLayout`    | panel labirin kiri + form kanan (Login, lupa password, undangan) |
+| `ProjectLayout` | ProjectHeader + Tabs + isi tab                                   |
+| `MobileShell`   | header mobile + sidebar sebagai drawer                           |
 
 `/dev/komponen` menampilkan semua komponen dikelompokkan per tingkat (Atom → Molekul → Organisme → Template), masing-masing dalam tema terang dan gelap.
 
 ### 4c. Halaman
 
-| Rute | Halaman | Mockup | Fase |
-|---|---|---|---|
-| `/dev/komponen` | semua komponen, terang & gelap (hanya mode dev) | `component-previews/` | 1 |
-| `/masuk` | Login | 01 | 2 |
-| `/lupa-password`, `/reset-password` | lupa & atur ulang password | (tanpa mockup; gaya login) | 2 |
-| `/undangan/:token` | terima undangan, buat password | (tanpa mockup; gaya login) | 8 |
-| `/pengaturan` | kelola pengguna (Admin) | (tanpa mockup) | 2 |
-| `/tim` | Manajemen Tim | 07 | 2 |
-| `/proyek/:id/anggota` | Anggota proyek | 08 | 2 (+ undang di 8) |
-| `/proyek/:id/tabel` | Proyek, Tabel | 03, 03-gelap | 3 |
-| `…?task=SEN-115` | Drawer detail task (di atas halaman mana pun) | 05 | 4 |
-| `/` | Dashboard pribadi | 02, 02-gelap, 10 | 5 |
-| `/proyek/:id/gantt` | Proyek, Gantt | 04 | 6 |
-| `/proyek/:id/milestone` | daftar milestone | (tanpa mockup) | 6 |
-| `/timeline-tim` | Timeline Tim | 06, 06a | 7 |
-| `/dashboard/:userId` | Dashboard anggota dilihat supervisor | 06b | 7 |
-| (mode Tamu pada halaman proyek) | Tampilan Tamu | 09 | 8 |
-| panel lonceng + `/notifikasi` | Notifikasi | 10 | 9 |
-| `/` di layar < 768px | Dashboard mobile | 11 | 10 |
+| Rute                                | Halaman                                         | Mockup                     | Fase              |
+| ----------------------------------- | ----------------------------------------------- | -------------------------- | ----------------- |
+| `/dev/komponen`                     | semua komponen, terang & gelap (hanya mode dev) | `component-previews/`      | 1                 |
+| `/masuk`                            | Login                                           | 01                         | 2                 |
+| `/lupa-password`, `/reset-password` | lupa & atur ulang password                      | (tanpa mockup; gaya login) | 2                 |
+| `/undangan/:token`                  | terima undangan, buat password                  | (tanpa mockup; gaya login) | 8                 |
+| `/pengaturan`                       | kelola pengguna (Admin)                         | (tanpa mockup)             | 2                 |
+| `/tim`                              | Manajemen Tim                                   | 07                         | 2                 |
+| `/proyek/:id/anggota`               | Anggota proyek                                  | 08                         | 2 (+ undang di 8) |
+| `/proyek/:id/tabel`                 | Proyek, Tabel                                   | 03, 03-gelap               | 3                 |
+| `…?task=SEN-115`                    | Drawer detail task (di atas halaman mana pun)   | 05                         | 4                 |
+| `/`                                 | Dashboard pribadi                               | 02, 02-gelap, 10           | 5                 |
+| `/proyek/:id/gantt`                 | Proyek, Gantt                                   | 04                         | 6                 |
+| `/proyek/:id/milestone`             | daftar milestone                                | (tanpa mockup)             | 6                 |
+| `/timeline-tim`                     | Timeline Tim                                    | 06, 06a                    | 7                 |
+| `/dashboard/:userId`                | Dashboard anggota dilihat supervisor            | 06b                        | 7                 |
+| (mode Tamu pada halaman proyek)     | Tampilan Tamu                                   | 09                         | 8                 |
+| panel lonceng + `/notifikasi`       | Notifikasi                                      | 10                         | 9                 |
+| `/` di layar < 768px                | Dashboard mobile                                | 11                         | 10                |
 
 Bagian bersama: `AppShell` = `Sidebar` (248px) + `Topbar` (56px, pencarian global, lonceng, avatar + menu: tema, keluar).
 
@@ -448,6 +473,7 @@ Bagian bersama: `AppShell` = `Sidebar` (248px) + `Topbar` (56px, pencarian globa
 Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, screenshot dibandingkan dengan mockup, lalu saya berhenti dan meringkas untuk Anda.
 
 **Syarat umum "selesai" untuk setiap fase** (di luar kriteria khusus tiap fase):
+
 - `scripts/check` hijau: test backend, test frontend, lint (termasuk aturan import atomic), pemeriksa token warna, gitleaks, dan audit dependensi. Hasilnya ditempel di ringkasan.
 - Checklist [pedoman-kode-ai.md](pedoman-kode-ai.md) ditinjau untuk fitur fase itu. Butir yang belum terpenuhi disebut terang-terangan.
 - Paket baru (npm/NuGet) disebutkan beserta alasannya.
@@ -466,6 +492,7 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 **Selesai jika:** `docker compose up` menyalakan semua layanan tanpa error; `/api/health` menjawab OK; `/dev/komponen` tampil per tingkat atomic dan setiap komponen mirip `component-previews/*.png` dalam tema terang, lalu terbaca baik di tema gelap; `scripts/check` hijau; commit berisi rahasia palsu ditolak gitleaks; atom yang mencoba meng-import molekul ditolak lint.
 
 ### Fase 2: Login, pengguna, tim, proyek bertingkat, anggota proyek
+
 - Identity + cookie login, "Ingat saya", lupa/reset password (email terlihat di Mailpit).
 - Tabel users, teams, team_members, projects, project_members + seed dari mockup.
 - Halaman: Login (01), Pengaturan (kelola pengguna), Tim (07), Anggota proyek (08, tanpa undangan dulu), sidebar dengan pohon proyek yang bisa dilipat, topbar.
@@ -474,6 +501,7 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 **Selesai jika:** bisa login sebagai Ahmad (seed) dan melihat sidebar seperti mockup; proyek level ke-4 ditolak API; supervisor bisa menambah/mengeluarkan anggota timnya sendiri tetapi tidak tim lain; semua endpoint fase ini punya test termasuk penolakan untuk Tamu; screenshot Login, Tim, Anggota mendekati 01, 07, 08.
 
 ### Fase 3: Task + halaman Proyek, Tabel
+
 - Tabel tasks, task_assignees, labels, task_labels; nomor `SEN-xxx` otomatis per proyek root.
 - CRUD task, sub-task, ubah status inline (Menu), wajib alasan saat tertahan, PIC banyak orang, label.
 - Halaman Proyek, Tabel (03): header + progres, tab, filter bar lengkap, grup sub-proyek yang bisa dilipat, sub-task menjorok, tanggal merah bila terlambat, HoldTooltip, pencarian di proyek.
@@ -483,6 +511,7 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 **Selesai jika:** status ke Blocked tanpa alasan ditolak API (ada test); ubah status langsung tersimpan tanpa reload; semua filter bekerja; Tamu tidak bisa membuat/mengubah task (test); screenshot tabel terang dan gelap mendekati 03 dan 03-gelap.
 
 ### Fase 4: Drawer detail task + aktivitas + @mention
+
 - Tabel activities dan mentions; log otomatis untuk status, PIC, tanggal, task dibuat, sub-task ditambah.
 - Drawer 520px (05): semua field bisa diedit di tempat, blok Alasan tertahan / Menunggu siapa, daftar sub-task, timeline aktivitas 4 jenis, kotak komentar Update / Komentar / Internal, popup @mention dengan keyboard.
 - Kolom "Update terakhir" di tabel diisi dari Update terbaru.
@@ -490,6 +519,7 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 **Selesai jika:** mengubah status menghasilkan baris log "Ahmad mengubah status …"; Tamu tidak menerima Internal dari endpoint mana pun (test); @mention tersimpan; drawer bisa dibuka lewat URL `?task=SEN-115`; screenshot mendekati 05.
 
 ### Fase 5: Dashboard pribadi
+
 - 4 kartu ringkasan (bisa diklik sebagai filter), daftar Hari Ini per kelompok dan urut prioritas, ubah status & "Tambah update" langsung dari baris, panel Perlu perhatian, Timeline saya (Gantt pribadi lintas proyek) + beban kerja pribadi, tombol "Tambah task" (pilih proyek dulu).
 - Pencarian global di topbar (task, proyek, orang; tombol `/`).
 - Tema terang/gelap tersimpan di akun.
@@ -497,12 +527,14 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 **Selesai jika:** dengan "hari ini" 28 Sep 2026 dan data seed, angka dan urutan sama dengan 02; aturan pengelompokan punya test unit; pencarian tidak pernah menampilkan proyek yang tidak boleh dilihat (test); screenshot 02 dan 02-gelap mendekati mockup.
 
 ### Fase 6: Proyek, Gantt + beban kerja + milestone
+
 - Gantt (04): daftar task kiri 360px, chart kanan, zoom Hari/Minggu/Bulan, tombol "Hari ini", garis hari ini, akhir pekan diarsir, bar sesuai status, milestone belah ketupat, baris beban kerja per orang di bawah.
 - CRUD milestone + tab Milestone (daftar sederhana, tanpa mockup).
 
 **Selesai jika:** posisi bar dan angka heatmap cocok dengan 04 untuk data seed; perhitungan beban kerja punya test unit; bisa digulir horizontal tanpa patah di ketiga zoom; screenshot mendekati 04.
 
 ### Fase 7: Timeline Tim (supervisor)
+
 - Pemilih tim, baris per orang yang bisa dibuka, heatmap, filter proyek/status/prioritas/hanya terlambat, zoom.
 - Dialog "Pindahkan ke…" (06a) dengan beban calon penerima di rentang task dan opsi kabari lewat notifikasi; ubah tanggal langsung dari baris.
 - Dashboard anggota dilihat supervisor (06b) dengan banner "Melihat dashboard: …" dan aksi Ubah tanggal / Pindahkan ke….
@@ -510,6 +542,7 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 **Selesai jika:** hanya supervisor tim itu yang bisa membuka Timeline Tim dan memindahkan task anggotanya (test untuk non-supervisor dan Tamu); pemindahan menulis log "Syaikhan memindahkan task dari Rama ke Galih"; screenshot mendekati 06, 06a, 06b.
 
 ### Fase 8: Undang tamu + tampilan Tamu
+
 - Dialog Undang (08), email undangan, halaman terima undangan dan buat password, daftar undangan menunggu + Batalkan.
 - Tampilan Tamu (09): banner, kontrol edit **disembunyikan**, tab kotak komentar hanya "Komentar", sidebar hanya proyek yang diundang, avatar tamu bergaris.
 - Audit izin menyeluruh: satu set test yang menjalankan semua endpoint sebagai Tamu.
@@ -517,6 +550,7 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 **Selesai jika:** alur undang → email di Mailpit → terima → login sebagai tamu berjalan; tamu tidak melihat Internal, tombol edit, Timeline Tim, atau proyek lain; semua test izin Tamu hijau; screenshot mendekati 09.
 
 ### Fase 9: Notifikasi in-app + email
+
 - Tabel notifications; pembuatan notifikasi untuk mention, penugasan, dipindahkan; job harian pukul 07.00 WIB untuk tenggat besok dan terlambat.
 - Panel lonceng (10) dengan tab Semua / Belum dibaca / Di-mention, badge jumlah, "Tandai semua dibaca", halaman "Lihat semua".
 - Pengiriman lewat `INotificationChannel` (InApp + Email via SMTP); email segera untuk mention dan penugasan, ringkasan harian untuk sisanya.
@@ -524,6 +558,7 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 **Selesai jika:** setiap jenis notifikasi punya test; notifikasi harian tidak dobel bila job jalan dua kali; email terlihat di Mailpit dengan ikon status dari `assets/Icons`; screenshot panel mendekati 10.
 
 ### Fase 10: Dashboard mobile + merapikan tema gelap
+
 - Tampilan < 768px (11): header dengan menu, kartu ringkasan ringkas, daftar Hari Ini berbentuk kartu, status bisa diubah, "Tambah update", sidebar jadi drawer.
 - Pemeriksaan semua halaman di tema gelap; perbaikan kontras dan detail.
 
@@ -568,18 +603,21 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 ### Fase 1 (27 September 2026)
 
 **Perbedaan dari rencana**
+
 - `Spinner` tidak dibuat: brand book melarang animasi selain fade 120ms dan putaran caret. Keadaan memuat memakai teks ("Memeriksa sambungan…").
 - `Tooltip` tidak dibuat: nama avatar dan tombol ikon sudah memakai atribut `title` seperti design system; komponen tambahan belum dibutuhkan (pedoman G5).
 - `TaskRow` dan `GroupRow` dipindah ke Fase 3, karena bentuknya bergantung pada kolom tabel yang baru dibuat di fase itu.
 - Test ditaruh per komponen (`X.test.tsx`) hanya untuk komponen yang punya perilaku; komponen tampilan murni (Label, Kbd, Mark) dicek lewat screenshot di Playwright.
 
 **Perbedaan dari design system (sengaja, demi aksesibilitas)**
+
 - **Label prioritas** ("High", "Medium") sempat memakai warna `ink` demi kontras, tetapi **Ahmad memutuskan (14 Oktober 2026) kembali ke warna prioritas seperti mockup**. Konsekuensinya diterima: di tema terang kata "High" (4,06:1) dan "Medium" (3,85:1) di bawah syarat WCAG 4,5:1 untuk teks kecil. Maknanya tetap tidak bergantung pada warna (ikon + kata selalu tampil). Pemeriksaan axe mengecualikan hanya elemen ini (`ACCEPTED_LOW_CONTRAST` di `frontend/e2e/helpers.ts`); jangan diperluas ke elemen lain. Bila kelak ada keluhan keterbacaan, perbaikannya cukup menggelapkan token `priority-high`/`priority-medium` di design system.
 - **NavItem** dibangun dari tautan + tombol buka/tutup (bukan `div role="treeitem"`), supaya sidebar bisa dipakai dengan keyboard. Tampilannya sama.
 - **HoldTooltip** kartunya melayang di kanan tombol info (seperti mockup 03), dan terbuka saat hover atau fokus keyboard.
 - **SummaryCard** bisa menjadi tombol (brand book: "Each card is a link that filters the Today list").
 
 **Temuan tentang design system**
+
 - `tokens.css` mendefinisikan alias `--danger`, `--link`, `--focus` hanya di blok `:root`. Untuk tema satu halaman penuh ini benar; hanya bermasalah bila tema dipasang bersarang (seperti katalog komponen, yang sudah ditangani di CSS katalog).
 - `component-previews/*.png` dirender tanpa huruf IBM Plex; aplikasi memakai IBM Plex sesuai brand book, jadi bentuk huruf terlihat sedikit berbeda.
 
@@ -597,6 +635,7 @@ Pelajaran untuk fase berikutnya: audit paket harus dijalankan ulang di awal seti
 **Yang dibuat:** login email + password dengan "Ingat saya", lupa/reset password (email lewat antrean latar ke Mailpit), kunci akun setelah 5 kali salah (15 menit), pengguna, tim, proyek bertingkat (maks. 3 level, dijaga API dan database), anggota proyek, halaman Login, Lupa password, Reset password, Tim (07), Anggota proyek (08), Pengaturan, sidebar + topbar, menu tersembunyi menurut peran, dan data contoh dari mockup.
 
 **Perbedaan dari rencana dan mockup (sengaja)**
+
 - Topbar belum punya kotak cari global (Fase 5) dan lonceng notifikasi (Fase 9): kontrol yang belum berfungsi tidak ditampilkan.
 - Kolom "Task aktif" di halaman Tim dan angka task di sidebar menunggu Fase 3 (task belum ada).
 - Tombol "Undang" dan status "Menunggu" di Anggota proyek menunggu Fase 8. Anggota proyek ditambahkan dari pengguna yang sudah ada.
@@ -608,6 +647,7 @@ Pelajaran untuk fase berikutnya: audit paket harus dijalankan ulang di awal seti
 - `Bootstrap` admin lewat `BOOTSTRAP_ADMIN_EMAIL/PASSWORD/NAME` (untuk database kosong, lokal maupun server; data contoh hanya di Development dan hanya bila `SEED_PASSWORD` diisi).
 
 **Keamanan yang ditegakkan di server (bukan hanya di tampilan)**
+
 - Cookie `ariadne.auth` HttpOnly + SameSite=Strict (Secure di luar Development); sesi lama langsung tidak berlaku saat pengguna dinonaktifkan atau dicabut hak adminnya (security stamp).
 - Semua permintaan ubah ke `/api` wajib header `X-Requested-With: ariadne` (perlindungan CSRF); tanpa header = 403.
 - Pesan gagal login dan lupa password sama untuk akun ada atau tidak; token reset berlaku 24 jam, sekali pakai, dikirim di bagian `#` alamat (tidak masuk log server) dan langsung dihapus dari alamat browser.
@@ -625,14 +665,15 @@ Keputusan Ahmad setelah Fase 2: gabungkan ke `main`; **mulai dari data kosong**;
 
 - **Mulai kosong:** database kerja tidak lagi berisi data contoh. Admin pertama dibuat dari `BOOTSTRAP_ADMIN_*` di `.env`. Data contoh tetap ada sebagai opsi (isi `SEED_PASSWORD`) karena dibutuhkan untuk membandingkan tampilan dengan mockup.
 - **Test browser terpisah dari data kerja:** `scripts/check.mjs` menyalakan stack Docker sementara (`-p ariadne-e2e`, port 28080/54322/28025/20251, password acak, data contoh aktif) lalu membongkarnya beserta databasenya. Port compose kini bisa diganti lewat `WEB_PORT`, `DB_PORT`, `MAILPIT_WEB_PORT`, `MAILPIT_SMTP_PORT`.
-- **Pengaturan > Proyek:** tombol *Ubah nama* dan *Arsipkan* (komponen baru `ProjectsTable`). Mengarsipkan membutuhkan konfirmasi dan ikut mengarsipkan semua sub-proyek. Data tidak dihapus, tetapi **belum ada tombol untuk memulihkan** proyek yang diarsipkan; kode proyeknya tetap terpakai.
-- **Admin dan keanggotaan:** admin yang membuat proyek **tidak otomatis menjadi anggota**; ia melihat dan mengelola semuanya, tetapi untuk menerima task ia perlu menambahkan dirinya di *Anggota* proyek. Bila ini terasa merepotkan, usulan: admin otomatis menjadi Pengelola proyek yang ia buat (keputusan belum diambil).
+- **Pengaturan > Proyek:** tombol _Ubah nama_ dan _Arsipkan_ (komponen baru `ProjectsTable`). Mengarsipkan membutuhkan konfirmasi dan ikut mengarsipkan semua sub-proyek. Data tidak dihapus, tetapi **belum ada tombol untuk memulihkan** proyek yang diarsipkan; kode proyeknya tetap terpakai.
+- **Admin dan keanggotaan:** admin yang membuat proyek **tidak otomatis menjadi anggota**; ia melihat dan mengelola semuanya, tetapi untuk menerima task ia perlu menambahkan dirinya di _Anggota_ proyek. Bila ini terasa merepotkan, usulan: admin otomatis menjadi Pengelola proyek yang ia buat (keputusan belum diambil).
 
 ### Fase 3 (27 Oktober 2026)
 
 **Yang dibuat:** tabel task per sub-proyek (mockup 03, terang dan gelap), nomor task otomatis per proyek (`SEN-115`), buat/ubah/hapus task dan sub-task, ubah status langsung dari baris (menu dengan keyboard), status tertahan wajib beralasan (dialog alasan + "menunggu siapa" + tooltip alasan), PIC banyak orang, label, filter lengkap (PIC, Status, Prioritas, Label, Terlambat, Minggu ini, Task saya, pencarian), progres proyek, angka task di sidebar, dan kolom "Task aktif" di halaman Tim. Admin yang membuat proyek otomatis menjadi Pengelolanya (keputusan Ahmad).
 
 **Perbedaan dari rencana dan mockup (sengaja)**
+
 - Kolom "Update terakhir" ada tetapi berisi "-" sampai Fase 4 (tabel aktivitas belum ada). Karena itu perubahan status, PIC, dan tanggal **belum menulis log aktivitas**; log mulai ditulis di Fase 4 dan tidak ada riwayat sebelumnya.
 - "58% · 41 dari 71 task selesai" di mockup tidak bisa ditiru tanpa 55 baris tambahan yang tidak tampak di gambar. Data contoh berisi 16 task induk (3 selesai, 19%) ditambah 3 sub-task; angka di layar dihitung sungguhan. Enam task Smartclassroom dan task Migrasi Data Center adalah contoh karangan (mockup tidak merinci).
 - Grup sub-proyek tanpa task disembunyikan (seperti mockup). Sub-proyek kosong tetap muncul di sidebar dan di pilihan sub-proyek saat menambah task.
@@ -643,6 +684,7 @@ Keputusan Ahmad setelah Fase 2: gabungkan ke `main`; **mulai dari data kosong**;
 - Tampilan layar kecil (mobile) menunggu Fase 10.
 
 **Keamanan dan ketahanan**
+
 - Status tertahan tanpa alasan ditolak 400 di API **dan** dijaga constraint database (`ck_tasks_hold_shape`); keluar dari status tertahan mengosongkan alasan, "menunggu siapa", dan "sejak".
 - Nomor task diambil dalam transaksi yang sama dengan penyimpanan (test: 20 task dibuat bersamaan, nomor tidak kembar); penyimpanan bersamaan memakai penanda versi baris (xmin) dan menjawab 409 bila bentrok.
 - PIC harus anggota aktif proyek (bukan Tamu); orang yang dikeluarkan dari proyek atau dijadikan Tamu otomatis dicopot dari PIC-nya.
@@ -659,19 +701,37 @@ Keputusan Ahmad setelah Fase 2: gabungkan ke `main`; **mulai dari data kosong**;
 **Yang dibuat:** drawer detail task 520px (mockup 05) yang terbuka dari mana pun lewat `?task=SEN-115` (bisa dibagikan, tombol Kembali menutupnya), semua bidang diubah di tempat (judul, keterangan, status, prioritas, PIC, tanggal, label, sub-proyek, alasan tertahan dan "menunggu siapa"), daftar sub-task yang bisa dibuka, timeline aktivitas empat jenis (Update, Komentar, Internal, Log otomatis), kotak menulis dengan daftar @mention yang bisa dipakai dengan keyboard, dan kolom "Update terakhir" di tabel. Dialog "Ubah task" dari Fase 3 diganti drawer; dialog "Tambah task" dan "Tambah sub-task" tetap.
 
 **Perbedaan dari rencana dan mockup (sengaja)**
+
 - Tamu boleh membuka drawer (judul menjadi tombol untuk semua orang). Kontrol ubah **disembunyikan**; kotak menulis Tamu hanya punya tab Komentar. Admin yang bukan anggota proyek melihat drawer tanpa kotak menulis (ia bukan anggota; sesuai tabel izin di domain.md).
 - Baris "Sub-proyek" di bidang drawer tidak ada di mockup; ditambahkan supaya kemampuan "pindah sub-proyek" dari dialog Fase 3 tidak hilang. Hanya tampil bagi yang boleh mengubah dan bila ada lebih dari satu sub-proyek.
 - Data contoh SEN-115 tidak punya tiga sub-task seperti di mockup 05 (SEN-116, 117, 119) karena mockup 03 menunjukkan SEN-115 tanpa sub-task; bagian sub-task diuji dengan data buatan test. Urutan PIC alfabetis (Ahmad, Wiwiet), bukan urutan penunjukan.
-- @mention **hanya disimpan** (tabel `mentions`); notifikasi dan email-nya Fase 9. Entri aktivitas tidak bisa diubah atau dihapus setelah dikirim (riwayat harus bisa dipercaya); bila perlu, ini dibuka di fase berikutnya.
+- @mention **hanya disimpan** (tabel `mentions`); notifikasi dan email-nya Fase 9. Mengubah dan menghapus tulisan ditambahkan di tindak lanjut di bawah.
 - Log otomatis: task dibuat, status, PIC, tanggal, sub-task ditambahkan (sesuai domain.md). Perubahan judul, keterangan, prioritas, dan label **tidak** dicatat. PIC yang dicopot otomatis karena orangnya dikeluarkan dari proyek juga tidak dicatat (aksi massal oleh sistem). Task yang sudah ada sebelum Fase 4 tidak punya riwayat; log mulai dari perubahan berikutnya.
 
 **Aturan dan keamanan**
+
 - Catatan Internal **tidak pernah** keluar ke Tamu: daftar aktivitas menyaringnya di server (termasuk halaman berikutnya), kolom "Update terakhir" hanya memuat jenis Update, dan Tamu ditolak 403 bila mencoba menulis Update atau Internal. Test menyerang tiap jalur; tiga aturan dirusak sengaja untuk membuktikan test-nya gagal (saringan Internal, Tamu di catatan Internal, "update terakhir" yang ikut jenis lain).
 - Orang yang ditandai harus anggota aktif proyek itu, "@Nama" harus benar-benar tertulis di teks, dan catatan Internal tidak boleh menandai Tamu; maksimal 20 orang per entri. Teks maksimal 5000 karakter, disimpan dan ditampilkan sebagai teks biasa (tidak pernah HTML).
 - Timeline dibaca bertahap (30 per halaman, penanda berupa nomor urut database, bukan waktu, jadi tidak ada entri terlewat atau ganda). Entri ikut tersembunyi bila task-nya dihapus. Bentuk entri dijaga juga oleh constraint database (`ck_activities_shape`).
 - Log dan perubahan task disimpan dalam satu penyimpanan: berhasil atau gagal bersama (permintaan yang ditolak tidak meninggalkan log).
 - Esc di dalam panel kecil (PIC, tanggal, menu) hanya menutup panel itu, bukan drawer.
 
-**Belum dilakukan:** uji beban dengan data seed ×10 (butir E7); tampilan drawer di layar kecil (Fase 10); notifikasi untuk @mention (Fase 9); mengubah atau menghapus komentar sendiri.
+**Belum dilakukan:** uji beban dengan data seed ×10 (butir E7); tampilan drawer di layar kecil (Fase 10); notifikasi untuk @mention (Fase 9).
 
 **Paket baru:** tidak ada.
+
+### Tindak lanjut Fase 4: ubah dan hapus tulisan (30 Oktober 2026)
+
+Atas permintaan Ahmad: update, komentar, dan catatan internal bisa diubah dan dihapus.
+
+**Aturan (keputusan saya; tidak ada di domain.md, mohon dikoreksi bila keliru)**
+
+- **Mengubah:** hanya penulisnya, dan hanya selama ia masih boleh menulis jenis itu (Tamu yang dulu menulis Update tidak bisa mengubahnya lagi). Pengelola dan Admin pun tidak bisa mengubah tulisan orang lain, supaya tidak ada yang "mengatasnamakan" orang. Jenis entri tidak bisa diganti. Teks sebelum diubah **tidak disimpan**; entri ditandai "diubah" dan waktu tulis aslinya tetap.
+- **Menghapus:** penulisnya, atau Pengelola proyek (menjaga ruang diskusi). Anggota lain, Tamu terhadap tulisan orang lain, dan Admin yang bukan anggota ditolak 403. Menghapus = disembunyikan (`deleted_at`), baris tetap ada di database, seperti task. Kolom "Update terakhir" otomatis kembali ke update sebelumnya.
+- Catatan otomatis (log) tidak bisa diubah atau dihapus siapa pun (400). Catatan Internal bagi Tamu tetap "tidak ada" (404), juga untuk ubah dan hapus. Entri lewat task lain, atau milik proyek yang tidak boleh dilihat, 404.
+- Orang yang ditandai dihitung ulang dari teks yang baru (aturan yang sama dengan menulis). Mengubah ke teks yang sama tidak menandai "diubah".
+- Orang yang ditandai sekarang dibaca dari teks "@Nama" di kotak, bukan dari daftar yang pernah dipilih; "@Pak Budi" tidak lagi ikut menandai orang bernama "Pak".
+
+**Pembuktian:** 16 test baru (backend); empat aturan dirusak sengaja (penulis saja, Pengelola saja yang boleh menghapus tulisan orang lain, Internal tidak terlihat Tamu, hapus = sembunyikan) dan test-nya gagal seperti seharusnya. Test browser mencakup ubah, batal hapus, hapus, dan sudut pandang Tamu.
+
+**Belum dilakukan:** riwayat versi tulisan (yang lama tidak bisa dilihat lagi).

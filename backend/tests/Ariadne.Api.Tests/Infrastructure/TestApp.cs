@@ -41,7 +41,8 @@ public sealed record World(
     Guid ProjectAlphaChild,
     Guid ProjectAlphaGrandchild,
     Guid ProjectBeta,
-    Guid TaskAlpha);
+    Guid TaskAlpha,
+    Guid ActivityAlpha);
 
 /// <summary>
 /// Satu aplikasi uji (database sendiri) untuk satu kelas test. Setiap peran login sekali dan kliennya
@@ -155,10 +156,22 @@ public sealed class TestApp : IAsyncDisposable
         };
         task.Assignees.Add(new TaskAssignee { TaskId = task.Id, UserId = member.Id });
         db.Tasks.Add(task);
+        // Satu komentar Anggota di task itu: dipakai matriks izin untuk mengubah entri milik orang lain
+        var comment = new Activity
+        {
+            Id = Guid.NewGuid(),
+            TaskId = task.Id,
+            RootProjectId = alpha.Id,
+            AuthorId = member.Id,
+            Kind = ActivityKind.Comment,
+            Body = "Komentar contoh",
+            CreatedAt = now,
+        };
+        db.Activities.Add(comment);
         await db.SaveChangesAsync();
 
         World = new World(admin, supervisor, otherSupervisor, member, manager, guest, outsider, otherManager,
-            teamA.Id, teamB.Id, alpha.Id, child.Id, grandchild.Id, beta.Id, task.Id);
+            teamA.Id, teamB.Id, alpha.Id, child.Id, grandchild.Id, beta.Id, task.Id, comment.Id);
     }
 
     /// <summary>Klien yang tidak login (tetap membawa header anti-CSRF seperti frontend).</summary>

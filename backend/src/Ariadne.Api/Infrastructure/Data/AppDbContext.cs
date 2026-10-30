@@ -202,7 +202,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             activity.HasOne(a => a.Task).WithMany().HasForeignKey(a => a.TaskId).OnDelete(DeleteBehavior.Cascade);
             activity.HasOne<Project>().WithMany().HasForeignKey(a => a.RootProjectId).OnDelete(DeleteBehavior.Restrict);
             activity.HasOne(a => a.Author).WithMany().HasForeignKey(a => a.AuthorId).OnDelete(DeleteBehavior.Restrict);
-            activity.HasQueryFilter(a => a.Task!.DeletedAt == null);
+            activity.HasQueryFilter(a => a.Task!.DeletedAt == null && a.DeletedAt == null);
         });
 
         builder.Entity<Mention>(mention =>
@@ -213,7 +213,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             mention.HasOne(m => m.Activity).WithMany(a => a.Mentions).HasForeignKey(m => m.ActivityId).OnDelete(DeleteBehavior.Cascade);
             mention.HasOne(m => m.User).WithMany().HasForeignKey(m => m.UserId).OnDelete(DeleteBehavior.Restrict);
             mention.HasIndex(m => m.UserId);
-            mention.HasQueryFilter(m => m.Activity!.Task!.DeletedAt == null);
+            mention.HasQueryFilter(m => m.Activity!.Task!.DeletedAt == null && m.Activity.DeletedAt == null);
         });
     }
 }

@@ -33,6 +33,7 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
         .Replace("{teamA}", w.TeamA.ToString(), StringComparison.Ordinal)
         .Replace("{alpha}", w.ProjectAlpha.ToString(), StringComparison.Ordinal)
         .Replace("{task}", w.TaskAlpha.ToString(), StringComparison.Ordinal)
+        .Replace("{activity}", w.ActivityAlpha.ToString(), StringComparison.Ordinal)
         .Replace("{member}", w.Member.Id.ToString(), StringComparison.Ordinal)
         .Replace("{outsider}", w.Outsider.Id.ToString(), StringComparison.Ordinal);
 
@@ -71,6 +72,8 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
         Get("/api/tasks/{task}/activities",                         "UANNAAANN"),
         // Komentar biasa boleh ditulis Tamu; Update dan Internal tidak (diuji per jenis di ActivityTests)
         Req(HttpMethod.Post,  "/api/tasks/{task}/activities",       "UFNNAAANN", _ => new { kind = "Comment", body = "   " }),
+        // Hanya penulis (Anggota) yang boleh mengubah; yang bisa melihat tetapi bukan penulis mendapat 403
+        Req(HttpMethod.Patch, "/api/tasks/{task}/activities/{activity}", "UFNNAFFNN", _ => new { body = "   " }),
     ];
 
     public static IEnumerable<object[]> Cases()
@@ -154,6 +157,7 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
             "POST /api/projects/{id}/archive", // merusak data; diuji di ProjectTests
             "DELETE /api/projects/{id}/members/{userId}", // merusak data; diuji di ProjectMemberTests
             "DELETE /api/tasks/{id}", // merusak data; diuji di TaskTests (semua peran)
+            "DELETE /api/tasks/{id}/activities/{activityId}", // merusak data; diuji di ActivityTests (semua peran)
         ];
 
         var routes = fx.App.Factory.Services.GetRequiredService<EndpointDataSource>().Endpoints

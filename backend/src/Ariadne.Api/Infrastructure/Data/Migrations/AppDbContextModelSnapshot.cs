@@ -46,6 +46,14 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("data");
 
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<DateTimeOffset?>("EditedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("edited_at");
+
                     b.Property<string>("Kind")
                         .IsRequired()
                         .HasMaxLength(20)

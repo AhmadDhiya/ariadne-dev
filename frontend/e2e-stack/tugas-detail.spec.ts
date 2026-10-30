@@ -276,6 +276,37 @@ test.describe('Drawer detail task: mengubah di tempat dan menulis aktivitas', ()
       'Jangan dibaca tamu',
     )
 
+    // Ubah komentar sendiri (@mention tetap disorot), lalu hapus catatan internal dan update
+    const reopened = drawerOf(page)
+    const log = reopened.getByRole('region', { name: 'Aktivitas' })
+    const comment = log.locator('.ar-act-comment').filter({ hasText: 'Tolong dicek' })
+    await comment.getByRole('button', { name: /^Ubah tulisan/ }).click()
+    await reopened
+      .getByRole('combobox', { name: 'Ubah komentar' })
+      .fill('Tolong dicek @Wiwiet, sudah dibahas')
+    await reopened.getByRole('button', { name: 'Simpan' }).click()
+    await expect(comment).toContainText('sudah dibahas')
+    await expect(comment).toContainText('diubah')
+    await expect(comment.locator('.ar-mention')).toHaveText('@Wiwiet')
+
+    const note = log.locator('.ar-act-internal')
+    await note.getByRole('button', { name: /^Hapus tulisan/ }).click()
+    await expect(note).toContainText('Hapus entri ini?')
+    await note.getByRole('button', { name: 'Batal' }).click() // batal tidak menghapus
+    await expect(note).toContainText('Jangan dibaca tamu')
+    await note.getByRole('button', { name: /^Hapus tulisan/ }).click()
+    await note.getByRole('button', { name: 'Ya, hapus' }).click()
+    await expect(log).not.toContainText('Jangan dibaca tamu')
+
+    await log
+      .locator('.ar-act-update')
+      .getByRole('button', { name: /^Hapus tulisan/ })
+      .click()
+    await log.locator('.ar-act-update').getByRole('button', { name: 'Ya, hapus' }).click()
+    await expect(log).not.toContainText('Setengah jalan')
+    await page.keyboard.press('Escape')
+    await expect(row(page, `${title} (v2)`)).not.toContainText('Setengah jalan') // kolom Update terakhir ikut kosong
+
     // Bersihkan
     const removed = await request.delete(`/api/tasks/${task.id}`, { headers: HEADERS })
     expect(removed.status()).toBe(204)
@@ -378,6 +409,21 @@ test.describe('Drawer detail task: Tamu', () => {
     await expect(timeline).toContainText('Pak Budi')
     await expect(timeline.locator('.ar-mention')).toHaveText('@Wiwiet')
     await expect(timeline.getByText('Tamu', { exact: true })).toBeVisible()
+
+    // Hanya tulisan sendiri yang bisa diubah dan dihapus; update milik Ahmad tidak
+    await expect(timeline.getByRole('button', { name: /^Ubah tulisan/ })).toHaveCount(1)
+    await expect(timeline.getByRole('button', { name: /^Hapus tulisan/ })).toHaveCount(1)
+    const mine = timeline.locator('.ar-act-comment').filter({ hasText: 'Terima kasih' })
+    await mine.getByRole('button', { name: /^Ubah tulisan/ }).click()
+    await drawer
+      .getByRole('combobox', { name: 'Ubah komentar' })
+      .fill('Terima kasih banyak @Wiwiet')
+    await drawer.getByRole('button', { name: 'Simpan' }).click()
+    await expect(mine).toContainText('banyak')
+    await expect(mine).toContainText('diubah')
+    await mine.getByRole('button', { name: /^Hapus tulisan/ }).click()
+    await mine.getByRole('button', { name: 'Ya, hapus' }).click()
+    await expect(timeline).not.toContainText('Terima kasih banyak')
 
     // API: Tamu tidak bisa menulis Update atau Internal, dan tidak menerima Internal
     const denied = await page.request.post(`/api/tasks/${task.id}/activities`, {

@@ -1,1 +1,5 @@
-export { ActivityTimeline, type ActivityTimelineProps } from './ActivityTimeline'
+export {
+  ActivityTimeline,
+  type ActivityTimelineProps,
+  type EntryPermissions,
+} from './ActivityTimeline'

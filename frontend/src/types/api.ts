@@ -236,6 +236,8 @@ export interface ActivityItem {
   logKind: LogKindName | null
   data: ActivityData | null
   createdAt: string
+  /** Waktu terakhir diubah penulisnya; null bila tidak pernah diubah. */
+  editedAt: string | null
 }
 
 export interface ActivityPage {
