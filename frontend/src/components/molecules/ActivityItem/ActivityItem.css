@@ -90,3 +90,15 @@
 .ar-act-logtext {
   flex: 1;
 }
+
+.ar-act-edited {
+  font-style: italic;
+}
+.ar-act-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  font-size: 12px;
+  color: var(--ink-muted);
+}

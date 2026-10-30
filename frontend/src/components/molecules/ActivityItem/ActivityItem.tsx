@@ -12,15 +12,28 @@ export interface ActivityItemProps {
   guest?: boolean
   /** Ikon kecil untuk entri log (default: move). */
   icon?: IconName
+  /** Penulis pernah mengubah isinya: ditandai "diubah" di samping waktu. */
+  edited?: boolean
   /** Teks biasa; @nama memakai atom Mention. Tidak pernah HTML mentah. */
   children: ReactNode
+  /** Aksi di bawah teks (Ubah, Hapus); tidak dipakai untuk entri log. */
+  footer?: ReactNode
 }
 
 /**
  * Satu entri timeline aktivitas task. `internal` tidak pernah dikirim API ke Tamu;
  * komponen ini tidak menyaringnya, penyaringan dilakukan di server.
  */
-export function ActivityItem({ kind, author, time, guest, icon, children }: ActivityItemProps) {
+export function ActivityItem({
+  kind,
+  author,
+  time,
+  guest,
+  icon,
+  edited,
+  children,
+  footer,
+}: ActivityItemProps) {
   if (kind === 'log') {
     return (
       <div className="ar-act ar-act-log">
@@ -54,9 +67,13 @@ export function ActivityItem({ kind, author, time, guest, icon, children }: Acti
               Internal
             </span>
           ) : null}
-          <span className="ar-act-time">{time}</span>
+          <span className="ar-act-time">
+            {edited ? <span className="ar-act-edited">diubah · </span> : null}
+            {time}
+          </span>
         </div>
         <div className="ar-act-text">{children}</div>
+        {footer ? <div className="ar-act-footer">{footer}</div> : null}
       </div>
     </div>
   )

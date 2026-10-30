@@ -15,6 +15,7 @@ const item = (over: Partial<ActivityItem>): ActivityItem => ({
   logKind: null,
   data: null,
   createdAt: '2026-09-28T02:12:00Z',
+  editedAt: null,
   ...over,
 })
 
@@ -97,5 +98,124 @@ describe('ActivityTimeline', () => {
 
     rerender(<ActivityTimeline items={ITEMS} today="2026-09-28" hasMore loadingMore />)
     expect(screen.getByRole('button', { name: 'Memuat…' })).toBeDisabled()
+  })
+
+  describe('mengubah dan menghapus', () => {
+    const PEOPLE = [
+      { id: 'ah', name: 'Ahmad', role: 'Pengelola' as const },
+      { id: 'bu', name: 'Pak Budi', role: 'Tamu' as const },
+    ]
+    const MINE = ITEMS[2] as ActivityItem // komentar Syaikhan dengan @Ahmad
+    const setup = (
+      permissions: (item: ActivityItem) => { canEdit: boolean; canDelete: boolean },
+    ) => {
+      const onEdit = vi.fn().mockResolvedValue(undefined)
+      const onDelete = vi.fn().mockResolvedValue(undefined)
+      const user = userEvent.setup()
+      render(
+        <ActivityTimeline
+          items={ITEMS}
+          today="2026-09-28"
+          people={PEOPLE}
+          permissionsOf={permissions}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />,
+      )
+      return { onEdit, onDelete, user }
+    }
+    const mineOnly = (item: ActivityItem) => ({
+      canEdit: item.id === MINE.id,
+      canDelete: item.id === MINE.id,
+    })
+
+    it('tombol Ubah dan Hapus hanya di entri yang diizinkan, dan tidak pernah di log otomatis', () => {
+      setup(mineOnly)
+
+      expect(screen.getAllByRole('button', { name: /^Ubah tulisan/ })).toHaveLength(1)
+      expect(screen.getAllByRole('button', { name: /^Hapus tulisan/ })).toHaveLength(1)
+    })
+
+    it('tanpa izin sama sekali (Tamu pada tulisan orang lain) tidak ada tombol', () => {
+      setup(() => ({ canEdit: false, canDelete: false }))
+
+      expect(screen.queryByRole('button', { name: /^Ubah tulisan/ })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /^Hapus tulisan/ })).not.toBeInTheDocument()
+    })
+
+    it('Pengelola yang hanya boleh menghapus tidak melihat tombol Ubah', () => {
+      setup((item) => ({ canEdit: false, canDelete: item.id === MINE.id }))
+
+      expect(screen.queryByRole('button', { name: /^Ubah tulisan/ })).not.toBeInTheDocument()
+      expect(screen.getAllByRole('button', { name: /^Hapus tulisan/ })).toHaveLength(1)
+    })
+
+    it('Ubah membuka editor berisi teks lama; Simpan mengirim teks baru dan orang yang ditandai', async () => {
+      const { onEdit, user } = setup(mineOnly)
+
+      await user.click(screen.getByRole('button', { name: /^Ubah tulisan/ }))
+      const box = screen.getByRole('combobox', { name: 'Ubah komentar' })
+      expect(box).toHaveValue('@Ahmad bisa dicek apakah runner boleh lewat proxy?')
+      await user.clear(box)
+      await user.type(box, '@Ahmad sudah selesai')
+      await user.click(screen.getByRole('button', { name: 'Simpan' }))
+
+      expect(onEdit).toHaveBeenCalledExactlyOnceWith(MINE, '@Ahmad sudah selesai', ['ah'])
+      expect(screen.queryByRole('combobox', { name: 'Ubah komentar' })).not.toBeInTheDocument() // editor menutup
+    })
+
+    it('Batal membuang perubahan', async () => {
+      const { onEdit, user } = setup(mineOnly)
+
+      await user.click(screen.getByRole('button', { name: /^Ubah tulisan/ }))
+      await user.type(screen.getByRole('combobox', { name: 'Ubah komentar' }), ' tambahan')
+      await user.click(screen.getByRole('button', { name: 'Batal' }))
+
+      expect(onEdit).not.toHaveBeenCalled()
+      expect(screen.getByText(/bisa dicek apakah runner/)).toBeInTheDocument()
+    })
+
+    it('catatan internal yang diubah tidak menawarkan Tamu untuk ditandai', async () => {
+      const { user } = setup((item) => ({ canEdit: item.kind === 'Internal', canDelete: false }))
+
+      await user.click(screen.getByRole('button', { name: /^Ubah tulisan/ }))
+      const box = screen.getByRole('combobox', { name: 'Ubah catatan internal' })
+      await user.clear(box)
+      await user.type(box, '@pak')
+
+      expect(screen.queryByRole('option')).not.toBeInTheDocument()
+    })
+
+    it('Hapus meminta konfirmasi dulu, baru menghapus', async () => {
+      const { onDelete, user } = setup(mineOnly)
+
+      await user.click(screen.getByRole('button', { name: /^Hapus tulisan/ }))
+      expect(onDelete).not.toHaveBeenCalled()
+      expect(screen.getByText('Hapus entri ini?')).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Ya, hapus' }))
+
+      expect(onDelete).toHaveBeenCalledExactlyOnceWith(MINE)
+    })
+
+    it('Batal pada konfirmasi tidak menghapus', async () => {
+      const { onDelete, user } = setup(mineOnly)
+
+      await user.click(screen.getByRole('button', { name: /^Hapus tulisan/ }))
+      await user.click(screen.getByRole('button', { name: 'Batal' }))
+
+      expect(onDelete).not.toHaveBeenCalled()
+      expect(screen.queryByText('Hapus entri ini?')).not.toBeInTheDocument()
+    })
+
+    it('entri yang pernah diubah ditandai "diubah"', () => {
+      render(
+        <ActivityTimeline
+          items={[item({ id: 'e', body: 'Isi baru', editedAt: '2026-09-28T03:00:00Z' })]}
+          today="2026-09-28"
+        />,
+      )
+
+      expect(screen.getByText(/diubah/)).toBeInTheDocument()
+    })
   })
 })

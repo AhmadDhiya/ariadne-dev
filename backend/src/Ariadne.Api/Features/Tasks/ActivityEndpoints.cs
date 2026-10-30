@@ -24,6 +24,8 @@ internal static class ActivityEndpoints
         var group = app.MapGroup("/api/tasks/{id:guid}/activities");
         group.MapGet("", List);
         group.MapPost("", Create);
+        group.MapPatch("/{activityId:guid}", Update);
+        group.MapDelete("/{activityId:guid}", Delete);
         return app;
     }
 
@@ -83,17 +85,12 @@ internal static class ActivityEndpoints
         access.EnsureCanViewProject(root); // yang tidak boleh melihat selalu mendapat 404, apa pun isi permintaannya
 
         var kind = Validate.Enum<ActivityKind>("kind", request.Kind, "Jenis");
-        switch (kind)
+        if (kind == ActivityKind.Log)
         {
-            case ActivityKind.Log:
-                throw new ValidationFailedException("kind", "Log hanya dibuat otomatis oleh sistem.");
-            case ActivityKind.Comment:
-                access.EnsureCanComment(root);
-                break;
-            default: // Update dan Internal: hanya Pengelola dan Anggota proyek
-                access.EnsureCanEditTasks(root);
-                break;
+            throw new ValidationFailedException("kind", "Log hanya dibuat otomatis oleh sistem.");
         }
+
+        EnsureCanWrite(access, root, kind);
 
         var body = Validate.Text("body", request.Body, MaxBodyLength, "Isi");
         var mentions = await CheckMentionsAsync(db, root, kind, body, request.MentionUserIds, ct);
@@ -119,6 +116,112 @@ internal static class ActivityEndpoints
         var saved = await db.Activities.AsNoTracking().Where(a => a.Id == activity.Id).Select(Projection).SingleAsync(ct);
         var item = (await ToItemsAsync(db, root, [saved], ct))[0];
         return Results.Created($"/api/tasks/{id}/activities", item);
+    }
+
+    private static async Task<IResult> Update(
+        Guid id,
+        Guid activityId,
+        UpdateActivityRequest request,
+        HttpContext http,
+        AccessService accessService,
+        AppDbContext db,
+        IClock clock,
+        CancellationToken ct)
+    {
+        var access = await accessService.CurrentAsync(http.User, ct);
+        var activity = await FindAsync(db, access, id, activityId, track: true, ct);
+        var root = activity.RootProjectId;
+        if (activity.AuthorId != access.UserId)
+        {
+            throw new ForbiddenException(); // hanya penulisnya yang boleh mengubah
+        }
+
+        EnsureCanWrite(access, root, activity.Kind);
+        var body = Validate.Text("body", request.Body, MaxBodyLength, "Isi");
+        var mentions = await CheckMentionsAsync(db, root, activity.Kind, body, request.MentionUserIds, ct);
+
+        var wanted = mentions.Select(m => m.Id).ToHashSet();
+        var unchanged = body == activity.Body && wanted.SetEquals(activity.Mentions.Select(m => m.UserId));
+        if (!unchanged)
+        {
+            activity.Body = body;
+            activity.Mentions.RemoveAll(m => !wanted.Contains(m.UserId));
+            foreach (var person in mentions.Where(p => activity.Mentions.All(m => m.UserId != p.Id)))
+            {
+                activity.Mentions.Add(new Mention { ActivityId = activity.Id, UserId = person.Id, DisplayName = person.Name });
+            }
+
+            activity.EditedAt = clock.UtcNow;
+            await db.SaveOrConflictAsync("Entri tidak bisa disimpan karena bentrok. Coba lagi.", ct);
+        }
+
+        var saved = await db.Activities.AsNoTracking().Where(a => a.Id == activityId).Select(Projection).SingleAsync(ct);
+        return Results.Ok((await ToItemsAsync(db, root, [saved], ct))[0]);
+    }
+
+    private static async Task<IResult> Delete(
+        Guid id,
+        Guid activityId,
+        HttpContext http,
+        AccessService accessService,
+        AppDbContext db,
+        IClock clock,
+        CancellationToken ct)
+    {
+        var access = await accessService.CurrentAsync(http.User, ct);
+        var activity = await FindAsync(db, access, id, activityId, track: true, ct);
+        var root = activity.RootProjectId;
+
+        // Penulisnya, atau Pengelola proyek (menjaga ruang diskusi); anggota lain tidak boleh menghapus tulisan orang
+        if (activity.AuthorId == access.UserId)
+        {
+            EnsureCanWrite(access, root, activity.Kind);
+        }
+        else if (access.RoleIn(root) != ProjectRole.Pengelola)
+        {
+            throw new ForbiddenException();
+        }
+
+        activity.DeletedAt = clock.UtcNow;
+        await db.SaveOrConflictAsync("Entri tidak bisa dihapus karena bentrok. Coba lagi.", ct);
+        return Results.NoContent();
+    }
+
+    /// <summary>
+    /// Entri yang boleh dilihat pemanggil, untuk diubah atau dihapus. Yang tidak boleh dilihat (task di proyek lain,
+    /// catatan Internal bagi Tamu, entri task lain, Log) tidak dibedakan dari "tidak ada": 404.
+    /// </summary>
+    private static async Task<Activity> FindAsync(AppDbContext db, UserAccess access, Guid taskId, Guid activityId, bool track, CancellationToken ct)
+    {
+        var task = await db.Tasks.AsNoTracking().SingleOrDefaultAsync(t => t.Id == taskId, ct) ?? throw new NotFoundException();
+        access.EnsureCanViewProject(task.RootProjectId);
+
+        var query = track ? db.Activities.Include(a => a.Mentions) : db.Activities.AsNoTracking();
+        var activity = await query.SingleOrDefaultAsync(a => a.Id == activityId && a.TaskId == taskId, ct) ?? throw new NotFoundException();
+        if (activity.Kind == ActivityKind.Internal && !access.CanSeeInternal(task.RootProjectId))
+        {
+            throw new NotFoundException();
+        }
+
+        if (activity.Kind == ActivityKind.Log)
+        {
+            throw new ValidationFailedException("kind", "Catatan otomatis tidak bisa diubah atau dihapus.");
+        }
+
+        return activity;
+    }
+
+    /// <summary>Update dan Internal: Pengelola dan Anggota. Komentar biasa: semua anggota proyek termasuk Tamu.</summary>
+    private static void EnsureCanWrite(UserAccess access, Guid root, ActivityKind kind)
+    {
+        if (kind == ActivityKind.Comment)
+        {
+            access.EnsureCanComment(root);
+        }
+        else
+        {
+            access.EnsureCanEditTasks(root);
+        }
     }
 
     /// <summary>
@@ -172,7 +275,8 @@ internal static class ActivityEndpoints
         List<MentionItem> Mentions,
         LogKind? LogKind,
         ActivityData? Data,
-        DateTimeOffset CreatedAt);
+        DateTimeOffset CreatedAt,
+        DateTimeOffset? EditedAt);
 
     private static readonly System.Linq.Expressions.Expression<Func<Activity, ActivityRow>> Projection = a => new ActivityRow(
         a.Id,
@@ -184,7 +288,8 @@ internal static class ActivityEndpoints
         a.Mentions.Select(m => new MentionItem(m.UserId, m.DisplayName)).ToList(),
         a.LogKind,
         a.Data,
-        a.CreatedAt);
+        a.CreatedAt,
+        a.EditedAt);
 
     private static async Task<List<ActivityItem>> ToItemsAsync(AppDbContext db, Guid root, List<ActivityRow> rows, CancellationToken ct)
     {
@@ -207,7 +312,8 @@ internal static class ActivityEndpoints
                 [.. r.Mentions.OrderBy(m => m.Name, StringComparer.Ordinal)],
                 r.LogKind,
                 r.Data,
-                r.CreatedAt)),
+                r.CreatedAt,
+                r.EditedAt)),
         ];
     }
 }

@@ -27,8 +27,9 @@ public enum LogKind
 }
 
 /// <summary>
-/// Satu entri di timeline aktivitas sebuah task. Entri tidak diubah dan tidak dihapus setelah dibuat
-/// (riwayat harus bisa dipercaya); ikut tersembunyi bila task-nya dihapus.
+/// Satu entri di timeline aktivitas sebuah task. Log otomatis tidak pernah diubah atau dihapus. Update, komentar, dan
+/// catatan internal hanya bisa diubah oleh penulisnya; penulisnya atau Pengelola proyek bisa menghapusnya (disembunyikan,
+/// bukan hilang). Ikut tersembunyi bila task-nya dihapus.
 /// </summary>
 public sealed class Activity
 {
@@ -56,6 +57,12 @@ public sealed class Activity
     public ActivityData? Data { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>Terakhir diubah oleh penulisnya; kosong bila tidak pernah diubah. Teks sebelumnya tidak disimpan.</summary>
+    public DateTimeOffset? EditedAt { get; set; }
+
+    /// <summary>Dihapus = disembunyikan di semua tampilan, tetapi barisnya tetap ada (sama seperti task).</summary>
+    public DateTimeOffset? DeletedAt { get; set; }
 
     public ProjectTask? Task { get; set; }
 

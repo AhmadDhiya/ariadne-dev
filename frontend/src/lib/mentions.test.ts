@@ -87,6 +87,15 @@ describe('mentionedIn', () => {
     expect(mentionedIn('Cek ya', picks)).toEqual([])
   })
 
+  it('nama yang saling memuat: yang lebih panjang menang', () => {
+    const people = [
+      { id: 'a', name: 'Pak' },
+      { id: 'b', name: 'Pak Budi' },
+    ]
+    expect(mentionedIn('terima kasih @Pak Budi', people)).toEqual(['b'])
+    expect(mentionedIn('@Pak dan @Pak Budi', people)).toEqual(['a', 'b'])
+  })
+
   it('tidak ganda bila ditandai dua kali, dan tidak cocok dengan potongan nama lain', () => {
     expect(mentionedIn('@Manto lalu @Manto lagi', picks)).toEqual(['1'])
     expect(mentionedIn('@Ramadhan hadir', picks)).toEqual([])

@@ -23,3 +23,7 @@
 .ar-timeline-error p {
   margin: 0;
 }
+
+.ar-timeline-entryerror {
+  color: var(--danger);
+}

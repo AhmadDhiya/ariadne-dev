@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { apiGet, apiPost } from './client'
+import { apiDelete, apiGet, apiPatch, apiPost } from './client'
 import type { ActivityItem, ActivityKindName, ActivityPage } from '@/types/api'
 
 const PAGE_SIZE = 30
@@ -27,6 +27,42 @@ export interface NewActivity {
   kind: Exclude<ActivityKindName, 'Log'>
   body: string
   mentionUserIds: string[]
+}
+
+/** Update terbaru tampil di kolom "Update terakhir" tabel, jadi tabel ikut dimuat ulang. */
+function useRefreshActivities() {
+  const client = useQueryClient()
+  return () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: ['task'] }),
+      client.invalidateQueries({ queryKey: ['tasks'] }),
+    ])
+}
+
+export function useUpdateActivity() {
+  const refresh = useRefreshActivities()
+  return useMutation({
+    mutationFn: ({
+      taskId,
+      activityId,
+      ...body
+    }: {
+      taskId: string
+      activityId: string
+      body: string
+      mentionUserIds: string[]
+    }) => apiPatch<ActivityItem>(`/api/tasks/${taskId}/activities/${activityId}`, body),
+    onSuccess: refresh,
+  })
+}
+
+export function useDeleteActivity() {
+  const refresh = useRefreshActivities()
+  return useMutation({
+    mutationFn: ({ taskId, activityId }: { taskId: string; activityId: string }) =>
+      apiDelete(`/api/tasks/${taskId}/activities/${activityId}`),
+    onSuccess: refresh,
+  })
 }
 
 export function useCreateActivity() {
