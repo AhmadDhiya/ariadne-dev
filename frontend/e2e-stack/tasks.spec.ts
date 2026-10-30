@@ -276,40 +276,36 @@ test.describe('Tabel proyek: mengubah task', () => {
     await expect(created.getByRole('cell').nth(7)).toHaveText(/3/) // 29 Sep - 1 Okt = 3 hari kerja
     await expect(page.getByRole('button', { name: /^Dispatch/ })).toContainText('4 task')
 
-    // Ubah judul
+    // Ubah judul di drawer detail
     await created.getByRole('button', { name: title }).click()
-    const edit = page.getByRole('dialog', { name: /^Ubah SEN-/ })
-    await expect(edit.getByLabel(/^Judul/)).toHaveValue(title)
-    await edit.getByLabel(/^Judul/).fill(`${title} (diubah)`)
-    await edit.getByRole('button', { name: 'Simpan' }).click()
+    const drawer = page.locator('dialog.ar-drawer')
+    await expect(drawer).toBeVisible()
+    await expect(page).toHaveURL(/task=SEN-\d+/)
+    await drawer.getByRole('button', { name: title }).click()
+    await drawer.getByRole('textbox', { name: 'Judul' }).fill(`${title} (diubah)`)
+    await drawer.getByRole('button', { name: 'Simpan' }).click()
     await expect(row(page, `${title} (diubah)`)).toBeVisible()
 
-    // Tambah sub-task
-    await row(page, `${title} (diubah)`)
-      .getByRole('button', { name: `${title} (diubah)` })
-      .click()
-    await page
-      .getByRole('dialog', { name: /^Ubah SEN-/ })
-      .getByRole('button', { name: 'Tambah sub-task' })
-      .click()
+    // Tambah sub-task dari drawer
+    await drawer.getByRole('button', { name: 'Tambah sub-task' }).first().click()
     const sub = page.getByRole('dialog', { name: 'Tambah sub-task' })
     await sub.getByLabel(/^Judul/).fill('Anak uji')
     await sub.getByRole('button', { name: 'Tambah sub-task' }).click()
     await expect(row(page, 'Anak uji')).toBeVisible()
     await expect(row(page, `${title} (diubah)`)).toContainText('0/1')
+    await expect(drawer.getByRole('button', { name: 'Anak uji' })).toBeVisible()
 
-    // Hapus (sub-task ikut hilang)
-    await row(page, `${title} (diubah)`)
-      .getByRole('button', { name: `${title} (diubah)` })
-      .click()
+    // Hapus lewat menu "..." (sub-task ikut hilang)
+    await drawer.getByRole('button', { name: 'Aksi lain' }).click()
     await page
-      .getByRole('dialog', { name: /^Ubah SEN-/ })
-      .getByRole('button', { name: 'Hapus task' })
+      .getByRole('listbox', { name: 'Aksi lain' })
+      .getByRole('option', { name: 'Hapus task' })
       .click()
     const confirm = page.getByRole('dialog', { name: /^Hapus SEN-/ })
     await confirm.getByRole('button', { name: 'Hapus task' }).click()
     await expect(row(page, `${title} (diubah)`)).toHaveCount(0)
     await expect(row(page, 'Anak uji')).toHaveCount(0)
+    await expect(drawer).toBeHidden()
     await expect(page.getByRole('button', { name: /^Dispatch/ })).toContainText('3 task')
   })
 
@@ -349,7 +345,7 @@ test.describe('Tabel proyek: peran', () => {
   test.describe('Pak Budi (Tamu)', () => {
     test.use({ storageState: authFile('budi') })
 
-    test('hanya melihat: tanpa tombol tambah, status bukan tombol, judul bukan tombol', async ({
+    test('hanya melihat: tanpa tombol tambah dan status bukan tombol; judul tetap bisa dibuka', async ({
       page,
     }) => {
       await openSentul(page)
@@ -358,7 +354,7 @@ test.describe('Tabel proyek: peran', () => {
       await expect(page.getByRole('button', { name: /Ubah status/ })).toHaveCount(0)
       await expect(
         row(page, 'SEN-104').getByRole('button', { name: 'Integrasi log & metrics' }),
-      ).toHaveCount(0)
+      ).toBeVisible() // membuka drawer baca-saja; kontrol ubahnya disembunyikan (lihat tugas-detail.spec.ts)
       await expect(row(page, 'SEN-104')).toContainText('On Progress') // tetap terbaca
       expect(await a11yViolations(page)).toEqual([])
     })

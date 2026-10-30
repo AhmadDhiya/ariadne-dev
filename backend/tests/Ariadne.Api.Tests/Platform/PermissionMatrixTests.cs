@@ -68,6 +68,9 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
         Req(HttpMethod.Put,   "/api/tasks/{task}/dates",            "UFNNAAFNN", _ => new { startDate = "2030-01-02", dueDate = "2030-01-01" }),
         Req(HttpMethod.Put,   "/api/tasks/{task}/assignees",        "UFNNAAFNN", _ => new { userIds = new[] { Guid.NewGuid() } }),
         Req(HttpMethod.Post,  "/api/tasks/{task}/subtasks",         "UFNNAAFNN", _ => new { title = "   " }),
+        Get("/api/tasks/{task}/activities",                         "UANNAAANN"),
+        // Komentar biasa boleh ditulis Tamu; Update dan Internal tidak (diuji per jenis di ActivityTests)
+        Req(HttpMethod.Post,  "/api/tasks/{task}/activities",       "UFNNAAANN", _ => new { kind = "Comment", body = "   " }),
     ];
 
     public static IEnumerable<object[]> Cases()

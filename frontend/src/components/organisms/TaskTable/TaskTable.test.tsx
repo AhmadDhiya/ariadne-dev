@@ -22,10 +22,12 @@ const task = (over: Partial<TaskRow>): TaskRow => ({
   holdReason: null,
   waitingOn: null,
   waitingOnIsPerson: false,
+  waitingOnUserId: null,
   heldSince: null,
   labels: [],
   subtaskCount: 0,
   subtaskDoneCount: 0,
+  lastUpdate: null,
   ...over,
 })
 
@@ -41,6 +43,11 @@ const GROUPS: TaskGroup[] = [
         title: 'Pipeline GitLab',
         status: 'Blocked',
         holdReason: 'Firewall menutup port 443',
+        lastUpdate: {
+          text: 'Runner gagal konek ke staging',
+          authorName: 'Wiwiet',
+          createdAt: '2026-09-28T01:40:00Z',
+        },
         waitingOn: 'Manto',
         waitingOnIsPerson: true,
         heldSince: '2026-09-24T01:00:00Z',
@@ -73,6 +80,7 @@ function setup(props: Partial<TaskTableProps> = {}) {
     <TaskTable
       groups={GROUPS}
       canEdit
+      today="2026-09-28"
       onChangeStatus={onChangeStatus}
       onOpenTask={onOpenTask}
       empty={<p>Belum ada task</p>}
@@ -180,6 +188,48 @@ describe('TaskTable', () => {
     await user.click(screen.getByRole('button', { name: 'Pipeline GitLab' }))
 
     expect(onOpenTask).toHaveBeenCalledWith(expect.objectContaining({ key: 'SEN-115' }))
+  })
+
+  it('kolom Update terakhir: teks, penulis, dan waktu (jam, Kemarin, atau tanggal)', () => {
+    setup({
+      groups: [
+        {
+          id: 'g',
+          label: 'Dispatch',
+          tasks: [
+            task({
+              id: 'x',
+              key: 'SEN-1',
+              lastUpdate: {
+                text: 'Hari ini',
+                authorName: 'Ahmad',
+                createdAt: '2026-09-28T02:12:00Z',
+              },
+            }),
+            task({
+              id: 'y',
+              key: 'SEN-2',
+              lastUpdate: {
+                text: 'Kemarin saja',
+                authorName: 'Rama',
+                createdAt: '2026-09-27T05:00:00Z',
+              },
+            }),
+            task({
+              id: 'z',
+              key: 'SEN-3',
+              lastUpdate: { text: 'Lama', authorName: 'Manto', createdAt: '2026-09-24T05:00:00Z' },
+            }),
+            task({ id: 'w', key: 'SEN-4' }),
+          ],
+        },
+      ],
+    })
+
+    expect(screen.getByText('Ahmad · 09.12')).toBeInTheDocument()
+    expect(screen.getByText('Rama · Kemarin')).toBeInTheDocument()
+    expect(screen.getByText('Manto · 24 Sep')).toBeInTheDocument()
+    expect(screen.getByText('Hari ini')).toBeInTheDocument()
   })
 
   it('tanpa grup menampilkan pesan kosong, bukan tabel', () => {

@@ -23,16 +23,37 @@ public sealed record TaskRow(
     string? HoldReason,
     string? WaitingOn,
     bool WaitingOnIsPerson,
+    Guid? WaitingOnUserId,
     DateTimeOffset? HeldSince,
     IReadOnlyList<string> Labels,
     int SubtaskCount,
-    int SubtaskDoneCount);
+    int SubtaskDoneCount,
+    TaskUpdate? LastUpdate);
+
+/// <summary>Update (laporan progres) terbaru sebuah task, untuk kolom "Update terakhir". Catatan Internal tidak pernah dihitung.</summary>
+public sealed record TaskUpdate(string Text, string AuthorName, DateTimeOffset CreatedAt);
 
 public sealed record TaskProgress(int Done, int Total, int Percent);
 
-public sealed record TaskList(Guid ProjectId, bool CanEdit, TaskProgress Progress, IReadOnlyList<TaskRow> Tasks);
+/// <summary>"Today" = hari ini di Asia/Jakarta menurut server (bisa dikunci di mode demo), dasar tulisan "Kemarin" di layar.</summary>
+public sealed record TaskList(Guid ProjectId, bool CanEdit, TaskProgress Progress, IReadOnlyList<TaskRow> Tasks, DateOnly Today);
 
-public sealed record TaskDetail(TaskRow Task, string? Description, bool CanEdit);
+public sealed record TaskParent(Guid Id, string Key, string Title);
+
+/// <summary>
+/// Semua yang dibutuhkan drawer detail. CanEdit = boleh mengubah task dan menulis Update/Internal;
+/// CanComment = boleh menulis komentar biasa (termasuk Tamu).
+/// </summary>
+public sealed record TaskDetail(
+    TaskRow Task,
+    string? Description,
+    bool CanEdit,
+    bool CanComment,
+    Guid RootProjectId,
+    IReadOnlyList<string> ProjectPath,
+    TaskParent? Parent,
+    IReadOnlyList<TaskRow> Subtasks,
+    DateOnly Today);
 
 public sealed record LabelItem(Guid Id, string Name);
 

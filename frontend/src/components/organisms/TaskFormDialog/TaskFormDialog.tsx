@@ -42,16 +42,14 @@ export interface TaskFormDialogProps {
   fieldErrors?: Record<string, string>
   formError?: string
   onSubmit: (values: TaskFormValues) => void
-  /** Hanya saat mengubah task. */
-  onDelete?: () => void
-  /** Hanya saat mengubah task induk: membuka form sub-task. */
-  onAddSubtask?: () => void
 }
 
-/** Dialog membuat dan mengubah task. Judul wajib; sisanya opsional. Server tetap memvalidasi semuanya. */
+/**
+ * Dialog membuat task dan sub-task. Judul wajib; sisanya opsional. Server tetap memvalidasi semuanya.
+ * Mengubah task yang sudah ada dilakukan di drawer detail (TaskDrawer), bukan di sini.
+ */
 export function TaskFormDialog(props: TaskFormDialogProps) {
-  const { open, onClose, title, description, submitLabel, submitting, onDelete, onAddSubtask } =
-    props
+  const { open, onClose, title, description, submitLabel, submitting } = props
   const formId = useId()
 
   return (
@@ -63,18 +61,6 @@ export function TaskFormDialog(props: TaskFormDialogProps) {
       width={560}
       footer={
         <div className="ar-taskform-footer">
-          <span className="ar-taskform-extra">
-            {onAddSubtask ? (
-              <Button variant="ghost" icon="plus" onClick={onAddSubtask}>
-                Tambah sub-task
-              </Button>
-            ) : null}
-            {onDelete ? (
-              <Button variant="ghost" onClick={onDelete}>
-                Hapus task
-              </Button>
-            ) : null}
-          </span>
           <Button onClick={onClose}>Batal</Button>
           <Button variant="primary" type="submit" form={formId} disabled={submitting}>
             {submitLabel}

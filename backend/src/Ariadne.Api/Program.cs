@@ -40,6 +40,7 @@ app.MapUserEndpoints();
 app.MapTeamEndpoints();
 app.MapProjectEndpoints();
 app.MapTaskEndpoints();
+app.MapActivityEndpoints();
 
 await app.MigrateDatabaseIfConfiguredAsync();
 await app.CreateIfConfiguredAsync();

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  formatActivityTime,
   formatDateRange,
   formatDateWithYear,
   formatLongDate,
@@ -60,5 +61,31 @@ describe('formatShortDateOfInstant', () => {
 
   it('menolak waktu yang rusak', () => {
     expect(() => formatShortDateOfInstant('kemarin')).toThrow()
+  })
+})
+
+describe('waktu entri aktivitas', () => {
+  const today = '2026-09-28'
+
+  it('hari ini ditulis sebagai jam, kemarin sebagai kata, sisanya sebagai tanggal', () => {
+    expect(formatActivityTime('2026-09-28T02:12:00Z', today)).toBe('09.12')
+    expect(formatActivityTime('2026-09-27T05:00:00Z', today)).toBe('Kemarin')
+    expect(formatActivityTime('2026-09-25T05:00:00Z', today)).toBe('25 Sep')
+  })
+
+  it('memakai hari Jakarta, bukan hari UTC', () => {
+    // 20.00 UTC tanggal 27 = 03.00 WIB tanggal 28 → hari ini
+    expect(formatActivityTime('2026-09-27T20:00:00Z', today)).toBe('03.00')
+    // 17.30 UTC tanggal 26 = 00.30 WIB tanggal 27 → kemarin
+    expect(formatActivityTime('2026-09-26T17:30:00Z', today)).toBe('Kemarin')
+  })
+
+  it('kemarin tetap benar di pergantian bulan dan tahun', () => {
+    expect(formatActivityTime('2026-09-30T05:00:00Z', '2026-10-01')).toBe('Kemarin')
+    expect(formatActivityTime('2026-12-31T05:00:00Z', '2027-01-01')).toBe('Kemarin')
+  })
+
+  it('tahun ditulis bila bukan tahun berjalan', () => {
+    expect(formatActivityTime('2026-12-20T05:00:00Z', '2027-01-05')).toBe('20 Des 2026')
   })
 })

@@ -77,7 +77,13 @@ export function ProjectPage() {
 
   const data = project.data
   const active = TABS.find((t) => t.segment === activeSegment) ?? TABS[0]
-  const onFiltersChange = (next: TaskFilters) => setParams(filtersToParams(next), { replace: true })
+  const onFiltersChange = (next: TaskFilters) => {
+    const nextParams = filtersToParams(next)
+    // Drawer yang sedang terbuka (?task=) tidak ikut tertutup saat filter berubah
+    const openTask = params.get('task')
+    if (openTask) nextParams.set('task', openTask)
+    setParams(nextParams, { replace: true })
+  }
   const canEditTasks = tasks.data?.canEdit ?? false
   const people = (members.data ?? [])
     .filter((m) => m.role !== 'Tamu')

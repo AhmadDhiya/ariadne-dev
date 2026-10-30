@@ -1,22 +1,14 @@
 import { useMemo, useState } from 'react'
 import { fieldErrorsOf, messageOf } from '@/api/errors'
 import { useProjectMembers, useProjectTree } from '@/api/projects'
-import {
-  useCreateSubtask,
-  useDeleteTask,
-  useLabels,
-  useSaveTask,
-  useSetTaskStatus,
-  useTask,
-} from '@/api/tasks'
+import { useLabels, useSetTaskStatus } from '@/api/tasks'
 import { useProjectContext } from '@/app/context'
 import { Button } from '@/components/atoms/Button'
 import { EmptyState } from '@/components/molecules/EmptyState'
 import { FilterBar } from '@/components/organisms/FilterBar'
-import { FormDialog } from '@/components/organisms/FormDialog'
 import { HoldReasonDialog } from '@/components/organisms/HoldReasonDialog'
-import { TaskFormDialog, type TaskFormValues } from '@/components/organisms/TaskFormDialog'
 import { TaskTable } from '@/components/organisms/TaskTable'
+import { useTaskParam } from '@/hooks/useTaskParam'
 import { useToast } from '@/hooks/useToast'
 import {
   isHeld,
@@ -26,27 +18,23 @@ import {
   type StatusKey,
 } from '@/lib/status'
 import { EMPTY_FILTERS, hasActiveFilters } from '@/lib/taskFilters'
-import { toTaskPayload } from '@/lib/taskForm'
-import { buildTaskGroups, projectOptions } from '@/lib/taskGroups'
+import { buildTaskGroups } from '@/lib/taskGroups'
 import type { TaskRow } from '@/types/api'
 
-/** Tab Tabel: filter, grup sub-proyek, ubah status langsung, dan dialog ubah / hapus task. */
+/**
+ * Tab Tabel: filter, grup sub-proyek, dan ubah status langsung dari baris. Klik judul membuka drawer detail
+ * (TaskDrawerPage), tempat semua field lain diubah.
+ */
 export function ProjectTablePage() {
   const { project, tasks, filters, onFiltersChange, onCreateTask } = useProjectContext()
   const toast = useToast()
+  const taskParam = useTaskParam()
   const tree = useProjectTree()
   const members = useProjectMembers(project.id)
   const labels = useLabels(project.id)
   const setStatus = useSetTaskStatus()
-  const saveTask = useSaveTask()
-  const deleteTask = useDeleteTask()
-  const createSubtask = useCreateSubtask()
 
   const [hold, setHold] = useState<{ task: TaskRow; status: HeldStatusKey } | null>(null)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [subtaskOf, setSubtaskOf] = useState<TaskRow | null>(null)
-  const [deleting, setDeleting] = useState<TaskRow | null>(null)
-  const editing = useTask(editingId ?? undefined)
 
   const people = useMemo(
     () =>
@@ -89,9 +77,6 @@ export function ProjectTablePage() {
     )
   }
 
-  const detail = editing.data
-  const subProjects = projectOptions(tree.data ?? [], project.id)
-
   return (
     <>
       <FilterBar filters={filters} onChange={onFiltersChange} people={people} labels={labelNames} />
@@ -99,8 +84,9 @@ export function ProjectTablePage() {
       <TaskTable
         groups={groups}
         canEdit={canEdit}
+        today={tasks.data.today}
         onChangeStatus={changeStatus}
-        onOpenTask={canEdit ? (task) => setEditingId(task.id) : undefined}
+        onOpenTask={(task) => taskParam.open(task.key)}
         empty={
           filtered && totalTasks === 0 ? (
             <EmptyState
@@ -163,142 +149,6 @@ export function ProjectTablePage() {
           }
         />
       ) : null}
-
-      <TaskFormDialog
-        open={editingId !== null && detail !== undefined}
-        onClose={() => {
-          setEditingId(null)
-          saveTask.reset()
-        }}
-        title={detail ? `Ubah ${detail.task.key}` : 'Ubah task'}
-        submitLabel="Simpan"
-        initial={
-          detail
-            ? {
-                title: detail.task.title,
-                description: detail.description ?? '',
-                priority: detail.task.priority,
-                projectId: detail.task.projectId,
-                assigneeIds: detail.task.assignees.map((a) => a.id),
-                start: detail.task.startDate ?? '',
-                end: detail.task.dueDate ?? '',
-                labels: detail.task.labels.join(', '),
-              }
-            : undefined
-        }
-        projects={detail && detail.task.parentTaskId === null ? subProjects : []}
-        people={people}
-        knownLabels={labelNames}
-        submitting={saveTask.isPending}
-        fieldErrors={saveTask.isError ? fieldErrorsOf(saveTask.error) : undefined}
-        formError={
-          saveTask.isError && Object.keys(fieldErrorsOf(saveTask.error)).length === 0
-            ? messageOf(saveTask.error)
-            : undefined
-        }
-        onAddSubtask={
-          detail && detail.task.parentTaskId === null
-            ? () => {
-                setSubtaskOf(detail.task)
-                setEditingId(null)
-              }
-            : undefined
-        }
-        onDelete={
-          detail
-            ? () => {
-                setDeleting(detail.task)
-                setEditingId(null)
-              }
-            : undefined
-        }
-        onSubmit={(values: TaskFormValues) => {
-          if (!detail) return
-          const payload = toTaskPayload(values)
-          saveTask.mutate(
-            {
-              id: detail.task.id,
-              changes: {
-                title: payload.title,
-                description: payload.description,
-                priority: payload.priority,
-                labels: payload.labels,
-                ...(detail.task.parentTaskId === null && values.projectId !== detail.task.projectId
-                  ? { projectId: values.projectId }
-                  : {}),
-              },
-              assigneeIds: payload.assigneeIds,
-              dates: { startDate: payload.startDate, dueDate: payload.dueDate },
-            },
-            {
-              onSuccess: () => {
-                setEditingId(null)
-                toast.success(`${detail.task.key} disimpan`)
-              },
-            },
-          )
-        }}
-      />
-
-      <TaskFormDialog
-        open={subtaskOf !== null}
-        onClose={() => {
-          setSubtaskOf(null)
-          createSubtask.reset()
-        }}
-        title="Tambah sub-task"
-        description={subtaskOf ? `Di bawah ${subtaskOf.key} ${subtaskOf.title}` : undefined}
-        submitLabel="Tambah sub-task"
-        projects={[]}
-        people={people}
-        knownLabels={labelNames}
-        submitting={createSubtask.isPending}
-        fieldErrors={createSubtask.isError ? fieldErrorsOf(createSubtask.error) : undefined}
-        formError={
-          createSubtask.isError && Object.keys(fieldErrorsOf(createSubtask.error)).length === 0
-            ? messageOf(createSubtask.error)
-            : undefined
-        }
-        onSubmit={(values) => {
-          if (!subtaskOf) return
-          createSubtask.mutate(
-            { parentId: subtaskOf.id, ...toTaskPayload(values) },
-            {
-              onSuccess: (created) => {
-                setSubtaskOf(null)
-                toast.success(`Sub-task ${created.key} ditambahkan`)
-              },
-            },
-          )
-        }}
-      />
-
-      <FormDialog
-        open={deleting !== null}
-        onClose={() => {
-          setDeleting(null)
-          deleteTask.reset()
-        }}
-        title={`Hapus ${deleting?.key ?? ''}?`}
-        description={
-          deleting
-            ? `"${deleting.title}" disembunyikan beserta semua sub-tasknya. Datanya tidak hilang dari database.`
-            : undefined
-        }
-        fields={[]}
-        submitLabel="Hapus task"
-        submitting={deleteTask.isPending}
-        formError={deleteTask.isError ? messageOf(deleteTask.error) : undefined}
-        onSubmit={() => {
-          if (!deleting) return
-          deleteTask.mutate(deleting.id, {
-            onSuccess: () => {
-              toast.success(`${deleting.key} dihapus`)
-              setDeleting(null)
-            },
-          })
-        }}
-      />
     </>
   )
 }

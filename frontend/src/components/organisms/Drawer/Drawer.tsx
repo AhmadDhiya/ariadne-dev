@@ -7,6 +7,8 @@ export interface DrawerProps {
   open: boolean
   onClose: () => void
   title: ReactNode
+  /** Nama dialog untuk pembaca layar bila `title` bukan teks polos (mis. judul yang bisa diubah di tempat). */
+  ariaLabel?: string
   /** Baris kecil di atas judul, mis. "SEN-115 Sentul / Dispatch". */
   eyebrow?: ReactNode
   /** Tombol tambahan di samping × (mis. menu "…"). */
@@ -17,7 +19,16 @@ export interface DrawerProps {
 }
 
 /** Panel samping 520px dari kanan (detail task). Esc, tombol ×, atau klik latar menutupnya. */
-export function Drawer({ open, onClose, title, eyebrow, actions, children, footer }: DrawerProps) {
+export function Drawer({
+  open,
+  onClose,
+  title,
+  ariaLabel,
+  eyebrow,
+  actions,
+  children,
+  footer,
+}: DrawerProps) {
   const ref = useModalDialog(open)
   const titleId = useId()
 
@@ -25,7 +36,8 @@ export function Drawer({ open, onClose, title, eyebrow, actions, children, foote
     <dialog
       ref={ref}
       className="ar-drawer"
-      aria-labelledby={titleId}
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabel ? undefined : titleId}
       onCancel={(e) => {
         e.preventDefault()
         onClose()

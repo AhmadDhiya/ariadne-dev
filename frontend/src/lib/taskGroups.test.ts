@@ -46,10 +46,12 @@ const task = (id: string, projectId: string): TaskRow => ({
   holdReason: null,
   waitingOn: null,
   waitingOnIsPerson: false,
+  waitingOnUserId: null,
   heldSince: null,
   labels: [],
   subtaskCount: 0,
   subtaskDoneCount: 0,
+  lastUpdate: null,
 })
 
 describe('buildTaskGroups', () => {

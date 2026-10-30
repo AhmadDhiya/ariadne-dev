@@ -41,6 +41,7 @@ import { PRIORITIES, STATUSES } from '@/lib/status'
 import { Demo, Level } from './Demo'
 import { Phase2Molecules, Phase2Organisms } from './phase2'
 import { Phase3Demos } from './phase3'
+import { Phase4Molecules, Phase4Organisms } from './phase4'
 import {
   GANTT_DAYS,
   GANTT_WEEKENDS,
@@ -448,6 +449,7 @@ export function DevKomponenPage() {
           />
         </Demo>
         <Phase2Molecules />
+        <Phase4Molecules />
       </Level>
 
       <Level id="organisme" title="Organisme">
@@ -467,6 +469,7 @@ export function DevKomponenPage() {
         </Demo>
         <Phase2Organisms />
         <Phase3Demos />
+        <Phase4Organisms />
       </Level>
 
       <Level id="template" title="Template">

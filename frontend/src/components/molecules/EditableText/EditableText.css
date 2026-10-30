@@ -1,0 +1,38 @@
+.ar-editable-text {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.ar-editable-text.is-editable {
+  width: calc(100% + var(--space-2) * 2);
+  margin: 0 calc(var(--space-2) * -1);
+  padding: 0 var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: text;
+}
+.ar-editable-text.is-editable:hover {
+  background: var(--surface-muted);
+}
+.ar-editable-text.is-empty {
+  color: var(--ink-muted);
+}
+.ar-editable-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+.ar-editable-error {
+  font-size: 12px;
+  color: var(--danger);
+}
+.ar-editable-actions {
+  display: flex;
+  gap: var(--space-2);
+}

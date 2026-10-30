@@ -39,10 +39,12 @@ const task = (over: Partial<TaskRowData>): TaskRowData => ({
   holdReason: null,
   waitingOn: null,
   waitingOnIsPerson: false,
+  waitingOnUserId: null,
   heldSince: null,
   labels: [],
   subtaskCount: 0,
   subtaskDoneCount: 0,
+  lastUpdate: null,
   ...over,
 })
 
@@ -123,6 +125,7 @@ function TableDemo() {
   return (
     <TaskTable
       groups={GROUPS}
+      today="2026-09-28"
       canEdit
       onChangeStatus={noop}
       onOpenTask={noop}

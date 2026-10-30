@@ -33,6 +33,8 @@ export function Popover({
     }
     function onKeyDown(e: KeyboardEvent) {
       if (e.key !== 'Escape') return
+      // Esc hanya menutup popover; tanpa ini panel (dialog) di sekelilingnya, mis. drawer, ikut tertutup
+      e.preventDefault()
       onClose()
       rootRef.current?.querySelector<HTMLElement>('button, [href], input')?.focus()
     }

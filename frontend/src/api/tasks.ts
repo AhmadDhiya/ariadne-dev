@@ -87,7 +87,7 @@ export interface TaskChanges {
   labels?: string[]
 }
 
-/** Menyimpan semua yang diubah di dialog Ubah task dalam satu rangkaian; berhenti di kesalahan pertama. */
+/** Menyimpan perubahan field task (satu atau beberapa) dalam satu rangkaian; berhenti di kesalahan pertama. */
 export function useSaveTask() {
   const refresh = useRefreshTasks()
   return useMutation({
@@ -97,7 +97,9 @@ export function useSaveTask() {
       assigneeIds?: string[]
       dates?: { startDate: string | null; dueDate: string | null }
     }) => {
-      await apiPatch<TaskRow>(`/api/tasks/${input.id}`, input.changes)
+      if (Object.keys(input.changes).length > 0) {
+        await apiPatch<TaskRow>(`/api/tasks/${input.id}`, input.changes)
+      }
       if (input.assigneeIds) {
         await apiPut<TaskRow>(`/api/tasks/${input.id}/assignees`, { userIds: input.assigneeIds })
       }

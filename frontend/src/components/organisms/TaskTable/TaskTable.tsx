@@ -5,7 +5,7 @@ import { HoldTooltip } from '@/components/molecules/HoldTooltip'
 import { Popover } from '@/components/molecules/Popover'
 import { TaskRow } from '@/components/molecules/TaskRow'
 import { Menu } from '@/components/organisms/Menu'
-import { formatShortDate, formatShortDateOfInstant } from '@/lib/dates'
+import { formatActivityTime, formatShortDate, formatShortDateOfInstant } from '@/lib/dates'
 import { isHeld, priorityFromApi, statusFromApi, STATUSES, type StatusKey } from '@/lib/status'
 import type { TaskRow as TaskRowData } from '@/types/api'
 import './TaskTable.css'
@@ -23,6 +23,8 @@ export interface TaskTableProps {
   canEdit: boolean
   onChangeStatus: (task: TaskRowData, status: StatusKey) => void
   onOpenTask?: (task: TaskRowData) => void
+  /** Hari ini menurut server ("YYYY-MM-DD"), untuk waktu di kolom "Update terakhir". */
+  today: string
   /** Ditampilkan menggantikan tabel bila tidak ada baris sama sekali. */
   empty: ReactNode
 }
@@ -47,7 +49,14 @@ const STATUS_ITEMS = (current: StatusKey) =>
  * Tabel task per sub-proyek (mockup 03). Grup dan task induk bisa dilipat; status diubah langsung lewat menu.
  * Status tertahan butuh alasan, jadi pemilihannya diteruskan ke induk (onChangeStatus) yang membuka dialog.
  */
-export function TaskTable({ groups, canEdit, onChangeStatus, onOpenTask, empty }: TaskTableProps) {
+export function TaskTable({
+  groups,
+  canEdit,
+  onChangeStatus,
+  onOpenTask,
+  today,
+  empty,
+}: TaskTableProps) {
   const [collapsedGroups, setCollapsedGroups] = useState<ReadonlySet<string>>(new Set())
   const [collapsedParents, setCollapsedParents] = useState<ReadonlySet<string>>(new Set())
   const [menuFor, setMenuFor] = useState<string | null>(null)
@@ -111,6 +120,7 @@ export function TaskTable({ groups, canEdit, onChangeStatus, onOpenTask, empty }
                           key={task.id}
                           task={task}
                           canEdit={canEdit}
+                          today={today}
                           menuOpen={menuFor === task.id}
                           expanded={!collapsedParents.has(task.id)}
                           onToggleMenu={() => setMenuFor((id) => (id === task.id ? null : task.id))}
@@ -135,6 +145,7 @@ export function TaskTable({ groups, canEdit, onChangeStatus, onOpenTask, empty }
 interface TaskTableRowProps {
   task: TaskRowData
   canEdit: boolean
+  today: string
   menuOpen: boolean
   expanded: boolean
   onToggleMenu: () => void
@@ -147,6 +158,7 @@ interface TaskTableRowProps {
 function TaskTableRow({
   task,
   canEdit,
+  today,
   menuOpen,
   expanded,
   onToggleMenu,
@@ -212,6 +224,14 @@ function TaskTableRow({
       overdue={task.isOverdue}
       lateDays={task.lateDays}
       duration={task.durationDays}
+      lastUpdate={
+        task.lastUpdate
+          ? {
+              text: task.lastUpdate.text,
+              meta: `${task.lastUpdate.authorName} · ${formatActivityTime(task.lastUpdate.createdAt, today)}`,
+            }
+          : null
+      }
       labels={task.labels}
       highlighted={menuOpen}
     />

@@ -1,0 +1,33 @@
+.ar-composer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ar-composer-field {
+  position: relative;
+}
+.ar-composer-field .ar-textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+.ar-composer-popup {
+  position: absolute;
+  z-index: 30;
+  left: var(--space-6);
+  bottom: calc(100% + var(--space-1));
+}
+.ar-composer-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.ar-composer-hint {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.ar-composer-error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--danger);
+}
