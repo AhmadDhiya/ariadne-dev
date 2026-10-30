@@ -1,5 +1,6 @@
 /* compiled from Ariadne tokens.json */
-:root, [data-theme="light"] {
+:root,
+[data-theme='light'] {
   --canvas: #f5f6f8;
   --surface: #ffffff;
   --surface-muted: #eef0f3;
@@ -62,7 +63,7 @@
   --shadow-lg: 0 4px 8px #1a213014, 0 20px 40px -8px #1a213033;
   --focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #2b7fc6;
 }
-[data-theme="dark"] {
+[data-theme='dark'] {
   --canvas: #10141b;
   --surface: #161b24;
   --surface-muted: #1c222d;
@@ -143,16 +144,65 @@
   --drawer-width: 520px;
   --gantt-day: 28px;
   --bar-height: 20px;
-  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --font-sans: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
 }
-.display { font-family: var(--font-sans); font-size: 28px; line-height: 36px; font-weight: 600; letter-spacing: -0.01em; }
-.title { font-family: var(--font-sans); font-size: 20px; line-height: 28px; font-weight: 600; }
-.heading { font-family: var(--font-sans); font-size: 15px; line-height: 22px; font-weight: 600; }
-.body { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400; }
-.body-strong { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 500; }
-.cell { font-family: var(--font-sans); font-size: 13px; line-height: 18px; font-weight: 400; }
-.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.01em; }
-.stat { font-family: var(--font-sans); font-size: 28px; line-height: 32px; font-weight: 600; }
-.id { font-family: var(--font-mono); font-size: 12px; line-height: 16px; font-weight: 500; }
-[data-theme] { color: var(--ink); }
+.display {
+  font-family: var(--font-sans);
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.title {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+.heading {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+.body-strong {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+.cell {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+}
+.caption {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.stat {
+  font-family: var(--font-sans);
+  font-size: 28px;
+  line-height: 32px;
+  font-weight: 600;
+}
+.id {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}
+[data-theme] {
+  color: var(--ink);
+}

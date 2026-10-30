@@ -1,0 +1,101 @@
+.ar-attention {
+  width: 360px;
+  flex-shrink: 0;
+}
+.ar-attention-head {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--line);
+  box-sizing: border-box;
+}
+.ar-attention-head h2 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.ar-attention-empty {
+  margin: 0;
+  padding: var(--space-4);
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.ar-attention-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ar-attention-item {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 14px var(--space-4);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.ar-attention-item:hover {
+  background: var(--surface-muted);
+}
+.ar-attention-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+}
+.ar-attention-icon.is-info {
+  background: var(--sky-soft);
+  color: var(--primary);
+}
+.ar-attention-icon.is-primary {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.ar-attention-icon.is-danger {
+  background: var(--status-blocked-soft);
+  color: var(--danger);
+}
+.ar-attention-icon.is-muted {
+  background: var(--surface-muted);
+  color: var(--ink-muted);
+}
+.ar-attention-body {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ar-attention-kind {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+.ar-attention-text {
+  font-size: 13px;
+  line-height: 18px;
+}
+.ar-attention-text b {
+  font-weight: 600;
+}
+.ar-attention-detail {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+.ar-attention-time {
+  font-size: 12px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}

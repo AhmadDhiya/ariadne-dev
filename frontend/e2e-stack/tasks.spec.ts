@@ -86,8 +86,8 @@ test.describe('Tabel proyek: tampilan', () => {
     await page.goto('/tim')
     const table = page.getByRole('table', { name: 'Anggota Tim Sentul' })
     await expect(table.getByRole('columnheader', { name: 'Task aktif' })).toBeVisible()
-    // Ahmad: 104, 115, 112, 121, 122, 124, 133 (belum Done)
-    await expect(table.getByRole('row').filter({ hasText: 'Ahmad' })).toContainText('7')
+    // Ahmad: 104, 115, 112, 121, 122, 124, 133 di Sentul, ditambah MDC-18, MDC-21, MDC-24 (belum Done)
+    await expect(table.getByRole('row').filter({ hasText: 'Ahmad' })).toContainText('10')
   })
 
   for (const theme of ['light', 'dark'] as const) {

@@ -361,6 +361,7 @@ internal static partial class DevelopmentSeeder
         Update(recap, galih, "2026-09-28T11:20", "Index baru dipasang, 2,1 dtk → 0,4 dtk");
         Update(vpn, ahmad, "2026-09-26T10:00", "Formulir akses sudah dikirim ulang");
         Update(scenario, rama, "2026-09-25T09:00", "Ditunda sampai jadwal UAT final");
+        Note(pentest, ActivityKind.Comment, khalil, "2026-09-27T15:00", "@Ahmad Draf laporan PenTest sudah saya unggah, mohon review.", ahmad);
 
         // Drawer SEN-115 (mockup 05). Urutan timeline mengikuti urutan penyimpanan, jadi disimpan dari yang terlama
         Log(pipeline, syaikhan, "2026-09-22T10:00", LogKind.AssigneesChanged, new ActivityData { Added = ["Wiwiet"], Removed = ["Rama"] });
@@ -370,12 +371,13 @@ internal static partial class DevelopmentSeeder
         Note(pipeline, ActivityKind.Internal, syaikhan, "2026-09-28T09:02", "Kalau firewall belum dibuka Rabu, eskalasi ke manajer infrastruktur klien.");
         Note(pipeline, ActivityKind.Comment, budi, "2026-09-28T09:30", "Tim kami sedang memproses permintaan firewall-nya, estimasi Rabu.");
 
-        // Migrasi Data Center: contoh kecil
+        // Migrasi Data Center: contoh kecil, dengan task yang tampil di dashboard Ahmad (mockup 02)
         Add(migrasi, migrasi, 1, "Inventaris server lama", Priority.High, WorkStatus.Done, "2026-09-14", "2026-09-18", [syaikhan, manto], ["Infra"]);
-        Add(migrasi, migrasi, 2, "Migrasi database utama", Priority.Critical, WorkStatus.OnProgress, "2026-09-24", "2026-10-02", [syaikhan, galih], ["Database"]);
-        Add(migrasi, migrasi, 3, "Uji failover", Priority.High, WorkStatus.NotStarted, "2026-10-05", "2026-10-09", [rama], ["QA"]);
-        Add(migrasi, migrasi, 4, "Cutover akhir pekan", Priority.Critical, WorkStatus.NotStarted, "2026-10-10", "2026-10-11", [syaikhan, wiwiet], ["Infra"]);
-        migrasi.NextTaskNumber = 5;
+        Add(migrasi, migrasi, 18, "Konfirmasi jadwal akses gedung", Priority.Low, WorkStatus.OnProgress, "2026-09-26", "2026-09-28", [ahmad], ["Infra"]);
+        Add(migrasi, migrasi, 21, "Inventaris rak & kabel", Priority.High, WorkStatus.OnProgress, "2026-09-24", "2026-09-30", [ahmad], ["Infra"]);
+        var cutover = Add(migrasi, migrasi, 24, "Rencana cut-over", Priority.Medium, WorkStatus.NotStarted, "2026-10-05", "2026-10-09", [ahmad], ["Infra"]);
+        Log(cutover, wiwiet, "2026-09-28T08:30", LogKind.TaskCreated, new ActivityData { Added = ["Ahmad"], AddedIds = [ahmad.Id] });
+        migrasi.NextTaskNumber = 25;
 
         return timeline;
     }

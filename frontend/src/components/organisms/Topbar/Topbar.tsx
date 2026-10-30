@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, type ReactNode } from 'react'
 import { Avatar } from '@/components/atoms/Avatar'
 import { Icon } from '@/components/atoms/Icon'
 import { Popover } from '@/components/molecules/Popover'
@@ -13,18 +13,29 @@ export interface TopbarProps {
   theme: 'light' | 'dark'
   onThemeChange: (theme: 'light' | 'dark') => void
   onLogout: () => void
+  /** Pencarian global (GlobalSearch), ditaruh di kiri. Kosong bila belum tersedia. */
+  search?: ReactNode
 }
 
 /**
- * Topbar 56px. Pencarian global (Fase 5) dan lonceng notifikasi (Fase 9) ditambahkan di fase itu:
+ * Topbar 56px: pencarian global di kiri, menu akun di kanan. Lonceng notifikasi ditambahkan di Fase 9:
  * kontrol yang belum berfungsi sengaja tidak ditampilkan.
  */
-export function Topbar({ userName, subtitle, guest, theme, onThemeChange, onLogout }: TopbarProps) {
+export function Topbar({
+  userName,
+  subtitle,
+  guest,
+  theme,
+  onThemeChange,
+  onLogout,
+  search,
+}: TopbarProps) {
   const [open, setOpen] = useState(false)
   const close = useCallback(() => setOpen(false), [])
 
   return (
     <header className="ar-topbar">
+      {search}
       <div className="ar-topbar-spacer" />
       <Popover
         open={open}

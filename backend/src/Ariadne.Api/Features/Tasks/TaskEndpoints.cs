@@ -210,7 +210,11 @@ internal static partial class TaskEndpoints
             .SqlQuery<int>($"UPDATE projects SET next_task_number = next_task_number + 1 WHERE id = {rootId} RETURNING next_task_number - 1 AS \"Value\"")
             .ToListAsync(ct)).Single();
         db.Tasks.Add(task);
-        db.Activities.Add(ActivityLog.Create(task, access.UserId, LogKind.TaskCreated, now));
+        // Satu entri untuk "dibuat" (beserta PIC awalnya): dua entri dalam satu penyimpanan tidak punya urutan yang pasti
+        var assigneeNames = assigneeIds.Count == 0
+            ? new Dictionary<Guid, string>()
+            : await db.Users.AsNoTracking().Where(u => assigneeIds.Contains(u.Id)).ToDictionaryAsync(u => u.Id, u => u.DisplayName, ct);
+        db.Activities.Add(ActivityLog.TaskCreated(task, access.UserId, [.. assigneeIds.Select(i => assigneeNames.GetValueOrDefault(i, "?")).Order(StringComparer.Ordinal)], assigneeIds, now));
         if (parentTaskId is { } parentId)
         {
             var code = await db.Projects.AsNoTracking().Where(p => p.Id == rootId).Select(p => p.Code).SingleAsync(ct);
@@ -345,7 +349,7 @@ internal static partial class TaskEndpoints
             var changed = removedIds.Concat(addedIds).ToList();
             var names = await db.Users.AsNoTracking().Where(u => changed.Contains(u.Id)).ToDictionaryAsync(u => u.Id, u => u.DisplayName, ct);
             string[] Named(IEnumerable<Guid> ids) => [.. ids.Select(i => names.GetValueOrDefault(i, "?")).Order(StringComparer.Ordinal)];
-            db.Activities.Add(ActivityLog.AssigneesChanged(task, access.UserId, Named(addedIds), Named(removedIds), now));
+            db.Activities.Add(ActivityLog.AssigneesChanged(task, access.UserId, Named(addedIds), Named(removedIds), addedIds, now));
         }
 
         task.UpdatedAt = now;

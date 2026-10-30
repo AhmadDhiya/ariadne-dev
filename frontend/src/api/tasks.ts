@@ -48,6 +48,7 @@ function useRefreshTasks() {
       client.invalidateQueries({ queryKey: ['labels'] }),
       client.invalidateQueries({ queryKey: ['projects', 'tree'] }),
       client.invalidateQueries({ queryKey: ['teams'] }),
+      client.invalidateQueries({ queryKey: ['dashboard'] }),
     ])
 }
 

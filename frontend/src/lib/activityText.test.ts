@@ -56,6 +56,9 @@ describe('logLine', () => {
 
   it('task dibuat dan sub-task ditambahkan', () => {
     expect(logLine({ logKind: 'TaskCreated', data: null }).text).toBe('membuat task ini')
+    expect(logLine({ logKind: 'TaskCreated', data: { added: ['Rama', 'Galih'] } }).text).toBe(
+      'membuat task ini dan menugaskan Rama dan Galih',
+    )
     expect(
       logLine({ logKind: 'SubtaskAdded', data: { key: 'SEN-122', title: 'Validasi jam' } }).text,
     ).toBe('menambahkan sub-task SEN-122 Validasi jam')

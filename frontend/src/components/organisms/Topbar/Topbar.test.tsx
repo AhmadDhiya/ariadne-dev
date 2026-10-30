@@ -49,4 +49,29 @@ describe('Topbar', () => {
     expect(onLogout).toHaveBeenCalledTimes(1)
     expect(screen.queryByRole('option', { name: 'Keluar' })).not.toBeInTheDocument()
   })
+
+  it('pencarian global ditaruh di kiri bila diberikan, dan tidak ada bila belum', () => {
+    const { rerender } = render(
+      <Topbar
+        userName="Ahmad"
+        subtitle="Supervisor"
+        theme="light"
+        onThemeChange={() => undefined}
+        onLogout={() => undefined}
+        search={<input aria-label="Cari" />}
+      />,
+    )
+    expect(screen.getByRole('textbox', { name: 'Cari' })).toBeInTheDocument()
+
+    rerender(
+      <Topbar
+        userName="Ahmad"
+        subtitle="Supervisor"
+        theme="light"
+        onThemeChange={() => undefined}
+        onLogout={() => undefined}
+      />,
+    )
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+  })
 })

@@ -1,0 +1,56 @@
+.ar-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.ar-dashboard-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.ar-dashboard-date {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ink-muted);
+}
+.ar-dashboard-title {
+  margin: 2px 0 0;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+.ar-dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+.ar-dashboard-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+}
+.ar-dashboard-timelinehead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+.ar-dashboard-timelinetitle {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.ar-dashboard-timelinetitle h2 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.ar-dashboard-timelinetitle span {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.ar-dashboard-note {
+  padding: var(--space-4);
+}

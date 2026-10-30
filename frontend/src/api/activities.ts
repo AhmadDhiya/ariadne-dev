@@ -36,6 +36,7 @@ function useRefreshActivities() {
     Promise.all([
       client.invalidateQueries({ queryKey: ['task'] }),
       client.invalidateQueries({ queryKey: ['tasks'] }),
+      client.invalidateQueries({ queryKey: ['dashboard'] }),
     ])
 }
 
@@ -75,6 +76,7 @@ export function useCreateActivity() {
         client.invalidateQueries({ queryKey: ['task'] }),
         // Update terbaru tampil di kolom "Update terakhir" tabel
         client.invalidateQueries({ queryKey: ['tasks'] }),
+        client.invalidateQueries({ queryKey: ['dashboard'] }),
       ]),
   })
 }

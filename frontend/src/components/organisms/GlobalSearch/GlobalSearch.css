@@ -1,0 +1,61 @@
+.ar-gsearch {
+  position: relative;
+}
+.ar-gsearch-popup {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  width: 460px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: var(--space-1) 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-md);
+}
+.ar-gsearch-section {
+  padding: var(--space-2) var(--space-3) var(--space-1);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+}
+.ar-gsearch-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  cursor: pointer;
+}
+.ar-gsearch-option.is-active {
+  background: var(--primary-soft);
+}
+.ar-gsearch-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ar-gsearch-title {
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ar-gsearch-sub {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ar-gsearch-note {
+  margin: 0;
+  padding: var(--space-3);
+  font-size: 13px;
+  color: var(--ink-muted);
+}

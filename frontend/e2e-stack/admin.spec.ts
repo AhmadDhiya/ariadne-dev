@@ -7,9 +7,11 @@ test.use({ storageState: authFile('ahmad') })
 const sidebar = (page: Page) => page.getByRole('navigation', { name: 'Navigasi utama' })
 
 test.describe('Ahmad (admin dan supervisor): sidebar dan navigasi', () => {
-  test('dashboard sementara, topbar menyebut peran, dan semua menu terlihat', async ({ page }) => {
+  test('dashboard, topbar menyebut peran, dan semua menu terlihat', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByRole('heading', { name: 'Halo, Ahmad' })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { level: 1, name: /^Selamat \w+, Ahmad$/ }),
+    ).toBeVisible()
     await expect(page.getByRole('button', { name: 'Menu akun Ahmad' })).toContainText(
       'Supervisor · Tim Sentul',
     )

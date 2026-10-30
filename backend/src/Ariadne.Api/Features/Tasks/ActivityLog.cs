@@ -23,6 +23,10 @@ internal static class ActivityLog
         CreatedAt = now,
     };
 
+    /// <summary>Task dibuat; PIC awalnya (bila ada) ikut tercatat di entri yang sama.</summary>
+    public static Activity TaskCreated(ProjectTask task, Guid authorId, IReadOnlyList<string> assignees, IReadOnlyList<Guid> assigneeIds, DateTimeOffset now) =>
+        Create(task, authorId, LogKind.TaskCreated, now, assignees.Count == 0 ? null : new ActivityData { Added = assignees, AddedIds = assigneeIds });
+
     public static Activity StatusChanged(ProjectTask task, Guid authorId, WorkStatus from, DateTimeOffset now) =>
         Create(task, authorId, LogKind.StatusChanged, now, new ActivityData { From = from.ToString(), To = task.Status.ToString(), Reason = task.HoldReason });
 
@@ -35,8 +39,14 @@ internal static class ActivityLog
             ToDue = Iso(task.DueDate),
         });
 
-    public static Activity AssigneesChanged(ProjectTask task, Guid authorId, IReadOnlyList<string> added, IReadOnlyList<string> removed, DateTimeOffset now) =>
-        Create(task, authorId, LogKind.AssigneesChanged, now, new ActivityData { Added = added, Removed = removed });
+    public static Activity AssigneesChanged(
+        ProjectTask task,
+        Guid authorId,
+        IReadOnlyList<string> added,
+        IReadOnlyList<string> removed,
+        IReadOnlyList<Guid> addedIds,
+        DateTimeOffset now) =>
+        Create(task, authorId, LogKind.AssigneesChanged, now, new ActivityData { Added = added, Removed = removed, AddedIds = addedIds });
 
     private static string? Iso(DateOnly? date) => date?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 }
