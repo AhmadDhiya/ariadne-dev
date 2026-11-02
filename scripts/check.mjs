@@ -121,6 +121,7 @@ function runStackE2E() {
     BOOTSTRAP_ADMIN_EMAIL: '',
     BOOTSTRAP_ADMIN_PASSWORD: '',
     ASPNETCORE_ENVIRONMENT: 'Development',
+    ARIADNE_FAKE_TODAY: '2026-09-28',
     APP_BASE_URL: `http://localhost:${ports.WEB_PORT}`,
     ARIADNE_STACK_URL: `http://localhost:${ports.WEB_PORT}`,
     ARIADNE_MAILPIT_URL: `http://localhost:${ports.MAILPIT_WEB_PORT}`,

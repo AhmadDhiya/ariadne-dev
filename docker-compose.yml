@@ -47,6 +47,8 @@ services:
       Email__FromAddress: ariadne@localhost
       # Data contoh dari mockup; hanya dimasukkan di Development dan hanya bila password diisi (pedoman A5)
       Seed__Password: ${SEED_PASSWORD:-}
+      # Kunci "hari ini" untuk demo/test (mis. 2026-09-28); kosong = tanggal asli. Hanya berlaku di Development.
+      Ariadne__FakeToday: ${ARIADNE_FAKE_TODAY:-}
       # Admin pertama untuk database kosong (mis. produksi); diabaikan bila sudah ada pengguna
       Bootstrap__AdminEmail: ${BOOTSTRAP_ADMIN_EMAIL:-}
       Bootstrap__AdminPassword: ${BOOTSTRAP_ADMIN_PASSWORD:-}
