@@ -272,6 +272,51 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                     b.ToTable("mentions", (string)null);
                 });
 
+            modelBuilder.Entity("Ariadne.Api.Domain.Milestone", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<bool>("IsDone")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_done");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<Guid>("RootProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("root_project_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_milestones");
+
+                    b.HasIndex("ProjectId")
+                        .HasDatabaseName("ix_milestones_project_id");
+
+                    b.HasIndex("RootProjectId", "Date")
+                        .HasDatabaseName("ix_milestones_root_project_id_date");
+
+                    b.ToTable("milestones", (string)null);
+                });
+
             modelBuilder.Entity("Ariadne.Api.Domain.Project", b =>
                 {
                     b.Property<Guid>("Id")
@@ -762,6 +807,23 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                     b.Navigation("Activity");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Ariadne.Api.Domain.Milestone", b =>
+                {
+                    b.HasOne("Ariadne.Api.Domain.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_milestones_projects_project_id");
+
+                    b.HasOne("Ariadne.Api.Domain.Project", null)
+                        .WithMany()
+                        .HasForeignKey("RootProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_milestones_projects_root_project_id");
                 });
 
             modelBuilder.Entity("Ariadne.Api.Domain.Project", b =>

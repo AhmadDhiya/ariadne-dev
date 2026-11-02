@@ -1,5 +1,6 @@
 using Ariadne.Api.Auth;
 using Ariadne.Api.Domain;
+using Ariadne.Api.Features.Milestones;
 using Ariadne.Api.Features.Tasks;
 using Ariadne.Api.Infrastructure.Clock;
 using Ariadne.Api.Infrastructure.Data;
@@ -90,7 +91,12 @@ internal static class DashboardEndpoints
     {
         var access = await accessService.CurrentAsync(http.User, ct);
         var today = clock.Today;
-        var (name, start, count) = RangeFor(zoom, today);
+        if (!TimelineRange.IsKnown(zoom))
+        {
+            throw new ValidationFailedException("zoom", "Zoom tidak dikenal (day, week, month).");
+        }
+
+        var (name, start, count) = TimelineRange.For(zoom, today, wide: false);
         var end = start.AddDays(count - 1);
         var mine = await LoadMineAsync(db, access.UserId, ct);
 
@@ -100,6 +106,17 @@ internal static class DashboardEndpoints
             .Where(m => (m.Task.StartDate ?? m.Task.DueDate) is { } from && (m.Task.DueDate ?? m.Task.StartDate) is { } to && from <= end && to >= start)
             .ToList();
         var codes = await TaskQueries.RootCodesAsync(db, inRange.Select(m => m.Task.RootProjectId), ct);
+
+        // Milestone proyek-proyek itu yang jatuh di rentang, ditampilkan di baris proyeknya
+        var groupRoots = inRange.Select(m => m.Task.RootProjectId).Distinct().ToList();
+        var milestoneRows = await db.Milestones.AsNoTracking()
+            .Where(m => groupRoots.Contains(m.RootProjectId) && m.Date >= start && m.Date <= end)
+            .Where(m => !db.Projects.Any(p => p.Id == m.ProjectId && p.ArchivedAt != null))
+            .OrderBy(m => m.Date)
+            .ThenBy(m => m.Name)
+            .ToListAsync(ct);
+        var milestoneItems = (await MilestoneEndpoints.ItemsAsync(db, milestoneRows, ct)).ToDictionary(i => i.Id);
+        var milestonesByRoot = milestoneRows.ToLookup(m => m.RootProjectId, m => milestoneItems[m.Id]);
         // Urutan proyek sama dengan sidebar (urutan proyek, lalu nama)
         var groups = inRange
             .GroupBy(m => m.Task.RootProjectId)
@@ -122,30 +139,12 @@ internal static class DashboardEndpoints
                         m.Task.StartDate,
                         m.Task.DueDate,
                         TaskRules.IsOverdue(m.Task.DueDate, m.Task.Status, today),
-                        m.Path)),
-            ]))
+                        m.Path))
+                ],
+                [.. milestonesByRoot[g.Key]]))
             .ToList();
 
         return Results.Ok(new TimelineResponse(name, start, count, today, groups, workload));
-    }
-
-    /// <summary>Rentang tanggal tiap zoom: Hari 21 hari (7 sebelum hari ini), Minggu 10 pekan, Bulan 210 hari.</summary>
-    internal static (string Name, DateOnly Start, int Count) RangeFor(string? zoom, DateOnly today)
-    {
-        switch (zoom)
-        {
-            case null or "" or "day":
-                return ("day", today.AddDays(-7), 21);
-            case "week":
-                var lastWeek = today.AddDays(-7);
-                var monday = lastWeek.AddDays(-(((int)lastWeek.DayOfWeek + 6) % 7));
-                return ("week", monday, 70);
-            case "month":
-                var back = today.AddMonths(-1);
-                return ("month", new DateOnly(back.Year, back.Month, 1), 210);
-            default:
-                throw new ValidationFailedException("zoom", "Zoom tidak dikenal (day, week, month).");
-        }
     }
 
     private static DateTime Jakarta(IClock clock) => TimeZoneInfo.ConvertTime(clock.UtcNow, clock.TimeZone).DateTime;

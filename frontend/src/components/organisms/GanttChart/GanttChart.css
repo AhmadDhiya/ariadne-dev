@@ -130,3 +130,79 @@ button.ar-gantt-title:hover {
   border-top: 1px solid var(--line);
   box-sizing: border-box;
 }
+
+/* Gantt proyek (mockup 04): pita grup, PIC di daftar kiri, dan beban kerja per orang */
+.ar-gantt-lefthead.is-detailed {
+  gap: var(--space-2);
+  padding: 0 var(--space-3) 6px;
+  background: var(--surface-muted);
+}
+.ar-gantt-lefthead-title {
+  flex-grow: 1;
+}
+.ar-gantt-group.is-detailed {
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+.ar-gantt-task.is-detailed {
+  padding: 0 var(--space-3);
+}
+.ar-gantt-task.is-sub {
+  padding-left: 32px;
+}
+.ar-gantt-task.is-detailed .ar-gantt-title {
+  flex-grow: 1;
+}
+.ar-gantt-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: var(--surface-muted);
+  opacity: 0.6;
+}
+.ar-gantt-people {
+  border-top: 2px solid var(--line);
+}
+.ar-gantt-peoplehead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  padding: 0 var(--space-3);
+  background: var(--surface-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.ar-gantt-peoplehead span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+.ar-gantt-person {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  padding: 0 var(--space-3);
+  font-size: 13px;
+  font-weight: 500;
+}
+.ar-gantt-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  box-sizing: border-box;
+  padding: 0 var(--space-3);
+  background: var(--surface-muted);
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+.ar-gantt-legend .ar-heat {
+  width: 16px;
+  height: 12px;
+}
+.ar-gantt-personrow {
+  display: flex;
+  align-items: center;
+}

@@ -323,11 +323,41 @@ export interface TimelineTask {
   path: string[]
 }
 
+export interface MilestoneItem {
+  id: string
+  /** Proyek atau sub-proyek tempat milestone berada. */
+  projectId: string
+  /** Nama proyek dari root sampai tempat milestone berada. */
+  path: string[]
+  name: string
+  /** "YYYY-MM-DD" */
+  date: string
+  isDone: boolean
+}
+
 export interface TimelineGroup {
   projectId: string
   name: string
   code: string
   tasks: TimelineTask[]
+  milestones: MilestoneItem[]
+}
+
+/** Beban kerja satu orang di satu proyek: task aktif per hari, mulai dari `start`. */
+export interface GanttPerson {
+  userId: string
+  name: string
+  counts: number[]
+}
+
+/** Yang dibutuhkan Gantt proyek di luar daftar task: rentang, milestone, dan beban kerja per orang. */
+export interface GanttResponse {
+  zoom: TimelineZoom
+  start: string
+  dayCount: number
+  today: string
+  milestones: MilestoneItem[]
+  workload: GanttPerson[]
 }
 
 export interface TimelineResponse {

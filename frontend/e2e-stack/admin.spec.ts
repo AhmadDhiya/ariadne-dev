@@ -48,16 +48,14 @@ test.describe('Ahmad (admin dan supervisor): sidebar dan navigasi', () => {
     await expect(nav.getByRole('link', { name: 'Dispatch' })).toHaveCount(0)
   })
 
-  test('tab proyek: Tabel berisi task, Gantt dan Milestone masih placeholder, Anggota berfungsi', async ({
-    page,
-  }) => {
+  test('tab proyek: Tabel, Gantt, Milestone, dan Anggota semuanya berfungsi', async ({ page }) => {
     await page.goto('/')
     await sidebar(page).getByRole('link', { name: 'Sentul', exact: true }).click()
     await expect(page.getByRole('table')).toBeVisible()
     await page.getByRole('tab', { name: 'Gantt' }).click()
-    await expect(page.getByText('Gantt segera hadir')).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Gantt proyek' })).toBeVisible()
     await page.getByRole('tab', { name: 'Milestone' }).click()
-    await expect(page.getByText('Milestone segera hadir')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Milestone', exact: true })).toBeVisible()
     await page.getByRole('tab', { name: 'Anggota' }).click()
     await expect(page).toHaveURL(/\/anggota$/)
   })

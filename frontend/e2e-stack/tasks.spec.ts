@@ -20,12 +20,12 @@ test.describe('Tabel proyek: tampilan', () => {
     await openSentul(page)
 
     await expect(page.getByRole('progressbar', { name: 'Progres Sentul' })).toBeVisible()
-    await expect(page.getByText('3 dari 16 task selesai')).toBeVisible() // 101, 105, 106
+    await expect(page.getByText('3 dari 17 task selesai')).toBeVisible() // 101, 105, 106 (dari 17: termasuk SEN-140 yang Rutin)
     for (const [group, meta] of [
       ['Dispatch', '3 task'],
       ['SLMS', '2 task'],
       ['SLMS / Temuan UAT & API', '2 task · 3 sub-task'],
-      ['Smartclassroom', '6 task'],
+      ['Smartclassroom', '7 task'],
       ['FAQ', '1 task'],
       ['Menagih Pihak Lain', '1 task'],
       ['Testing Oktober', '1 task'],
@@ -80,7 +80,7 @@ test.describe('Tabel proyek: tampilan', () => {
     await openSentul(page)
     const nav = sidebar(page)
     await expect(nav.getByRole('link', { name: /^Dispatch/ })).toContainText('2')
-    await expect(nav.getByRole('link', { name: /^Smartclassroom/ })).toContainText('4')
+    await expect(nav.getByRole('link', { name: /^Smartclassroom/ })).toContainText('5')
     await expect(nav.getByRole('link', { name: /^Migrasi Data Center/ })).toContainText('3')
 
     await page.goto('/tim')

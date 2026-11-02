@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/useToast'
 import { greeting, heldHint, isCard, lateHint, weekHint, workingHint } from '@/lib/dashboard'
 import { formatLongDate } from '@/lib/dates'
 import { rangeLabel, ZOOM_LABELS } from '@/lib/gantt'
+import { milestoneLabel } from '@/lib/milestones'
 import {
   isHeld,
   statusFromApi,
@@ -264,6 +265,12 @@ export function DashboardPage() {
             groups={timelineData.groups.map((group) => ({
               id: group.projectId,
               label: group.name,
+              milestones: group.milestones.map((m) => ({
+                id: m.id,
+                label: milestoneLabel(m, Number(data.today.slice(0, 4))),
+                date: m.date,
+                done: m.isDone,
+              })),
               tasks: group.tasks.map((task) => ({
                 id: task.id,
                 key: task.key,
