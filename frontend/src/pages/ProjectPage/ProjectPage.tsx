@@ -53,9 +53,12 @@ export function ProjectPage() {
   useDocumentTitle(project.data?.name ?? 'Proyek')
 
   const activeSegment = location.pathname.split('/')[3] ?? 'tabel'
-  // Filter hanya berlaku di tab Tabel; tab lain memuat task apa adanya (untuk progres di header)
+  // Filter berlaku di tab Tabel dan Gantt; tab lain memuat task apa adanya (untuk progres di header)
   const filters = useMemo(
-    () => (activeSegment === 'tabel' ? filtersFromParams(params) : EMPTY_FILTERS),
+    () =>
+      activeSegment === 'tabel' || activeSegment === 'gantt'
+        ? filtersFromParams(params)
+        : EMPTY_FILTERS,
     [activeSegment, params],
   )
   const tasks = useTasks(projectId, filters)

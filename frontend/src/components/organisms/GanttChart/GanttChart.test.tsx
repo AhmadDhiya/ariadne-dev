@@ -172,3 +172,117 @@ function renderWith(zoom: 'week' | 'month', dayCount: number) {
   const result = render(build(zoom, dayCount))
   return { rerender: (z: 'week' | 'month', n: number) => result.rerender(build(z, n)) }
 }
+
+describe('GanttChart: tampilan proyek (detail)', () => {
+  const PROJECT_GROUPS: GanttChartGroup[] = [
+    {
+      id: 'dispatch',
+      label: 'Dispatch',
+      milestones: [{ id: 'm1', label: 'Go-Live Sentul · 30 Okt', date: '2026-09-30', done: false }],
+      tasks: [
+        {
+          id: '1',
+          key: 'SEN-104',
+          title: 'Integrasi log & metrics',
+          status: 'progress',
+          start: '2026-09-28',
+          due: '2026-10-02',
+          overdue: false,
+          assignees: ['Ahmad', 'Rama'],
+          priority: 'medium',
+        },
+        {
+          id: '2',
+          key: 'SEN-122',
+          title: 'Validasi jam masuk shift malam',
+          status: 'fixing',
+          start: '2026-09-23',
+          due: '2026-09-26',
+          overdue: true,
+          assignees: ['Ahmad'],
+          priority: 'high',
+          subtask: true,
+        },
+      ],
+    },
+  ]
+  const PEOPLE = [
+    {
+      id: 'a',
+      name: 'Ahmad',
+      counts: [4, 5, 6, 6, 6, 0, 0, 5, 5, 4, 4, 3, 0, 0, 1, 1, 1, 1, 1, 0, 0],
+    },
+    { id: 'w', name: 'Wiwiet', counts: [1, 1, 1, 1, 1, ...Array.from({ length: 16 }, () => 0)] },
+  ]
+
+  function detailed(props: Partial<GanttChartProps> = {}) {
+    render(
+      <GanttChart
+        detailed
+        leftWidth={360}
+        groups={PROJECT_GROUPS}
+        rangeStart="2026-09-21"
+        dayCount={21}
+        zoom="day"
+        today="2026-09-28"
+        people={PEOPLE}
+        empty={<p>Kosong</p>}
+        {...props}
+      />,
+    )
+  }
+
+  it('daftar kiri 360px berkepala "Task" dan "PIC", dengan avatar PIC dan sub-task menjorok', () => {
+    detailed()
+
+    expect(screen.getByText('PIC')).toBeInTheDocument()
+    expect(document.querySelector('.ar-gantt-left')).toHaveStyle({ width: '360px' })
+    expect(document.querySelectorAll('.ar-gantt-task .ar-avatar').length).toBeGreaterThanOrEqual(3)
+    expect(document.querySelector('.ar-gantt-task.is-sub')).toHaveTextContent('SEN-122')
+  })
+
+  it('bar punya label nama PIC dan ikon prioritas di kanannya, dan grup punya pita', () => {
+    detailed()
+
+    const labels = [...document.querySelectorAll('.ar-bar-label')].map((el) => el.textContent)
+    expect(labels[0]).toContain('Ahmad, Rama')
+    expect(labels[1]).toContain('Ahmad')
+    expect(document.querySelectorAll('.ar-bar-label .ar-prio')).toHaveLength(2)
+    expect(document.querySelectorAll('.ar-gantt-band')).toHaveLength(1)
+  })
+
+  it('milestone digambar di baris grupnya pada harinya, dengan labelnya', () => {
+    detailed()
+
+    expect(screen.getByText('Go-Live Sentul · 30 Okt')).toBeInTheDocument()
+    const diamond = document.querySelector<HTMLElement>('.ar-ms')
+    expect(diamond?.style.left).toBe(`${9 * 40 + 20}px`) // 30 Sep = hari ke-10
+  })
+
+  it('milestone di luar rentang tidak digambar', () => {
+    detailed({
+      groups: [
+        {
+          ...(PROJECT_GROUPS[0] as GanttChartGroup),
+          milestones: [{ id: 'm', label: 'Jauh', date: '2027-03-01', done: false }],
+        },
+      ],
+    })
+
+    expect(screen.queryByText('Jauh')).not.toBeInTheDocument()
+  })
+
+  it('beban kerja per orang: nama di kiri, satu baris angka per orang di kanan, dan legenda skala', () => {
+    detailed()
+
+    expect(screen.getByText('Beban kerja per orang')).toBeInTheDocument()
+    expect(screen.getByText('Wiwiet')).toBeInTheDocument()
+    expect(document.querySelectorAll('.ar-gantt-personrow')).toHaveLength(2)
+    const first = [
+      ...(document.querySelectorAll('.ar-gantt-personrow')[0]?.querySelectorAll('.ar-heat') ?? []),
+    ]
+    expect(first.slice(0, 5).map((c) => c.textContent)).toEqual(['4', '5', '6', '6', '6'])
+    expect(document.querySelectorAll('.ar-gantt-legend .ar-heat')).toHaveLength(6)
+    expect(screen.queryByText('Beban kerja saya')).not.toBeInTheDocument()
+  })
+})

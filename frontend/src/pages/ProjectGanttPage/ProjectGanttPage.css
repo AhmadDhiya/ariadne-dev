@@ -1,0 +1,26 @@
+.ar-ganttpage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.ar-ganttpage-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.ar-ganttpage-sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 var(--space-1);
+  background: var(--line);
+}
+.ar-ganttpage-range {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.ar-ganttpage-card {
+  box-shadow: none;
+  overflow: hidden;
+}

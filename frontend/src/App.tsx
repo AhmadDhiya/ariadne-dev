@@ -8,7 +8,8 @@ import { NotFoundPage } from '@/pages/NotFoundPage'
 import { ProjectMembersPage } from '@/pages/ProjectMembersPage'
 import { ProjectPage } from '@/pages/ProjectPage'
 import { ProjectTablePage } from '@/pages/ProjectTablePage'
-import { ProjectSoonPage } from '@/pages/ProjectSoonPage'
+import { ProjectGanttPage } from '@/pages/ProjectGanttPage'
+import { ProjectMilestonesPage } from '@/pages/ProjectMilestonesPage'
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { TeamsPage } from '@/pages/TeamsPage'
@@ -49,8 +50,8 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to="tabel" replace /> },
           { path: 'tabel', Component: ProjectTablePage },
-          { path: 'gantt', Component: ProjectSoonPage },
-          { path: 'milestone', Component: ProjectSoonPage },
+          { path: 'gantt', Component: ProjectGanttPage },
+          { path: 'milestone', Component: ProjectMilestonesPage },
           { path: 'anggota', Component: ProjectMembersPage },
         ],
       },

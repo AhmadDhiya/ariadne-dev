@@ -741,6 +741,7 @@ Atas permintaan Ahmad: update, komentar, dan catatan internal bisa diubah dan di
 **Yang dibuat:** dashboard pribadi (mockup 02, terang dan gelap): sapaan menurut jam Jakarta, empat kartu ringkasan yang bisa diklik untuk menyaring daftar, daftar "Hari Ini" (Terlambat, Jatuh tempo hari ini, Sedang berjalan, urut prioritas) dengan ubah status dan "Tambah update" langsung dari baris, panel "Perlu perhatian", "Timeline saya" (Gantt pribadi lintas proyek, zoom Hari/Minggu/Bulan) dengan baris "Beban kerja saya", tombol "Tambah task" (pilih proyek dulu), dan pencarian global di topbar (task, proyek, orang; tombol `/`). Tema terang/gelap yang tersimpan di akun sudah ada sejak Fase 2.
 
 **Aturan yang dipakai (semuanya dihitung di server, `Domain/TaskRules`, dengan test unit)**
+
 - Semua yang tampil adalah task yang saya menjadi PIC-nya, belum Done, di proyek yang belum diarsipkan (sub-task ikut, karena bisa punya PIC sendiri). Tidak ada parameter "pengguna": dashboard orang lain tidak bisa dibuka lewat endpoint ini (dashboard anggota untuk supervisor: Fase 7).
 - Kartu: Terlambat; Jatuh tempo minggu ini (hari ini s.d. Jumat, belum Done); Sedang dikerjakan (On Progress + Fixing); Tertahan (Blocked + On Hold + On Request). Kartu yang diklik hanya menyaring daftar; angka di semua kartu tetap dihitung dari seluruh task saya.
 - Hari Ini: Terlambat → jatuh tempo hari ini → sedang berjalan (mulai ≤ hari ini). **Keputusan saya:** task tanpa tanggal mulai tetapi punya tenggat dianggap sudah berjalan; task tanpa tanggal sama sekali tidak masuk daftar. Saat daftar disaring kartu, kelompok "Mendatang" (belum mulai) ikut tampil supaya task tertahan yang belum mulai tidak "hilang".
@@ -748,6 +749,7 @@ Atas permintaan Ahmad: update, komentar, dan catatan internal bisa diubah dan di
 - Rentang timeline: Hari 21 hari (7 sebelum hari ini), Minggu 10 pekan (mulai Senin pekan lalu), Bulan 210 hari (mulai tanggal 1 bulan lalu). Lebar per hari 40/12/4 px.
 
 **Perbedaan dari rencana dan mockup (sengaja)**
+
 - "Perlu perhatian" dihitung dari data yang ada (di-mention, ditugaskan orang lain lewat catatan otomatis, tenggat besok, terlambat; 14 hari terakhir, maksimal 8 butir), **bukan** dari tabel notifikasi (Fase 9), jadi belum ada tanda "sudah dibaca" dan tautan "Lihat semua" belum ditampilkan; tombol lonceng dan badge juga menunggu Fase 9. Hak melihat diperiksa lagi saat membaca: orang yang sudah dikeluarkan dari proyek, atau kini hanya Tamu, tidak melihat kutipan (apalagi dari catatan Internal).
 - Membuat task dengan PIC awal kini tercatat di catatan "membuat task ini dan menugaskan …" (satu entri, dengan id orangnya), dasar butir "ditugaskan" di atas. Task yang dibuat sebelum Fase 5 tidak punya data itu.
 - Milestone di Timeline saya belum ada (tabelnya Fase 6). Panah/dependensi tidak dibuat (di luar MVP).
@@ -759,5 +761,31 @@ Atas permintaan Ahmad: update, komentar, dan catatan internal bisa diubah dan di
 **Pembuktian:** test unit aturan (kelompok Hari Ini, aktif per hari, beban kerja, sapaan), test API dashboard (hanya milik saya, urutan, kartu, saringan, arsip, perlu perhatian, izin saat peran berubah), test pencarian (proyek orang lain, arsip, Tamu, wildcard), matriks izin untuk tiga endpoint baru, dan test browser (data contoh Ahmad, kartu, status, "Tambah update", "Tambah task", zoom, pencarian, Tamu) dengan screenshot terang dan gelap.
 
 **Belum dilakukan:** uji beban dengan data seed ×10 (butir E7); tampilan layar kecil (Fase 10); lonceng dan halaman notifikasi (Fase 9).
+
+**Paket baru:** tidak ada.
+
+### Fase 6 (2 November 2026)
+
+**Yang dibuat:** tab **Gantt** proyek (mockup 04, terang dan gelap): daftar task per sub-proyek di kiri (360px, dengan avatar PIC dan sub-task menjorok), bar bertanda status dengan label PIC dan ikon prioritas di kanannya, pita per grup, milestone (belah ketupat berlabel), garis "Hari ini", zoom Hari/Minggu/Bulan, tombol "Hari ini", saringan PIC, Status, dan Terlambat, dan baris **beban kerja per orang** dengan legenda skala. Tab **Milestone**: daftar sederhana (nama, sub-proyek, tanggal, status) dengan tambah, ubah, hapus, dan tandai selesai. Milestone juga tampil di grafik "Timeline saya" di dashboard.
+
+**Aturan dan data**
+
+- Milestone: satu tanggal, milik proyek atau sub-proyek (bisa dipindah antar sub-proyek di proyek yang sama), tanda selesai. Semua anggota (termasuk Tamu) melihat; **hanya Pengelola proyek dan Admin** yang membuat, mengubah, menghapus (domain.md: "Kelola proyek, sub-proyek, milestone"). Admin boleh walau bukan anggota proyek. Dihapus = benar-benar dihapus (tidak ada riwayat yang terkait, berbeda dengan task); milestone di proyek terarsip dianggap tidak ada.
+- Rentang Gantt dihitung server (`Domain/TimelineRange`) dan lebih lebar dari satu layar supaya bisa digulir ke samping: Hari 91 hari (mulai 7 hari sebelum hari ini), Minggu 182 hari (mulai Senin, dua pekan sebelum hari ini), Bulan 366 hari (mulai tanggal 1 bulan lalu). Lebar per hari 40/12/4 px. Grafik otomatis digulir ke hari ini saat dibuka dan saat zoom berganti; tombol "Hari ini" menggulir kembali. Dashboard tetap memakai rentang yang pas satu layar.
+- Beban kerja per orang: task aktif per hari (aturan yang sama dengan dashboard) milik tiap Pengelola dan Anggota proyek, **di proyek ini dan sub-proyeknya saja** (bukan seluruh pekerjaan orang itu di proyek lain; itu urusan Timeline Tim di Fase 7). Tidak ikut tersaring oleh filter tampilan. Tamu tidak masuk daftar.
+- Daftar task di Gantt memakai endpoint dan saringan yang sama dengan tabel, jadi saringan tersimpan di alamat halaman dan berlaku di kedua tab.
+- Data contoh: tiga milestone (UAT SLMS 5 Okt, Go-Live Sentul 30 Okt, Freeze jaringan 7 Okt) dan satu task Rutin (SEN-140 Backup harian server kelas, bar hijau-toska seperti di mockup). Progres Sentul di data contoh kini "3 dari 17".
+
+**Perbedaan dari rencana dan mockup (sengaja)**
+
+- Milestone milik proyek root (mis. Go-Live Sentul) digambar di baris grup pertama, karena proyek root tidak punya baris grup sendiri bila tidak punya task langsung; milestone sub-proyek tanpa task juga ikut baris grup pertama. Pil "Go-Live … >" untuk milestone di luar layar tidak dibuat: grafik bisa digulir.
+- Tombol "Undang" di header proyek (mockup 04) menunggu Fase 8.
+- Task tanpa tanggal tidak punya bar (tetap ada di daftar kiri); task dengan satu tanggal digambar sebagai bar satu hari.
+- Di tab Milestone, status hanya "Selesai" atau "Belum selesai"; hitungan "terlewat" belum ada.
+- Tombol Ubah dan Hapus di daftar milestone memakai tombol berbingkai (bukan ghost) karena kontras tombol ghost di tabel belum lolos pemeriksaan aksesibilitas.
+
+**Pembuktian:** test API milestone (semua peran, validasi, pindah sub-proyek, arsip, urutan) dan Gantt (rentang per zoom, beban kerja per orang tanpa Tamu dan hanya proyek ini, milestone), empat baris baru di matriks izin, test unit komponen, dan test browser (grup, bar, label, milestone, zoom dan gulir ke samping, filter, tambah/ubah/hapus milestone, peran Wiwiet dan Tamu) dengan screenshot terang dan gelap.
+
+**Belum dilakukan:** uji beban dengan data seed ×10 (butir E7); tampilan layar kecil (Fase 10).
 
 **Paket baru:** tidak ada.

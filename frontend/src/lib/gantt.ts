@@ -4,6 +4,12 @@ import type { TimelineZoom } from '@/types/api'
 /** Lebar satu hari per zoom (px): Hari 40 (mockup 02), Minggu 12, Bulan 4 (design system). */
 export const DAY_WIDTH: Record<TimelineZoom, number> = { day: 40, week: 12, month: 4 }
 
+/**
+ * Berapa hari sebelum "hari ini" yang dibiarkan terlihat di tepi kiri saat grafik digulir ke hari ini
+ * (mockup 04: hari ini di kolom ke-8 pada zoom Hari).
+ */
+export const TODAY_SCROLL_OFFSET: Record<TimelineZoom, number> = { day: 7, week: 14, month: 30 }
+
 export const ZOOM_LABELS: Record<TimelineZoom, string> = {
   day: 'Hari',
   week: 'Minggu',

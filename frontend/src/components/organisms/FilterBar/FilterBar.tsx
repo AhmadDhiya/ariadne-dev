@@ -28,7 +28,23 @@ export interface FilterBarProps {
   labels: string[]
   /** Tulisan di kotak cari, mis. "Cari di proyek ini". */
   searchPlaceholder?: string
+  /** Kontrol yang ditampilkan (default semua). Gantt hanya memakai PIC, Status, dan Terlambat. */
+  controls?: readonly FilterControl[]
 }
+
+export type FilterControl =
+  'pic' | 'status' | 'priority' | 'label' | 'overdue' | 'thisWeek' | 'mine' | 'search'
+
+const ALL_CONTROLS: readonly FilterControl[] = [
+  'pic',
+  'status',
+  'priority',
+  'label',
+  'overdue',
+  'thisWeek',
+  'mine',
+  'search',
+]
 
 type Dropdown = 'pic' | 'status' | 'priority' | 'label'
 
@@ -45,7 +61,9 @@ export function FilterBar({
   people,
   labels,
   searchPlaceholder = 'Cari di proyek ini',
+  controls = ALL_CONTROLS,
 }: FilterBarProps) {
+  const show = (control: FilterControl) => controls.includes(control)
   const [open, setOpen] = useState<Dropdown | null>(null)
   const close = useCallback(() => setOpen(null), [])
   const set = (patch: Partial<TaskFilters>) => onChange({ ...filters, ...patch })
@@ -90,116 +108,128 @@ export function FilterBar({
 
   return (
     <div className="ar-filterbar" role="search" aria-label="Filter task">
-      {renderDropdown({
-        which: 'pic',
-        label: 'PIC',
-        selected: filters.pic.length,
-        value: single(filters.pic, picName),
-        menu: {
-          title: 'Filter PIC',
-          width: 220,
-          items: people.map((p) => ({
-            avatar: p.name,
-            label: p.name,
-            selected: filters.pic.includes(p.id),
-          })),
-          onSelect: (_item, index) => {
-            const person = people[index]
-            if (person) set({ pic: toggled(filters.pic, person.id) })
+      {show('pic') &&
+        renderDropdown({
+          which: 'pic',
+          label: 'PIC',
+          selected: filters.pic.length,
+          value: single(filters.pic, picName),
+          menu: {
+            title: 'Filter PIC',
+            width: 220,
+            items: people.map((p) => ({
+              avatar: p.name,
+              label: p.name,
+              selected: filters.pic.includes(p.id),
+            })),
+            onSelect: (_item, index) => {
+              const person = people[index]
+              if (person) set({ pic: toggled(filters.pic, person.id) })
+            },
           },
-        },
-      })}
-      {renderDropdown({
-        which: 'status',
-        label: 'Status',
-        selected: filters.status.length,
-        value: single(
-          filters.status,
-          (v) => STATUSES.find((s) => s.key === statusFromApi(v as WorkStatusName))?.label ?? v,
-        ),
-        menu: {
-          title: 'Filter status',
-          width: 200,
-          items: WORK_STATUS_NAMES.map((name) => ({
-            status: statusFromApi(name),
-            selected: filters.status.includes(name),
-          })),
-          onSelect: (item) => {
-            if (item.status) set({ status: toggled(filters.status, statusToApi(item.status)) })
+        })}
+      {show('status') &&
+        renderDropdown({
+          which: 'status',
+          label: 'Status',
+          selected: filters.status.length,
+          value: single(
+            filters.status,
+            (v) => STATUSES.find((s) => s.key === statusFromApi(v as WorkStatusName))?.label ?? v,
+          ),
+          menu: {
+            title: 'Filter status',
+            width: 200,
+            items: WORK_STATUS_NAMES.map((name) => ({
+              status: statusFromApi(name),
+              selected: filters.status.includes(name),
+            })),
+            onSelect: (item) => {
+              if (item.status) set({ status: toggled(filters.status, statusToApi(item.status)) })
+            },
           },
-        },
-      })}
-      {renderDropdown({
-        which: 'priority',
-        label: 'Prioritas',
-        selected: filters.priority.length,
-        value: single(filters.priority, (v) => v),
-        menu: {
-          title: 'Filter prioritas',
-          width: 180,
-          items: PRIORITY_NAMES.map((name) => ({
-            label: name,
-            selected: filters.priority.includes(name),
-          })),
-          onSelect: (_item, index) => {
-            const name: PriorityName | undefined = PRIORITY_NAMES[index]
-            if (name) set({ priority: toggled(filters.priority, name) })
+        })}
+      {show('priority') &&
+        renderDropdown({
+          which: 'priority',
+          label: 'Prioritas',
+          selected: filters.priority.length,
+          value: single(filters.priority, (v) => v),
+          menu: {
+            title: 'Filter prioritas',
+            width: 180,
+            items: PRIORITY_NAMES.map((name) => ({
+              label: name,
+              selected: filters.priority.includes(name),
+            })),
+            onSelect: (_item, index) => {
+              const name: PriorityName | undefined = PRIORITY_NAMES[index]
+              if (name) set({ priority: toggled(filters.priority, name) })
+            },
           },
-        },
-      })}
-      {renderDropdown({
-        which: 'label',
-        label: 'Label',
-        selected: filters.label.length,
-        value: single(filters.label, (v) => v),
-        menu: {
-          title: labels.length ? 'Filter label' : 'Belum ada label',
-          width: 200,
-          items: labels.map((name) => ({
-            label: name,
-            selected: filters.label.some((l) => l.toLowerCase() === name.toLowerCase()),
-          })),
-          onSelect: (_item, index) => {
-            const name = labels[index]
-            if (!name) return
-            const has = filters.label.some((l) => l.toLowerCase() === name.toLowerCase())
-            set({
-              label: has
-                ? filters.label.filter((l) => l.toLowerCase() !== name.toLowerCase())
-                : [...filters.label, name],
-            })
+        })}
+      {show('label') &&
+        renderDropdown({
+          which: 'label',
+          label: 'Label',
+          selected: filters.label.length,
+          value: single(filters.label, (v) => v),
+          menu: {
+            title: labels.length ? 'Filter label' : 'Belum ada label',
+            width: 200,
+            items: labels.map((name) => ({
+              label: name,
+              selected: filters.label.some((l) => l.toLowerCase() === name.toLowerCase()),
+            })),
+            onSelect: (_item, index) => {
+              const name = labels[index]
+              if (!name) return
+              const has = filters.label.some((l) => l.toLowerCase() === name.toLowerCase())
+              set({
+                label: has
+                  ? filters.label.filter((l) => l.toLowerCase() !== name.toLowerCase())
+                  : [...filters.label, name],
+              })
+            },
           },
-        },
-      })}
+        })}
 
       <span className="ar-filterbar-sep" aria-hidden />
-      <FilterChip
-        label="Terlambat"
-        toggle
-        active={filters.overdue}
-        onClick={() => set({ overdue: !filters.overdue })}
-      />
-      <FilterChip
-        label="Minggu ini"
-        toggle
-        active={filters.thisWeek}
-        onClick={() => set({ thisWeek: !filters.thisWeek })}
-      />
-      <FilterChip
-        label="Task saya"
-        toggle
-        active={filters.mine}
-        onClick={() => set({ mine: !filters.mine })}
-      />
+      {show('overdue') && (
+        <FilterChip
+          label="Terlambat"
+          toggle
+          active={filters.overdue}
+          onClick={() => set({ overdue: !filters.overdue })}
+        />
+      )}
+      {show('thisWeek') && (
+        <FilterChip
+          label="Minggu ini"
+          toggle
+          active={filters.thisWeek}
+          onClick={() => set({ thisWeek: !filters.thisWeek })}
+        />
+      )}
+      {show('mine') && (
+        <FilterChip
+          label="Task saya"
+          toggle
+          active={filters.mine}
+          onClick={() => set({ mine: !filters.mine })}
+        />
+      )}
 
       <span className="ar-filterbar-spacer" />
-      <SearchField
-        aria-label={searchPlaceholder}
-        placeholder={searchPlaceholder}
-        width={220}
-        value={filters.q}
-        onValueChange={(q) => set({ q })}
-      />
+      {show('search') && (
+        <SearchField
+          aria-label={searchPlaceholder}
+          placeholder={searchPlaceholder}
+          width={220}
+          value={filters.q}
+          onValueChange={(q) => set({ q })}
+        />
+      )}
     </div>
   )
 }
