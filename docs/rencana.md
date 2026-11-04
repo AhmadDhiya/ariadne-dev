@@ -831,7 +831,7 @@ Atas permintaan Ahmad: update, komentar, dan catatan internal bisa diubah dan di
 
 **Perlu keputusan Ahmad**
 
-- Mockup 08 mengizinkan undangan dengan peran **Pengelola dan Anggota**, bukan hanya Tamu. Artinya Pengelola proyek bisa membuat akun untuk orang yang belum terdaftar, padahal Keputusan 3 bilang akun pegawai dibuat Admin. Saya ikuti mockup. Bila undangan sebaiknya hanya untuk Tamu, perubahannya kecil (satu aturan di server + menyembunyikan dua pilihan).
+- Mockup 08 mengizinkan undangan dengan peran **Pengelola dan Anggota**, bukan hanya Tamu. Artinya Pengelola proyek bisa membuat akun untuk orang yang belum terdaftar, padahal Keputusan 3 bilang akun pegawai dibuat Admin. Saya ikuti mockup. **Diputuskan Ahmad (5 Nov 2026): undangan tetap untuk semua peran, seperti mockup.** Jadi Pengelola proyek juga boleh membuatkan akun lewat undangan, sebagai pengecualian dari Keputusan 3.
 - Banner "Anda melihat sebagai Tamu" hanya tampil untuk **tamu murni** (tidak punya peran lain di mana pun). Pegawai yang kebetulan Tamu di satu proyek tetap diperlakukan sebagai Tamu oleh server di proyek itu, tetapi tidak melihat banner.
 
 **Keamanan dan audit izin**
