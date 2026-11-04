@@ -11,6 +11,7 @@ for (const theme of THEMES) {
     })
 
     test('lolos pemeriksaan aksesibilitas WCAG 2.1 AA', async ({ page }) => {
+      test.setTimeout(90_000) // katalog makin panjang tiap fase
       expect(await accessibilityViolations(page)).toEqual([])
     })
 

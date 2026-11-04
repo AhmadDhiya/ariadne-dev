@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Button } from '@/components/atoms/Button'
 import { DueDate } from '@/components/atoms/DueDate'
+import { StatusPill } from '@/components/atoms/StatusPill'
 import { TodayRow } from '@/components/molecules/TodayRow'
 import { StatusSelect } from '@/components/organisms/StatusSelect'
 import { dueView, GROUP_LABELS } from '@/lib/dashboard'
@@ -16,9 +17,16 @@ export interface TodayListProps {
   cardLabel?: string
   onClearCard?: () => void
   onOpenTask: (task: TaskRow) => void
-  /** Status tertahan butuh alasan, jadi pilihannya diteruskan ke induk yang membuka dialog alasan. */
-  onChangeStatus: (task: TaskRow, status: StatusKey) => void
-  onAddUpdate: (task: TaskRow) => void
+  /**
+   * Status tertahan butuh alasan, jadi pilihannya diteruskan ke induk yang membuka dialog alasan. Dikosongkan saat
+   * dashboard orang lain dilihat supervisor: status hanya tampil, tidak bisa diubah.
+   */
+  onChangeStatus?: (task: TaskRow, status: StatusKey) => void
+  onAddUpdate?: (task: TaskRow) => void
+  /** Aksi lain di ujung baris (mis. "Ubah tanggal" dan "Pindahkan ke…"); menggantikan "Tambah update". */
+  renderActions?: (task: TaskRow) => ReactNode
+  /** Judul daftar; default "Hari Ini". */
+  title?: string
   /** Ditampilkan bila tidak ada task sama sekali. */
   empty: ReactNode
 }
@@ -35,12 +43,14 @@ export function TodayList({
   onOpenTask,
   onChangeStatus,
   onAddUpdate,
+  renderActions,
+  title = 'Hari Ini',
   empty,
 }: TodayListProps) {
   return (
     <section className="ar-card ar-todaylist" aria-label="Hari Ini">
       <div className="ar-todaylist-head">
-        <h2>Hari Ini</h2>
+        <h2>{title}</h2>
         {cardLabel && onClearCard ? (
           <Button
             size="sm"
@@ -81,20 +91,28 @@ export function TodayList({
                   )
                 }
                 status={
-                  <StatusSelect
-                    status={statusFromApi(task.status)}
-                    onChange={(next) => onChangeStatus(task, next)}
-                  />
+                  onChangeStatus ? (
+                    <StatusSelect
+                      status={statusFromApi(task.status)}
+                      onChange={(next) => onChangeStatus(task, next)}
+                    />
+                  ) : (
+                    <StatusPill status={statusFromApi(task.status)} />
+                  )
                 }
                 action={
-                  <Button
-                    size="sm"
-                    icon="update"
-                    aria-label={`Tambah update untuk ${task.key}`}
-                    onClick={() => onAddUpdate(task)}
-                  >
-                    Tambah update
-                  </Button>
+                  renderActions ? (
+                    renderActions(task)
+                  ) : onAddUpdate ? (
+                    <Button
+                      size="sm"
+                      icon="update"
+                      aria-label={`Tambah update untuk ${task.key}`}
+                      onClick={() => onAddUpdate(task)}
+                    >
+                      Tambah update
+                    </Button>
+                  ) : null
                 }
               />
             )

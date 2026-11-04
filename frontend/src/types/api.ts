@@ -203,7 +203,12 @@ export interface TaskDetail {
 
 export type ActivityKindName = 'Update' | 'Comment' | 'Internal' | 'Log'
 export type LogKindName =
-  'TaskCreated' | 'StatusChanged' | 'AssigneesChanged' | 'DatesChanged' | 'SubtaskAdded'
+  | 'TaskCreated'
+  | 'StatusChanged'
+  | 'AssigneesChanged'
+  | 'DatesChanged'
+  | 'SubtaskAdded'
+  | 'TaskMoved'
 
 export interface ActivityMention {
   userId: string
@@ -307,6 +312,8 @@ export interface DashboardResponse {
   groups: DashboardGroup[]
   attention: AttentionItem[]
   editableProjects: ProjectOption[]
+  /** Terisi bila supervisor membuka dashboard anggota; kosong untuk dashboard sendiri. */
+  viewing: TaskPerson | null
 }
 
 export type TimelineZoom = 'day' | 'week' | 'month'
@@ -398,4 +405,67 @@ export interface SearchResults {
   tasks: SearchTask[]
   projects: SearchProject[]
   people: SearchPerson[]
+}
+
+// ---------- Timeline Tim (Fase 7) ----------
+
+export interface TeamOption {
+  id: string
+  name: string
+  memberCount: number
+}
+
+export interface ProjectFilterOption {
+  id: string
+  name: string
+}
+
+export interface TeamTask {
+  id: string
+  key: string
+  title: string
+  status: WorkStatusName
+  priority: PriorityName
+  startDate: string | null
+  dueDate: string | null
+  isOverdue: boolean
+  rootProjectId: string
+  projectPath: string[]
+}
+
+export interface TeamPerson {
+  userId: string
+  name: string
+  /** Task aktif per hari lintas proyek, sejajar dengan rentang; tidak tersaring. */
+  counts: number[]
+  /** Task di rentang yang lolos filter. */
+  tasks: TeamTask[]
+}
+
+export interface TeamTimelineResponse {
+  teams: TeamOption[]
+  teamId: string
+  teamName: string
+  zoom: TimelineZoom
+  start: string
+  dayCount: number
+  today: string
+  projects: ProjectFilterOption[]
+  people: TeamPerson[]
+}
+
+export interface MoveCandidate {
+  userId: string
+  name: string
+  isAssignee: boolean
+  /** Beban per hari di rentang task, tanpa menghitung task itu sendiri. */
+  counts: number[]
+  peak: number
+}
+
+export interface MoveCandidates {
+  start: string
+  dayCount: number
+  assignees: TaskPerson[]
+  candidates: MoveCandidate[]
 }

@@ -54,6 +54,12 @@ describe('logLine', () => {
     )
   })
 
+  it('task dipindahkan dari satu PIC ke PIC lain', () => {
+    expect(
+      logLine({ logKind: 'TaskMoved', data: { removed: ['Rama'], added: ['Galih'] } }),
+    ).toEqual({ text: 'memindahkan task dari Rama ke Galih', icon: 'move' })
+  })
+
   it('task dibuat dan sub-task ditambahkan', () => {
     expect(logLine({ logKind: 'TaskCreated', data: null }).text).toBe('membuat task ini')
     expect(logLine({ logKind: 'TaskCreated', data: { added: ['Rama', 'Galih'] } }).text).toBe(

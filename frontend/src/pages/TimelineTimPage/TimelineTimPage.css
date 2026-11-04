@@ -1,0 +1,58 @@
+.ar-tt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.ar-tt-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.ar-tt-title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+.ar-tt-team {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 32px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.ar-tt-also {
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.ar-tt-spacer {
+  flex-grow: 1;
+}
+.ar-tt-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.ar-tt-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.ar-tt-legend .ar-heat {
+  width: 16px;
+  height: 12px;
+}
+.ar-tt-card {
+  box-shadow: none;
+  overflow: hidden;
+}
