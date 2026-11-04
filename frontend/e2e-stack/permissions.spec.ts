@@ -107,8 +107,10 @@ test.describe('Pak Budi (Tamu klien)', () => {
     await page.getByRole('tab', { name: 'Anggota' }).click()
 
     const table = page.getByRole('table', { name: 'Anggota Sentul' })
-    await expect(table.getByRole('row')).toHaveCount(10)
+    await expect(table.getByRole('row')).toHaveCount(10) // undangan yang menunggu tidak untuk Tamu
     await expect(table.getByText('@perusahaan.co.id')).toHaveCount(0)
+    await expect(page.getByText('Menunggu diterima')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Undang', exact: true })).toHaveCount(0)
     await expect(page.getByRole('combobox', { name: /^Peran / })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Tambah sub-proyek' })).toHaveCount(0)
     expect(await a11yViolations(page)).toEqual([])

@@ -40,6 +40,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Milestone> Milestones => Set<Milestone>();
 
+    public DbSet<Invitation> Invitations => Set<Invitation>();
+
     private static readonly JsonSerializerOptions DataJson = new(JsonSerializerDefaults.Web)
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -216,6 +218,29 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             milestone.HasIndex(m => m.ProjectId);
             milestone.HasOne<Project>().WithMany().HasForeignKey(m => m.ProjectId).OnDelete(DeleteBehavior.Restrict);
             milestone.HasOne<Project>().WithMany().HasForeignKey(m => m.RootProjectId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Entity<Invitation>(invitation =>
+        {
+            invitation.ToTable("invitations", t =>
+            {
+                // Diterima <=> ada akun penerima; Menunggu <=> belum diselesaikan
+                t.HasCheckConstraint("ck_invitations_accepted", "(status = 'Diterima') = (accepted_user_id IS NOT NULL)");
+                t.HasCheckConstraint("ck_invitations_resolved", "(status = 'Menunggu') = (resolved_at IS NULL)");
+            });
+            invitation.HasKey(i => i.Id);
+            invitation.Property(i => i.Email).HasMaxLength(254).IsRequired();
+            invitation.Property(i => i.NormalizedEmail).HasMaxLength(254).IsRequired();
+            invitation.Property(i => i.Role).HasConversion<string>().HasMaxLength(20);
+            invitation.Property(i => i.Status).HasConversion<string>().HasMaxLength(20);
+            invitation.Property(i => i.TokenHash).HasMaxLength(64).IsFixedLength().IsRequired();
+            invitation.Property(i => i.Message).HasMaxLength(500);
+            invitation.HasIndex(i => i.TokenHash).IsUnique();
+            // Satu undangan yang masih menunggu per email per proyek (mengundang ulang menggantikan yang lama)
+            invitation.HasIndex(i => new { i.ProjectId, i.NormalizedEmail }).IsUnique().HasFilter("status = 'Menunggu'");
+            invitation.HasOne(i => i.Project).WithMany().HasForeignKey(i => i.ProjectId).OnDelete(DeleteBehavior.Cascade);
+            invitation.HasOne(i => i.InvitedBy).WithMany().HasForeignKey(i => i.InvitedById).OnDelete(DeleteBehavior.Restrict);
+            invitation.HasOne<AppUser>().WithMany().HasForeignKey(i => i.AcceptedUserId).OnDelete(DeleteBehavior.Restrict);
         });
 
         builder.Entity<Mention>(mention =>

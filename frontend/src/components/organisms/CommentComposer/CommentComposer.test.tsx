@@ -42,6 +42,7 @@ describe('CommentComposer', () => {
     setup({ kinds: ['Comment'] })
 
     expect(screen.getByRole('button', { name: 'Komentar' })).toBeInTheDocument()
+    expect(screen.getByText('Komentar Anda terlihat oleh tim proyek.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Update' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Internal' })).not.toBeInTheDocument()
   })

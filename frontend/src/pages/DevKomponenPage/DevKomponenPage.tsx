@@ -45,6 +45,7 @@ import { Phase4Molecules, Phase4Organisms } from './phase4'
 import { Phase5Molecules, Phase5Organisms } from './phase5'
 import { Phase6Organisms } from './phase6'
 import { Phase7Organisms } from './phase7'
+import { Phase8Organisms } from './phase8'
 import {
   GANTT_DAYS,
   GANTT_WEEKENDS,
@@ -477,6 +478,7 @@ export function DevKomponenPage() {
         <Phase5Organisms />
         <Phase6Organisms />
         <Phase7Organisms />
+        <Phase8Organisms />
       </Level>
 
       <Level id="template" title="Template">

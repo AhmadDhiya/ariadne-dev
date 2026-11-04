@@ -132,7 +132,8 @@ export function AppLayoutPage() {
       banner={
         user.isGuestOnly ? (
           <Banner kind="guest">
-            Anda melihat sebagai <b>Tamu</b>. Anda bisa berkomentar dan menandai anggota dengan @.
+            Anda melihat sebagai <b>Tamu</b>. Anda bisa melihat progres, berkomentar, dan menandai
+            anggota dengan @.
           </Banner>
         ) : undefined
       }

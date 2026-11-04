@@ -172,6 +172,21 @@ internal static partial class DevelopmentSeeder
             Pm(migrasi, rama, ProjectRole.Anggota, 2026, 6, 15),
             Pm(migrasi, galih, ProjectRole.Anggota, 2026, 6, 15));
 
+        // Undangan Sari yang belum diterima (mockup 08). Tokennya acak dan tidak disimpan di mana pun, jadi tautannya
+        // tidak bisa dipakai; masa berlakunya dihitung dari "sekarang" supaya tidak tampil kedaluwarsa.
+        db.Invitations.Add(new Invitation
+        {
+            Id = Guid.NewGuid(),
+            ProjectId = sentulProject.Id,
+            Email = "sari@klien.example",
+            NormalizedEmail = "SARI@KLIEN.EXAMPLE",
+            Role = ProjectRole.Tamu,
+            TokenHash = Convert.ToHexStringLower(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)),
+            InvitedById = ahmad.Id,
+            Status = InvitationStatus.Menunggu,
+            CreatedAt = new DateTimeOffset(2026, 9, 26, 2, 0, 0, TimeSpan.Zero),
+            ExpiresAt = now + Invitation.Lifetime,
+        });
 
         var timeline = SeedTasks(db, now, sentulProject, migrasi, dispatch, slms, temuan, smartclassroom, faq, menagih, testing, ahmad, syaikhan, wiwiet, manto, rama, khalil, galih, bintang, budi);
 

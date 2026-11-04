@@ -150,15 +150,18 @@ test.describe('Ahmad: anggota proyek', () => {
     await sidebar(page).getByRole('link', { name: 'Sentul', exact: true }).click()
     await page.getByRole('tab', { name: 'Anggota' }).click()
 
-    await expect(page.getByText('2 Pengelola · 6 Anggota · 1 Tamu')).toBeVisible()
+    // Undangan Sari yang belum diterima ikut dihitung dan tampil di baris terakhir (Fase 8)
+    await expect(page.getByText('2 Pengelola · 6 Anggota · 2 Tamu')).toBeVisible()
     const table = page.getByRole('table', { name: 'Anggota Sentul' })
-    await expect(table.getByRole('row')).toHaveCount(10) // header + 9
+    await expect(table.getByRole('row')).toHaveCount(11) // header + 9 anggota + 1 undangan
     await expect(table.getByRole('row').nth(1)).toContainText('Ahmad')
     await expect(table.getByRole('row').nth(1)).toContainText('ahmad@perusahaan.co.id')
     await expect(table.getByRole('row').nth(3)).toContainText('Wiwiet')
     await expect(table.getByRole('row').nth(3)).toContainText('2 Jun 2026')
     await expect(table.getByRole('row').nth(9)).toContainText('Pak Budi')
     await expect(page.getByRole('combobox', { name: 'Peran Pak Budi' })).toHaveValue('Tamu')
+    await expect(table.getByRole('row').nth(10)).toContainText('Menunggu diterima')
+    await expect(page.getByRole('button', { name: 'Undang', exact: true })).toBeVisible()
     await expect(page).toHaveScreenshot('anggota-proyek.png')
   })
 
@@ -169,7 +172,7 @@ test.describe('Ahmad: anggota proyek', () => {
     await page.getByRole('tab', { name: 'Anggota' }).click()
 
     await expect(page.getByRole('table', { name: 'Anggota Sentul' }).getByRole('row')).toHaveCount(
-      10,
+      11,
     )
   })
 

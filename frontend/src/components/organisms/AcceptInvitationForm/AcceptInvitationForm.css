@@ -1,0 +1,15 @@
+.ar-acceptinv-message {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--line-strong);
+  background: var(--surface-muted);
+  font-size: 14px;
+  line-height: 20px;
+  white-space: pre-wrap;
+}
+.ar-acceptinv-note {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-muted);
+}

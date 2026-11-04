@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import type { ProjectMemberItem } from '@/types/api'
+import type { InvitationItem, ProjectMemberItem } from '@/types/api'
 import { ProjectMembersTable } from './ProjectMembersTable'
 
 const MEMBERS: ProjectMemberItem[] = [
@@ -25,7 +25,61 @@ const MEMBERS: ProjectMemberItem[] = [
   },
 ]
 
+const SARI: InvitationItem = {
+  id: 'inv-1',
+  email: 'sari@klien.example',
+  role: 'Tamu',
+  invitedBy: 'Ahmad',
+  createdAt: '2026-09-26T02:00:00Z',
+  expiresAt: '2026-10-03T02:00:00Z',
+  expired: false,
+}
+const INVITES: InvitationItem[] = [SARI]
+
 describe('ProjectMembersTable', () => {
+  it('undangan tampil sebagai "Menunggu diterima" dengan peran yang bisa diubah dan tombol Batalkan', async () => {
+    const user = userEvent.setup()
+    const onChangeInvitationRole = vi.fn()
+    const onCancelInvitation = vi.fn()
+    render(
+      <ProjectMembersTable
+        projectName="Sentul"
+        members={MEMBERS}
+        invitations={INVITES}
+        canManage
+        onChangeRole={() => {}}
+        onRemove={() => {}}
+        onChangeInvitationRole={onChangeInvitationRole}
+        onCancelInvitation={onCancelInvitation}
+      />,
+    )
+
+    expect(screen.getByText('Sari')).toBeInTheDocument()
+    expect(screen.getByText('Menunggu diterima')).toBeInTheDocument()
+    expect(screen.getByText('26 Sep 2026')).toBeInTheDocument()
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Peran sari@klien.example' }),
+      'Anggota',
+    )
+    expect(onChangeInvitationRole).toHaveBeenCalledWith('inv-1', 'Anggota')
+    await user.click(screen.getByRole('button', { name: 'Batalkan undangan sari@klien.example' }))
+    expect(onCancelInvitation).toHaveBeenCalledWith('inv-1')
+  })
+
+  it('undangan kedaluwarsa ditandai', () => {
+    render(
+      <ProjectMembersTable
+        projectName="Sentul"
+        members={[]}
+        invitations={[{ ...SARI, expired: true }]}
+        canManage
+        onChangeRole={() => {}}
+        onRemove={() => {}}
+      />,
+    )
+    expect(screen.getByText('Undangan kedaluwarsa')).toBeInTheDocument()
+  })
+
   it('pengelola bisa mengubah peran dan mengeluarkan anggota', async () => {
     const user = userEvent.setup()
     const onChangeRole = vi.fn()

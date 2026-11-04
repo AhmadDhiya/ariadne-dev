@@ -1,5 +1,6 @@
 import { Navigate, createBrowserRouter, RouterProvider, type RouteObject } from 'react-router'
 import { ToastProvider } from '@/app/ToastProvider'
+import { AcceptInvitationPage } from '@/pages/AcceptInvitationPage'
 import { AppLayoutPage } from '@/pages/AppLayoutPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
   { path: '/masuk', Component: LoginPage },
   { path: '/lupa-password', Component: ForgotPasswordPage },
   { path: '/reset-password', Component: ResetPasswordPage },
+  { path: '/undangan', Component: AcceptInvitationPage },
   ...devRoutes,
 
   // Semua halaman setelah login lewat AppLayoutPage (periksa sesi + sidebar + topbar)

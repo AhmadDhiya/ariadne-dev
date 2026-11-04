@@ -214,6 +214,99 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Ariadne.Api.Domain.Invitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AcceptedUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accepted_user_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("InvitedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("invited_by_id");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("message");
+
+                    b.Property<string>("NormalizedEmail")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("normalized_email");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.Property<DateTimeOffset?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("resolved_at");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("role");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .HasColumnName("token_hash")
+                        .IsFixedLength();
+
+                    b.HasKey("Id")
+                        .HasName("pk_invitations");
+
+                    b.HasIndex("AcceptedUserId")
+                        .HasDatabaseName("ix_invitations_accepted_user_id");
+
+                    b.HasIndex("InvitedById")
+                        .HasDatabaseName("ix_invitations_invited_by_id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_invitations_token_hash");
+
+                    b.HasIndex("ProjectId", "NormalizedEmail")
+                        .IsUnique()
+                        .HasDatabaseName("ix_invitations_project_id_normalized_email")
+                        .HasFilter("status = 'Menunggu'");
+
+                    b.ToTable("invitations", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_invitations_accepted", "(status = 'Diterima') = (accepted_user_id IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_invitations_resolved", "(status = 'Menunggu') = (resolved_at IS NULL)");
+                        });
+                });
+
             modelBuilder.Entity("Ariadne.Api.Domain.Label", b =>
                 {
                     b.Property<Guid>("Id")
@@ -776,6 +869,33 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                     b.Navigation("Author");
 
                     b.Navigation("Task");
+                });
+
+            modelBuilder.Entity("Ariadne.Api.Domain.Invitation", b =>
+                {
+                    b.HasOne("Ariadne.Api.Domain.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("AcceptedUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_invitations_users_accepted_user_id");
+
+                    b.HasOne("Ariadne.Api.Domain.AppUser", "InvitedBy")
+                        .WithMany()
+                        .HasForeignKey("InvitedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_invitations_users_invited_by_id");
+
+                    b.HasOne("Ariadne.Api.Domain.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_invitations_projects_project_id");
+
+                    b.Navigation("InvitedBy");
+
+                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("Ariadne.Api.Domain.Label", b =>
