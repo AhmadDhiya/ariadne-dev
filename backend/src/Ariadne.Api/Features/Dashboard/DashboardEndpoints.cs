@@ -48,7 +48,7 @@ internal static class DashboardEndpoints
         var access = await accessService.CurrentAsync(http.User, ct);
         var (target, viewing) = await ResolveTargetAsync(db, access, userId, ct);
         var today = clock.Today;
-        var mine = await LoadMineAsync(db, target, ct);
+        var mine = await LoadMineAsync(db, target, target == access.UserId ? null : access, ct);
         var codes = await TaskQueries.RootCodesAsync(db, mine.Select(m => m.Task.RootProjectId), ct);
 
         // Kartu dan daftar dihitung dari himpunan yang sama (task milik saya yang belum Done)
@@ -118,7 +118,7 @@ internal static class DashboardEndpoints
 
         var (name, start, count) = TimelineRange.For(zoom, today, wide: false);
         var end = start.AddDays(count - 1);
-        var mine = await LoadMineAsync(db, target, ct);
+        var mine = await LoadMineAsync(db, target, target == access.UserId ? null : access, ct);
 
         var workload = TaskRules.WorkloadPerDay([.. mine.Select(m => (m.Task.StartDate, m.Task.DueDate, m.Task.Status))], start, count);
 
@@ -169,12 +169,19 @@ internal static class DashboardEndpoints
 
     private static DateTime Jakarta(IClock clock) => TimeZoneInfo.ConvertTime(clock.UtcNow, clock.TimeZone).DateTime;
 
-    /// <summary>Task yang saya menjadi PIC-nya, belum Done, di proyek yang belum diarsipkan, beserta jalur proyeknya.</summary>
-    private static async Task<List<Mine>> LoadMineAsync(AppDbContext db, Guid me, CancellationToken ct)
+    /// <summary>Task yang `me` menjadi PIC-nya (bila `viewer` diisi: hanya yang boleh dilihat viewer), belum Done, di proyek yang belum diarsipkan, beserta jalur proyeknya.</summary>
+    private static async Task<List<Mine>> LoadMineAsync(AppDbContext db, Guid me, UserAccess? viewer, CancellationToken ct)
     {
         var tasks = await db.Tasks.WithDetails()
             .Where(t => t.Assignees.Any(a => a.UserId == me) && t.Status != WorkStatus.Done && t.Project!.ArchivedAt == null)
             .ToListAsync(ct);
+
+        // Supervisor yang membuka dashboard orang lain hanya melihat task dari proyek yang boleh ia lihat
+        if (viewer is not null)
+        {
+            tasks = [.. tasks.Where(t => viewer.CanViewProject(t.RootProjectId))];
+        }
+
         if (tasks.Count == 0)
         {
             return [];

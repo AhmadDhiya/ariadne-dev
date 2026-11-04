@@ -51,13 +51,14 @@ public sealed class TeamTimelineTests(FakeTodayWorldFixture fx) : IClassFixture<
     // ---------- Timeline Tim ----------
 
     [Fact]
-    public async Task Supervisor_sees_team_members_with_tasks_and_workload_across_projects_they_have_not_joined()
+    public async Task Supervisor_sees_team_workload_across_all_projects_but_tasks_only_from_projects_they_joined()
     {
         var teammate = await NewTeammateAsync("Rama Uji");
         var one = await TaskKit.NewSiteAsync(App, W);
         var two = await TaskKit.NewSiteAsync(App, W);
         await JoinAsync(one, teammate);
         await JoinAsync(two, teammate);
+        await JoinAsync(one, W.Supervisor); // proyek kedua sengaja tidak diikuti supervisor
         await TaskKit.NewTaskAsync(one.Manager, one.Root, new { title = "a", startDate = "2026-09-21", dueDate = "2026-09-25", assigneeIds = new[] { teammate.Id } });
         await TaskKit.NewTaskAsync(two.Manager, two.Root, new { title = "b", startDate = "2026-09-24", dueDate = "2026-09-28", assigneeIds = new[] { teammate.Id } });
         await TaskKit.NewTaskAsync(two.Manager, two.Root, new { title = "selesai", status = "Done", startDate = "2026-09-21", dueDate = "2026-09-30", assigneeIds = new[] { teammate.Id } });
@@ -69,10 +70,11 @@ public sealed class TeamTimelineTests(FakeTodayWorldFixture fx) : IClassFixture<
         Assert.Equal((new DateOnly(2026, 9, 21), 91), (timeline.Start, timeline.DayCount));
         var person = timeline.People.Single(p => p.UserId == teammate.Id);
         Assert.Equal([1, 1, 1, 2, 2, 1, 1, 1, 0], person.Counts.Take(9)); // task Done tidak dihitung
-        Assert.Equal(["a", "b"], person.Tasks.Select(t => t.Title));
+        Assert.Equal(["a"], person.Tasks.Select(t => t.Title)); // task "b" ada di proyek yang tidak diikuti supervisor
         Assert.StartsWith(one.Code + "-", person.Tasks[0].Key, StringComparison.Ordinal);
         Assert.DoesNotContain(timeline.People, p => p.UserId == W.Supervisor.Id); // supervisor bukan salah satu baris
         Assert.Contains(timeline.Projects, p => p.Id == one.Root);
+        Assert.DoesNotContain(timeline.Projects, p => p.Id == two.Root);
         Assert.Contains(timeline.Teams, t => t.Id == W.TeamA);
     }
 
@@ -84,6 +86,8 @@ public sealed class TeamTimelineTests(FakeTodayWorldFixture fx) : IClassFixture<
         var two = await TaskKit.NewSiteAsync(App, W);
         await JoinAsync(one, teammate);
         await JoinAsync(two, teammate);
+        await JoinAsync(one, W.Supervisor);
+        await JoinAsync(two, W.Supervisor);
         await TaskKit.NewTaskAsync(one.Manager, one.Root, new { title = "telat", priority = "Critical", status = "OnProgress", startDate = "2026-09-21", dueDate = "2026-09-25", assigneeIds = new[] { teammate.Id } });
         await TaskKit.NewTaskAsync(two.Manager, two.Root, new { title = "aman", priority = "Low", status = "NotStarted", startDate = "2026-09-28", dueDate = "2026-10-02", assigneeIds = new[] { teammate.Id } });
 
@@ -108,6 +112,7 @@ public sealed class TeamTimelineTests(FakeTodayWorldFixture fx) : IClassFixture<
         var teammate = await NewTeammateAsync("Bintang Uji");
         var site = await TaskKit.NewSiteAsync(App, W);
         await JoinAsync(site, teammate);
+        await JoinAsync(site, W.Supervisor);
         await TaskKit.NewTaskAsync(site.Manager, site.Root, new { title = "jauh", startDate = "2028-01-03", dueDate = "2028-01-07", assigneeIds = new[] { teammate.Id } });
         await TaskKit.NewTaskAsync(site.Manager, site.Root, new { title = "dekat", startDate = "2026-09-29", dueDate = "2026-09-30", assigneeIds = new[] { teammate.Id } });
 
@@ -151,6 +156,7 @@ public sealed class TeamTimelineTests(FakeTodayWorldFixture fx) : IClassFixture<
         var site = await TaskKit.NewSiteAsync(App, W);
         await JoinAsync(site, from);
         await JoinAsync(site, to);
+        await JoinAsync(site, W.Supervisor);
         var task = await TaskKit.NewTaskAsync(site.Manager, site.Root, new { title = "pindah", assigneeIds = new[] { from.Id, W.Member.Id } });
 
         var response = await Supervisor.PostApiAsync($"/api/tasks/{task.Id}/move", new { fromUserId = from.Id, toUserId = to.Id, notify = true });
@@ -172,6 +178,7 @@ public sealed class TeamTimelineTests(FakeTodayWorldFixture fx) : IClassFixture<
         var site = await TaskKit.NewSiteAsync(App, W);
         await JoinAsync(site, from);
         await JoinAsync(site, to);
+        await JoinAsync(site, W.Supervisor);
         var task = await TaskKit.NewTaskAsync(site.Manager, site.Root, new { title = "ganda", assigneeIds = new[] { from.Id, to.Id } });
 
         var row = await (await Supervisor.PostApiAsync($"/api/tasks/{task.Id}/move", new { fromUserId = from.Id, toUserId = to.Id })).ReadAsync<TaskRow>();
@@ -186,6 +193,7 @@ public sealed class TeamTimelineTests(FakeTodayWorldFixture fx) : IClassFixture<
         var site = await TaskKit.NewSiteAsync(App, W);
         await JoinAsync(site, from);
         await JoinAsync(site, new TestUser(W.OtherManager.Id, W.OtherManager.Email)); // anggota proyek, tetapi bukan Tim A
+        await JoinAsync(site, W.Supervisor);
         var task = await TaskKit.NewTaskAsync(site.Manager, site.Root, new { title = "luar tim", assigneeIds = new[] { from.Id } });
         var body = new { fromUserId = from.Id, toUserId = W.OtherManager.Id, notify = false };
 
@@ -239,6 +247,7 @@ public sealed class TeamTimelineTests(FakeTodayWorldFixture fx) : IClassFixture<
         await JoinAsync(site, from);
         await JoinAsync(site, to);
         await JoinAsync(elsewhere, to);
+        await JoinAsync(site, W.Supervisor);
         var task = await TaskKit.NewTaskAsync(site.Manager, site.Root, new { title = "beban", startDate = "2026-09-21", dueDate = "2026-09-25", assigneeIds = new[] { from.Id } });
         await TaskKit.NewTaskAsync(elsewhere.Manager, elsewhere.Root, new { title = "lain", startDate = "2026-09-23", dueDate = "2026-09-24", assigneeIds = new[] { to.Id } });
 
@@ -261,11 +270,12 @@ public sealed class TeamTimelineTests(FakeTodayWorldFixture fx) : IClassFixture<
     // ---------- Ubah tanggal oleh supervisor ----------
 
     [Fact]
-    public async Task Supervisor_can_change_the_dates_of_a_teammates_task_in_a_project_they_have_not_joined()
+    public async Task Supervisor_can_change_the_dates_of_a_teammates_task_in_a_project_they_joined()
     {
         var teammate = await NewTeammateAsync("Tanggal Uji");
         var site = await TaskKit.NewSiteAsync(App, W);
         await JoinAsync(site, teammate);
+        await JoinAsync(site, W.Supervisor);
         var task = await TaskKit.NewTaskAsync(site.Manager, site.Root, new { title = "geser", startDate = "2026-09-21", dueDate = "2026-09-25", assigneeIds = new[] { teammate.Id } });
 
         var response = await Supervisor.PutApiAsync($"/api/tasks/{task.Id}/dates", new { startDate = "2026-09-28", dueDate = "2026-10-02" });
@@ -279,6 +289,31 @@ public sealed class TeamTimelineTests(FakeTodayWorldFixture fx) : IClassFixture<
         Assert.Equal(HttpStatusCode.NotFound, (await (await App.ClientAsync(W.OtherSupervisor)).PutApiAsync($"/api/tasks/{task.Id}/dates", new { startDate = "2026-09-28", dueDate = "2026-10-02" })).StatusCode);
     }
 
+    // ---------- Proyek yang tidak diikuti supervisor ----------
+
+    [Fact]
+    public async Task Tasks_in_projects_the_supervisor_has_not_joined_are_hidden_and_cannot_be_touched()
+    {
+        var teammate = await NewTeammateAsync("Proyek Lain");
+        var site = await TaskKit.NewSiteAsync(App, W);
+        await JoinAsync(site, teammate);
+        var task = await TaskKit.NewTaskAsync(site.Manager, site.Root, new { title = "tak terlihat", status = "OnProgress", startDate = "2026-09-28", dueDate = "2026-09-30", assigneeIds = new[] { teammate.Id } });
+
+        var person = (await TimelineAsync(Supervisor)).People.Single(p => p.UserId == teammate.Id);
+        Assert.Empty(person.Tasks);
+        Assert.Contains(person.Counts, c => c > 0); // beban nyata tetap terhitung di heatmap
+
+        var dashboard = await (await Supervisor.GetApiAsync($"/api/dashboard?userId={teammate.Id}")).ReadAsync<DashboardResponse>();
+        Assert.Empty(dashboard.Groups.SelectMany(g => g.Tasks));
+        Assert.Equal(0, dashboard.Summary.InProgress);
+        var timeline = await (await Supervisor.GetApiAsync($"/api/dashboard/timeline?userId={teammate.Id}")).ReadAsync<TimelineResponse>();
+        Assert.Empty(timeline.Groups.SelectMany(g => g.Tasks));
+
+        Assert.Equal(HttpStatusCode.NotFound, (await Supervisor.PutApiAsync($"/api/tasks/{task.Id}/dates", new { startDate = "2026-09-29", dueDate = "2026-10-02" })).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await Supervisor.GetApiAsync($"/api/tasks/{task.Id}/move-candidates")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await Supervisor.PostApiAsync($"/api/tasks/{task.Id}/move", new { fromUserId = teammate.Id, toUserId = W.Member.Id })).StatusCode);
+    }
+
     // ---------- Dashboard anggota ----------
 
     [Fact]
@@ -287,6 +322,7 @@ public sealed class TeamTimelineTests(FakeTodayWorldFixture fx) : IClassFixture<
         var teammate = await NewTeammateAsync("Dashboard Uji");
         var site = await TaskKit.NewSiteAsync(App, W);
         await JoinAsync(site, teammate);
+        await JoinAsync(site, W.Supervisor);
         await TaskKit.NewTaskAsync(site.Manager, site.Root, new { title = "milik dia", status = "OnProgress", startDate = "2026-09-21", dueDate = "2026-10-02", assigneeIds = new[] { teammate.Id } });
 
         var response = await Supervisor.GetApiAsync($"/api/dashboard?userId={teammate.Id}");

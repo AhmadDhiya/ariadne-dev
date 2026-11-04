@@ -42,11 +42,12 @@ internal static class Supervision
     }
 
     /// <summary>
-    /// Mengubah tanggal: Pengelola dan Anggota proyek, atau supervisor yang memegang tim salah satu PIC-nya (walau ia bukan
-    /// anggota proyek itu). Tidak boleh melihat sama sekali = 404; boleh melihat tetapi tidak berhak = 403.
+    /// Mengubah tanggal: Pengelola dan Anggota proyek, atau supervisor yang memegang tim salah satu PIC-nya (khusus proyek yang
+    /// boleh ia lihat). Tidak boleh melihat sama sekali = 404; boleh melihat tetapi tidak berhak = 403.
     /// </summary>
     public static async Task EnsureCanRescheduleAsync(AppDbContext db, UserAccess access, Guid rootProjectId, IEnumerable<Guid> assigneeIds, CancellationToken ct)
     {
+        EnsureCanView(access, rootProjectId);
         if (access.CanEditTasks(rootProjectId) || await SupervisesAnyAsync(db, access, assigneeIds, ct))
         {
             return;
@@ -58,6 +59,7 @@ internal static class Supervision
     /// <summary>Memindahkan task ke PIC lain: Pengelola proyek, atau supervisor yang memegang tim PIC lama.</summary>
     public static async Task EnsureCanMoveAsync(AppDbContext db, UserAccess access, Guid rootProjectId, Guid fromUserId, CancellationToken ct)
     {
+        EnsureCanView(access, rootProjectId);
         if (access.RoleIn(rootProjectId) == ProjectRole.Pengelola || (await SupervisedUserIdsAsync(db, access, ct)).Contains(fromUserId))
         {
             return;
@@ -69,12 +71,22 @@ internal static class Supervision
     /// <summary>Melihat calon penerima "Pindahkan ke…": Pengelola proyek, atau supervisor yang memegang tim salah satu PIC task.</summary>
     public static async Task EnsureCanSeeMoveCandidatesAsync(AppDbContext db, UserAccess access, Guid rootProjectId, IEnumerable<Guid> assigneeIds, CancellationToken ct)
     {
+        EnsureCanView(access, rootProjectId);
         if (access.RoleIn(rootProjectId) == ProjectRole.Pengelola || await SupervisesAnyAsync(db, access, assigneeIds, ct))
         {
             return;
         }
 
         throw Denied(access, rootProjectId);
+    }
+
+    /// <summary>Supervisor hanya mengurus task di proyek yang boleh ia lihat; proyek lain dianggap tidak ada (404).</summary>
+    private static void EnsureCanView(UserAccess access, Guid rootProjectId)
+    {
+        if (!access.CanViewProject(rootProjectId))
+        {
+            throw new NotFoundException();
+        }
     }
 
     private static ApiException Denied(UserAccess access, Guid rootProjectId) =>
