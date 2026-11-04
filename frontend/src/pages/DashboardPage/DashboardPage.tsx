@@ -1,19 +1,24 @@
 import { useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { useCreateActivity } from '@/api/activities'
 import { fieldErrorsOf, messageOf } from '@/api/errors'
 import { useDashboard, useTimeline } from '@/api/dashboard'
 import { useProjectMembers, useProjectTree } from '@/api/projects'
 import { useCreateTask, useLabels, useSetTaskStatus } from '@/api/tasks'
+import { useChangeTaskDates, useMoveCandidates, useMoveTask } from '@/api/teamTimeline'
 import { useAppContext } from '@/app/context'
+import { Avatar } from '@/components/atoms/Avatar'
 import { Button } from '@/components/atoms/Button'
+import { Banner } from '@/components/molecules/Banner'
 import { EmptyState } from '@/components/molecules/EmptyState'
 import { SegmentedControl } from '@/components/molecules/SegmentedControl'
 import { SummaryCard } from '@/components/molecules/SummaryCard'
 import { AddUpdateDialog } from '@/components/organisms/AddUpdateDialog'
 import { AttentionPanel } from '@/components/organisms/AttentionPanel'
+import { ChangeDatesDialog } from '@/components/organisms/ChangeDatesDialog'
 import { GanttChart } from '@/components/organisms/GanttChart'
 import { HoldReasonDialog } from '@/components/organisms/HoldReasonDialog'
+import { MoveTaskDialog } from '@/components/organisms/MoveTaskDialog'
 import { ProjectPickDialog } from '@/components/organisms/ProjectPickDialog'
 import { TaskFormDialog } from '@/components/organisms/TaskFormDialog'
 import { TodayList } from '@/components/organisms/TodayList'
@@ -21,7 +26,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useTaskParam } from '@/hooks/useTaskParam'
 import { useToast } from '@/hooks/useToast'
 import { greeting, heldHint, isCard, lateHint, weekHint, workingHint } from '@/lib/dashboard'
-import { formatLongDate } from '@/lib/dates'
+import { formatDateRange, formatLongDate, formatShortDate } from '@/lib/dates'
 import { rangeLabel, ZOOM_LABELS } from '@/lib/gantt'
 import { milestoneLabel } from '@/lib/milestones'
 import {
@@ -36,6 +41,12 @@ import { projectOptions } from '@/lib/taskGroups'
 import type { DashboardCard, TaskRow, TimelineZoom } from '@/types/api'
 import './DashboardPage.css'
 
+const spanText = (task: TaskRow): string => {
+  if (task.startDate && task.dueDate) return formatDateRange(task.startDate, task.dueDate)
+  const single = task.startDate ?? task.dueDate
+  return single ? formatShortDate(single) : 'tanpa tanggal'
+}
+
 const CARD_LABELS: Record<DashboardCard, string> = {
   terlambat: 'Terlambat',
   minggu: 'Jatuh tempo minggu ini',
@@ -47,10 +58,16 @@ const CARD_LABELS: Record<DashboardCard, string> = {
  * Dashboard pribadi (mockup 02): sapaan, empat kartu ringkasan yang menyaring daftar "Hari Ini", daftar Hari Ini
  * dengan ubah status dan "Tambah update" langsung dari baris, "Perlu perhatian", dan Timeline saya dengan beban kerja.
  * Semua angka dan pengelompokan datang dari server (pedoman E6); halaman ini hanya menampilkan.
+ *
+ * Di alamat /dashboard/:userId halaman yang sama dipakai supervisor untuk melihat dashboard anggota timnya (mockup 06b):
+ * ada banner, status hanya tampil, dan aksi baris diganti "Ubah tanggal" dan "Pindahkan ke…". Server yang memutuskan
+ * siapa boleh (selain supervisor tim itu: 404).
  */
 export function DashboardPage() {
   const { me } = useAppContext()
   const toast = useToast()
+  const navigate = useNavigate()
+  const { userId } = useParams()
   const [params, setParams] = useSearchParams()
   const taskParam = useTaskParam()
   useDocumentTitle('Dashboard')
@@ -58,12 +75,17 @@ export function DashboardPage() {
   const rawCard = params.get('kartu')
   const card = isCard(rawCard) ? rawCard : null
   const [zoom, setZoom] = useState<TimelineZoom>('day')
-  const dashboard = useDashboard(card)
-  const timeline = useTimeline(zoom)
+  const dashboard = useDashboard(card, userId)
+  const timeline = useTimeline(zoom, userId, !userId)
   const setStatus = useSetTaskStatus()
   const createActivity = useCreateActivity()
   const createTask = useCreateTask()
   const tree = useProjectTree()
+  const [moving, setMoving] = useState<TaskRow | null>(null)
+  const [rescheduling, setRescheduling] = useState<TaskRow | null>(null)
+  const candidates = useMoveCandidates(moving?.id)
+  const move = useMoveTask()
+  const changeDates = useChangeTaskDates()
 
   const [hold, setHold] = useState<{ task: TaskRow; status: HeldStatusKey } | null>(null)
   const [updateFor, setUpdateFor] = useState<TaskRow | null>(null)
@@ -146,22 +168,53 @@ export function DashboardPage() {
 
   const timelineData = timeline.data
   const newRootName = data.editableProjects.find((p) => p.id === newTaskRoot)?.name ?? ''
+  const viewing = data.viewing
 
   return (
     <div className="ar-dashboard">
-      <div className="ar-dashboard-head">
-        <div>
-          <div className="ar-dashboard-date">{formatLongDate(data.today)}</div>
-          <h1 className="ar-dashboard-title">{greeting(data.dayPart, me.displayName)}</h1>
+      {viewing ? (
+        <div className="ar-dashboard-banner">
+          <Banner
+            kind="viewing"
+            action="Kembali ke Timeline Tim"
+            onAction={() => void navigate('/timeline-tim')}
+          >
+            Melihat dashboard: <b>{viewing.name}</b>
+          </Banner>
         </div>
-        {data.editableProjects.length > 0 ? (
+      ) : null}
+
+      <div className="ar-dashboard-head">
+        {viewing ? (
+          <div className="ar-dashboard-who">
+            <Avatar name={viewing.name} size={40} />
+            <div>
+              <div className="ar-dashboard-date">{formatLongDate(data.today)}</div>
+              <h1 className="ar-dashboard-title">Dashboard {viewing.name}</h1>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="ar-dashboard-date">{formatLongDate(data.today)}</div>
+            <h1 className="ar-dashboard-title">{greeting(data.dayPart, me.displayName)}</h1>
+          </div>
+        )}
+        {viewing ? (
+          <p className="ar-dashboard-hint">
+            Anda bisa memindahkan task dan mengubah tanggal dari sini.
+          </p>
+        ) : data.editableProjects.length > 0 ? (
           <Button variant="primary" icon="plus" onClick={startNewTask}>
             Tambah task
           </Button>
         ) : null}
       </div>
 
-      <div className="ar-dashboard-cards" role="group" aria-label="Ringkasan task saya">
+      <div
+        className="ar-dashboard-cards"
+        role="group"
+        aria-label={viewing ? `Ringkasan task ${viewing.name}` : 'Ringkasan task saya'}
+      >
         <SummaryCard
           label={CARD_LABELS.terlambat}
           value={summary.late}
@@ -204,12 +257,47 @@ export function DashboardPage() {
           today={data.today}
           cardLabel={card ? CARD_LABELS[card] : undefined}
           onClearCard={card ? clearCard : undefined}
+          title={viewing ? `Hari Ini — ${viewing.name}` : undefined}
           onOpenTask={(task) => taskParam.open(task.key)}
-          onChangeStatus={changeStatus}
-          onAddUpdate={(task) => {
-            createActivity.reset()
-            setUpdateFor(task)
-          }}
+          onChangeStatus={viewing ? undefined : changeStatus}
+          onAddUpdate={
+            viewing
+              ? undefined
+              : (task) => {
+                  createActivity.reset()
+                  setUpdateFor(task)
+                }
+          }
+          renderActions={
+            viewing
+              ? (task) => (
+                  <span className="ar-dashboard-rowactions">
+                    <Button
+                      size="sm"
+                      icon="calendar"
+                      aria-label={`Ubah tanggal ${task.key}`}
+                      onClick={() => {
+                        changeDates.reset()
+                        setRescheduling(task)
+                      }}
+                    >
+                      Ubah tanggal
+                    </Button>
+                    <Button
+                      size="sm"
+                      icon="move"
+                      aria-label={`Pindahkan ${task.key} ke anggota lain`}
+                      onClick={() => {
+                        move.reset()
+                        setMoving(task)
+                      }}
+                    >
+                      Pindahkan ke…
+                    </Button>
+                  </span>
+                )
+              : undefined
+          }
           empty={
             card ? (
               <EmptyState
@@ -222,86 +310,144 @@ export function DashboardPage() {
               <EmptyState
                 icon="check"
                 title="Tidak ada task untuk hari ini"
-                description="Task yang menjadi tanggung jawab Anda dan sedang berjalan akan muncul di sini."
+                description={
+                  viewing
+                    ? `Task ${viewing.name} yang sedang berjalan akan muncul di sini.`
+                    : 'Task yang menjadi tanggung jawab Anda dan sedang berjalan akan muncul di sini.'
+                }
               />
             )
           }
         />
-        <AttentionPanel
-          items={data.attention}
-          today={data.today}
-          onOpenTask={(key) => taskParam.open(key)}
-        />
+        {viewing ? null : (
+          <AttentionPanel
+            items={data.attention}
+            today={data.today}
+            onOpenTask={(key) => taskParam.open(key)}
+          />
+        )}
       </div>
 
-      <section className="ar-card ar-dashboard-timeline" aria-label="Timeline saya">
-        <div className="ar-dashboard-timelinehead">
-          <div className="ar-dashboard-timelinetitle">
-            <h2>Timeline saya</h2>
-            {timelineData ? (
-              <span>Semua proyek · {rangeLabel(timelineData.start, timelineData.dayCount)}</span>
-            ) : null}
-          </div>
-          <SegmentedControl
-            label="Skala waktu"
-            value={zoom}
-            onChange={setZoom}
-            options={(Object.keys(ZOOM_LABELS) as TimelineZoom[]).map((value) => ({
-              value,
-              label: ZOOM_LABELS[value],
-            }))}
-          />
-        </div>
-        {timeline.isError ? (
-          <div className="ar-dashboard-note">
-            <EmptyState
-              title="Timeline tidak bisa dimuat"
-              description={messageOf(timeline.error)}
-              action={<Button onClick={() => void timeline.refetch()}>Coba lagi</Button>}
+      {viewing ? null : (
+        <section className="ar-card ar-dashboard-timeline" aria-label="Timeline saya">
+          <div className="ar-dashboard-timelinehead">
+            <div className="ar-dashboard-timelinetitle">
+              <h2>Timeline saya</h2>
+              {timelineData ? (
+                <span>Semua proyek · {rangeLabel(timelineData.start, timelineData.dayCount)}</span>
+              ) : null}
+            </div>
+            <SegmentedControl
+              label="Skala waktu"
+              value={zoom}
+              onChange={setZoom}
+              options={(Object.keys(ZOOM_LABELS) as TimelineZoom[]).map((value) => ({
+                value,
+                label: ZOOM_LABELS[value],
+              }))}
             />
           </div>
-        ) : timelineData ? (
-          <GanttChart
-            groups={timelineData.groups.map((group) => ({
-              id: group.projectId,
-              label: group.name,
-              milestones: group.milestones.map((m) => ({
-                id: m.id,
-                label: milestoneLabel(m, Number(data.today.slice(0, 4))),
-                date: m.date,
-                done: m.isDone,
-              })),
-              tasks: group.tasks.map((task) => ({
-                id: task.id,
-                key: task.key,
-                title: task.title,
-                status: statusFromApi(task.status),
-                start: task.startDate,
-                due: task.dueDate,
-                overdue: task.isOverdue,
-              })),
-            }))}
-            rangeStart={timelineData.start}
-            dayCount={timelineData.dayCount}
-            zoom={timelineData.zoom}
-            today={timelineData.today}
-            workload={timelineData.workload}
-            workloadLabel="Beban kerja saya"
-            onOpenTask={(key) => taskParam.open(key)}
-            empty={
+          {timeline.isError ? (
+            <div className="ar-dashboard-note">
               <EmptyState
-                icon="timeline"
-                title="Belum ada task di rentang ini"
-                description="Task dengan tanggal yang menjadi tanggung jawab Anda akan tampil di sini."
+                title="Timeline tidak bisa dimuat"
+                description={messageOf(timeline.error)}
+                action={<Button onClick={() => void timeline.refetch()}>Coba lagi</Button>}
               />
-            }
-          />
-        ) : (
-          <p role="status" className="ar-dashboard-note">
-            Memuat timeline…
-          </p>
-        )}
-      </section>
+            </div>
+          ) : timelineData ? (
+            <GanttChart
+              groups={timelineData.groups.map((group) => ({
+                id: group.projectId,
+                label: group.name,
+                milestones: group.milestones.map((m) => ({
+                  id: m.id,
+                  label: milestoneLabel(m, Number(data.today.slice(0, 4))),
+                  date: m.date,
+                  done: m.isDone,
+                })),
+                tasks: group.tasks.map((task) => ({
+                  id: task.id,
+                  key: task.key,
+                  title: task.title,
+                  status: statusFromApi(task.status),
+                  start: task.startDate,
+                  due: task.dueDate,
+                  overdue: task.isOverdue,
+                })),
+              }))}
+              rangeStart={timelineData.start}
+              dayCount={timelineData.dayCount}
+              zoom={timelineData.zoom}
+              today={timelineData.today}
+              workload={timelineData.workload}
+              workloadLabel="Beban kerja saya"
+              onOpenTask={(key) => taskParam.open(key)}
+              empty={
+                <EmptyState
+                  icon="timeline"
+                  title="Belum ada task di rentang ini"
+                  description="Task dengan tanggal yang menjadi tanggung jawab Anda akan tampil di sini."
+                />
+              }
+            />
+          ) : (
+            <p role="status" className="ar-dashboard-note">
+              Memuat timeline…
+            </p>
+          )}
+        </section>
+      )}
+
+      {viewing && moving ? (
+        <MoveTaskDialog
+          open
+          onClose={() => setMoving(null)}
+          taskLabel={`${moving.key} ${moving.title}`}
+          context={`${spanText(moving)} · saat ini: ${viewing.name}`}
+          from={{ id: viewing.id, name: viewing.name }}
+          candidates={candidates.data}
+          loading={candidates.isPending}
+          loadError={candidates.isError ? messageOf(candidates.error) : undefined}
+          submitting={move.isPending}
+          error={move.isError ? messageOf(move.error) : undefined}
+          onSubmit={({ toUserId, notify }) =>
+            move.mutate(
+              { taskId: moving.id, fromUserId: viewing.id, toUserId, notify },
+              {
+                onSuccess: (row) => {
+                  toast.success(
+                    `${moving.key} dipindahkan ke ${row.assignees.map((a) => a.name).join(', ')}`,
+                  )
+                  setMoving(null)
+                },
+              },
+            )
+          }
+        />
+      ) : null}
+
+      {rescheduling ? (
+        <ChangeDatesDialog
+          open
+          onClose={() => setRescheduling(null)}
+          taskLabel={`${rescheduling.key} ${rescheduling.title}`}
+          initial={{ start: rescheduling.startDate ?? '', end: rescheduling.dueDate ?? '' }}
+          submitting={changeDates.isPending}
+          error={changeDates.isError ? messageOf(changeDates.error) : undefined}
+          onSubmit={(dates) =>
+            changeDates.mutate(
+              { taskId: rescheduling.id, ...dates },
+              {
+                onSuccess: () => {
+                  toast.success(`Tanggal ${rescheduling.key} diubah`)
+                  setRescheduling(null)
+                },
+              },
+            )
+          }
+        />
+      ) : null}
 
       {hold ? (
         <HoldReasonDialog

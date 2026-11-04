@@ -41,6 +41,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, Component: DashboardPage },
       { path: 'timeline-tim', Component: TimelineTimPage },
+      { path: 'dashboard/:userId', Component: DashboardPage },
       { path: 'tim', Component: TeamsPage },
       { path: 'tim/:teamId', Component: TeamsPage },
       { path: 'pengaturan', Component: SettingsPage },

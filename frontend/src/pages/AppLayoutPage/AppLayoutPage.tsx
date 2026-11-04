@@ -20,6 +20,7 @@ import { roleSubtitle } from '@/lib/roles'
 function topLevelKey(pathname: string): TopLevelKey | null {
   if (pathname === '/') return 'dashboard'
   if (matchPath('/timeline-tim/*', pathname)) return 'timeline'
+  if (matchPath('/dashboard/:userId', pathname)) return 'timeline'
   if (matchPath('/tim/*', pathname)) return 'tim'
   if (matchPath('/pengaturan/*', pathname)) return 'pengaturan'
   return null

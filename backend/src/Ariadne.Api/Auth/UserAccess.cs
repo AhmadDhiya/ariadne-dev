@@ -123,6 +123,23 @@ public sealed class UserAccess(
         }
     }
 
+    /// <summary>
+    /// Timeline Tim dan dashboard anggota: hanya supervisor tim itu (Admin pun tidak, kecuali ia sendiri supervisornya).
+    /// Bukan anggota tim sama sekali = 404; anggota biasa = 403.
+    /// </summary>
+    public void EnsureSupervisesTeam(Guid teamId)
+    {
+        if (!Teams.TryGetValue(teamId, out var role))
+        {
+            throw new NotFoundException();
+        }
+
+        if (role != TeamRole.Supervisor)
+        {
+            throw new ForbiddenException();
+        }
+    }
+
     /// <summary>Daftar tim, pencarian orang, dan sejenisnya hanya untuk orang internal, bukan Tamu.</summary>
     public void EnsureNotGuestOnly()
     {

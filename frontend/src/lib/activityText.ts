@@ -65,6 +65,11 @@ export function logLine(item: Pick<ActivityItem, 'logKind' | 'data'>): LogLine {
         text: `mengubah tanggal ${dateSpan(data.fromStart, data.fromDue)} → ${dateSpan(data.toStart, data.toDue)}`,
         icon: 'calendar',
       }
+    case 'TaskMoved':
+      return {
+        text: `memindahkan task dari ${(data.removed ?? [])[0] ?? '?'} ke ${(data.added ?? [])[0] ?? '?'}`,
+        icon: 'move',
+      }
     case 'SubtaskAdded':
       return {
         text: `menambahkan sub-task ${data.key ?? ''} ${data.title ?? ''}`.trim(),

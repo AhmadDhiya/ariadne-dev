@@ -7,3 +7,4 @@ e2e/**/*-snapshots
 # Salinan apa adanya dari design system: jangan diformat ulang
 src/styles/tokens.css
 e2e-stack/.auth/
+.vitest

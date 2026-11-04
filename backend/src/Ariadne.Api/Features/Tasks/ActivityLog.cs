@@ -48,5 +48,9 @@ internal static class ActivityLog
         DateTimeOffset now) =>
         Create(task, authorId, LogKind.AssigneesChanged, now, new ActivityData { Added = added, Removed = removed, AddedIds = addedIds });
 
+    /// <summary>Task dipindahkan dari PIC lama (Removed) ke PIC baru (Added); id penerima disimpan untuk "ditugaskan ke saya".</summary>
+    public static Activity TaskMoved(ProjectTask task, Guid authorId, string fromName, string toName, Guid toId, DateTimeOffset now) =>
+        Create(task, authorId, LogKind.TaskMoved, now, new ActivityData { Removed = [fromName], Added = [toName], AddedIds = [toId] });
+
     private static string? Iso(DateOnly? date) => date?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 }

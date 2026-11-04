@@ -7,6 +7,8 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
+  // Katalog komponen makin panjang tiap fase; memuatnya bersamaan di banyak worker bisa lebih dari 30 detik
+  timeout: 90_000,
   reporter: [['list']],
   use: {
     baseURL: 'http://localhost:5173',

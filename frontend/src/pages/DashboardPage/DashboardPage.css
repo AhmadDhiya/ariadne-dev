@@ -54,3 +54,21 @@
 .ar-dashboard-note {
   padding: var(--space-4);
 }
+.ar-dashboard-banner {
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-6)) 0;
+}
+.ar-dashboard-who {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.ar-dashboard-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.ar-dashboard-rowactions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}

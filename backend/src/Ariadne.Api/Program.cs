@@ -9,6 +9,7 @@ using Ariadne.Api.Features.Projects;
 using Ariadne.Api.Features.Search;
 using Ariadne.Api.Features.Tasks;
 using Ariadne.Api.Features.Teams;
+using Ariadne.Api.Features.TeamTimeline;
 using Ariadne.Api.Features.Users;
 using Ariadne.Api.Infrastructure.Clock;
 using Ariadne.Api.Infrastructure.Data;
@@ -25,6 +26,7 @@ builder.Services.AddAriadneDatabase(builder.Configuration);
 builder.Services.AddAriadneAuth(builder.Environment);
 builder.Services.AddAriadneEmail(builder.Configuration);
 builder.Services.AddAriadneRateLimiting(builder.Configuration);
+builder.Services.AddScoped<ITaskMoveNotifier, NoopTaskMoveNotifier>();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 
@@ -49,6 +51,8 @@ app.MapDashboardEndpoints();
 app.MapSearchEndpoints();
 app.MapMilestoneEndpoints();
 app.MapGanttEndpoints();
+app.MapTaskMoveEndpoints();
+app.MapTeamTimelineEndpoints();
 
 await app.MigrateDatabaseIfConfiguredAsync();
 await app.CreateIfConfiguredAsync();

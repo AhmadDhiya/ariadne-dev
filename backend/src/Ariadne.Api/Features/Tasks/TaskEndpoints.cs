@@ -310,8 +310,8 @@ internal static partial class TaskEndpoints
     private static async Task<IResult> SetDates(Guid id, SetDatesRequest request, HttpContext http, AccessService accessService, AppDbContext db, IClock clock, CancellationToken ct)
     {
         var access = await accessService.CurrentAsync(http.User, ct);
-        var task = await db.Tasks.SingleOrDefaultAsync(t => t.Id == id, ct) ?? throw new NotFoundException();
-        access.EnsureCanEditTasks(task.RootProjectId);
+        var task = await db.Tasks.Include(t => t.Assignees).SingleOrDefaultAsync(t => t.Id == id, ct) ?? throw new NotFoundException();
+        await Supervision.EnsureCanRescheduleAsync(db, access, task.RootProjectId, task.Assignees.Select(a => a.UserId), ct);
 
         CheckDates(request.StartDate, request.DueDate);
         var now = clock.UtcNow;

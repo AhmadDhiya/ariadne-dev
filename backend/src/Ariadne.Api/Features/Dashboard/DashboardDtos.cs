@@ -50,7 +50,8 @@ public sealed record DashboardResponse(
     string? Card,
     IReadOnlyList<DashboardGroup> Groups,
     IReadOnlyList<AttentionItem> Attention,
-    IReadOnlyList<ProjectOption> EditableProjects);
+    IReadOnlyList<ProjectOption> EditableProjects,
+    TaskPerson? Viewing);
 
 public sealed record TimelineTask(
     Guid Id,

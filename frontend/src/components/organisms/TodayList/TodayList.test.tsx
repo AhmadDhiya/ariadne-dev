@@ -147,6 +147,33 @@ describe('TodayList', () => {
     expect(onClearCard).toHaveBeenCalledOnce()
   })
 
+  it('dashboard orang lain: status hanya tampil, aksi baris diganti, dan judul bisa diubah', async () => {
+    const onOpenTask = vi.fn()
+    const onMove = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <TodayList
+        groups={GROUPS}
+        today="2026-09-28"
+        title="Hari Ini — Rama"
+        onOpenTask={onOpenTask}
+        renderActions={(t) => (
+          <button type="button" onClick={() => onMove(t)}>
+            Pindahkan {t.key}
+          </button>
+        )}
+        empty={<p>kosong</p>}
+      />,
+    )
+
+    expect(screen.getByRole('heading', { name: 'Hari Ini — Rama' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Ubah status/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Tambah update/ })).not.toBeInTheDocument()
+    expect(screen.getByText('Blocked')).toBeInTheDocument() // status tetap tampil (ikon + teks)
+    await user.click(screen.getByRole('button', { name: 'Pindahkan SEN-115' }))
+    expect(onMove.mock.calls[0]?.[0]).toMatchObject({ key: 'SEN-115' })
+  })
+
   it('task tanpa tenggat menampilkan tanda kosong', () => {
     setup({
       groups: [

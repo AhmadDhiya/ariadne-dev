@@ -67,7 +67,8 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
         Get("/api/tasks/{task}",                                    "UANNAAANN"),
         Req(HttpMethod.Patch, "/api/tasks/{task}",                  "UFNNAAFNN", _ => new { }),
         Req(HttpMethod.Put,   "/api/tasks/{task}/status",           "UFNNAAFNN", _ => new { status = "Bukan Status" }),
-        Req(HttpMethod.Put,   "/api/tasks/{task}/dates",            "UFNNAAFNN", _ => new { startDate = "2030-01-02", dueDate = "2030-01-01" }),
+        // Tanggal: juga supervisor yang memegang tim PIC-nya (Supervisor memegang tim Anggota), walau bukan anggota proyek
+        Req(HttpMethod.Put,   "/api/tasks/{task}/dates",            "UFANAAFNN", _ => new { startDate = "2030-01-02", dueDate = "2030-01-01" }),
         Req(HttpMethod.Put,   "/api/tasks/{task}/assignees",        "UFNNAAFNN", _ => new { userIds = new[] { Guid.NewGuid() } }),
         Req(HttpMethod.Post,  "/api/tasks/{task}/subtasks",         "UFNNAAFNN", _ => new { title = "   " }),
         Get("/api/tasks/{task}/activities",                         "UANNAAANN"),
@@ -83,6 +84,15 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
         Get("/api/dashboard",                                       "UAAAAAAAA"),
         Get("/api/dashboard/timeline",                              "UAAAAAAAA"),
         Get("/api/search?q=alpha",                                  "UAAAAAAAA"),
+        // Dashboard orang lain: hanya supervisor tim orang itu (Anggota membuka dashboard dirinya sendiri)
+        Get("/api/dashboard?userId={member}",                       "UNANANNNN"),
+        Get("/api/dashboard/timeline?userId={member}",              "UNANANNNN"),
+        // Timeline Tim: hanya supervisor tim itu. Tanpa teamId, yang bukan supervisor sama sekali mendapat 403.
+        Get("/api/team-timeline",                                   "UFAAFFFFF"),
+        Get("/api/team-timeline?teamId={teamA}",                    "UNANFNNNN"),
+        // Pindahkan task: Pengelola proyek, atau supervisor yang memegang tim PIC lamanya
+        Get("/api/tasks/{task}/move-candidates",                    "UFANFAFNN"),
+        Req(HttpMethod.Post,  "/api/tasks/{task}/move",             "UFANFAFNN", w => new { fromUserId = w.Member.Id, toUserId = Guid.NewGuid(), notify = false }),
         Req(HttpMethod.Patch, "/api/tasks/{task}/activities/{activity}", "UFNNAFFNN", _ => new { body = "   " }),
     ];
 
