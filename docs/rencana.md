@@ -584,7 +584,7 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 
 **7. Hubungan tim dan proyek.** Halaman Tim menulis "Proyek: Sentul, Migrasi Data Center", tetapi di `domain.md` tim dan proyek tidak terhubung. Rekomendasi: **dihitung otomatis**, yaitu proyek tempat anggota tim itu bekerja. Tidak perlu diatur manual.
 
-**8. Supervisor dan proyek yang bukan miliknya.** Rekomendasi: di Timeline Tim dan dashboard anggota, supervisor **melihat dan boleh memindahkan/mengubah tanggal** semua task anggota timnya, termasuk dari proyek yang supervisor itu tidak ikuti. Tetapi supervisor **tidak bisa membuka halaman proyek** itu kecuali ia anggotanya. Calon penerima "Pindahkan ke…" = anggota tim yang juga anggota (bukan Tamu) proyek task itu.
+**8. Supervisor dan proyek yang bukan miliknya.** (Diputuskan Ahmad, 4 November 2026: supervisor hanya mengurus task di proyek yang ia ikuti.) Di Timeline Tim dan dashboard anggota, supervisor **hanya melihat, memindahkan, dan mengubah tanggal** task anggota timnya yang berada di proyek yang **boleh ia lihat** (ia anggotanya, atau Admin). Task di proyek lain tidak tampil dan dianggap tidak ada (404). Heatmap beban tetap menghitung seluruh pekerjaan anggota, supaya beban nyata tidak terlihat lebih kecil. Calon penerima "Pindahkan ke…" = anggota tim yang juga anggota (bukan Tamu) proyek task itu.
 
 **9. Siapa yang membuat proyek root (mis. "Sentul")?** Rekomendasi: **Admin** membuat proyek root dan kodenya (SEN), lalu menunjuk Pengelola. Pengelola membuat sub-proyek, milestone, dan mengelola anggota.
 
@@ -802,13 +802,14 @@ Atas permintaan Ahmad: update, komentar, dan catatan internal bisa diubah dan di
 - Tanggal bisa dihapus (kosong) dan divalidasi di server (selesai tidak boleh sebelum mulai).
 - Tanggal "hari ini" palsu kini hanya lewat environment `ARIADNE_FAKE_TODAY` (Development saja).
 
-**Perbedaan dari rencana dan mockup (sengaja) dan butuh keputusan Ahmad**
+**Keputusan Ahmad (4 November 2026) dan perubahannya**
 
-1. Baris Timeline Tim hanya berisi anggota bertipe **Anggota**; supervisor sendiri tidak masuk daftar.
-2. Sesuai Keputusan 8, supervisor melihat **semua** task anggotanya, termasuk di proyek yang tidak ia ikuti. Ini bertentangan dengan kalimat di bagian Fase 7 ("hanya proyek yang bisa ia lihat"), dan drawer task bisa memberi 404 untuk task di proyek yang tidak ia ikuti. Perlu diputuskan mana yang dipakai.
-3. "Cuti" belum ada (Keputusan 4).
-4. Banner dashboard anggota belum memuat nama tim ("· Tim Sentul") seperti di mockup.
-5. Hitungan akhir pekan masih ditampilkan di heatmap.
+1. Supervisor tidak tampil sebagai baris di Timeline Tim (sudah begitu).
+2. Supervisor hanya melihat dan mengurus task di proyek yang ia ikuti (Keputusan 8 diubah, lihat di atas). Berlaku di Timeline Tim, dashboard anggota (kartu, daftar, dan Timeline), serta ubah tanggal, pindahkan, dan calon penerima (404 untuk proyek lain). Heatmap tetap utuh.
+3. "Cuti" dilewati (Keputusan 4).
+4. Banner dashboard anggota tidak memuat nama tim (sudah begitu).
+5. Opsi "kabari" baru mencatat pilihannya; pengirimannya menunggu Fase 9 (notifikasi).
+6. Hitungan akhir pekan: tetap seperti sekarang (hari Sabtu dan Minggu ikut dihitung di heatmap bila task melewatinya).
 
 **Pembuktian:** test API (izin semua peran, memindahkan, tanggal, log aktivitas, filter), 733 test backend lolos termasuk matriks izin (diuji dengan mutasi), test unit komponen dan perhitungan, dan test browser (`vtimeline-tim.spec.ts`: tampil terang/gelap, axe, pindah task, ubah tanggal, dashboard anggota, peran Wiwiet dan Tamu).
 

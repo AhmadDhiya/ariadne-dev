@@ -40,7 +40,7 @@ public sealed record TeamTimelineResponse(
 
 /// <summary>
 /// Timeline Tim untuk supervisor: satu baris per anggota tim, dengan task lintas proyek dan heatmap beban kerja.
-/// Hanya supervisor tim itu yang boleh membukanya; task dari proyek yang tidak ia ikuti ikut tampil (keputusan 8).
+/// Hanya supervisor tim itu yang boleh membukanya; task yang tampil hanya dari proyek yang boleh dilihat supervisor itu.
 /// </summary>
 internal static class TeamTimelineEndpoints
 {
@@ -115,8 +115,9 @@ internal static class TeamTimelineEndpoints
             })
             .ToListAsync(ct);
 
-        var roots = rows.Select(r => r.RootProjectId).Distinct().ToList();
-        var family = (await db.Projects.AsNoTracking().Where(p => roots.Contains(p.RootId)).Select(p => new { p.Id, p.ParentId, p.Name, p.Code }).ToListAsync(ct)).ToDictionary(p => p.Id);
+        var roots = rows.Where(r => access.CanViewProject(r.RootProjectId)).Select(r => r.RootProjectId).Distinct().ToList();
+        var allRoots = rows.Select(r => r.RootProjectId).Distinct().ToList();
+        var family = (await db.Projects.AsNoTracking().Where(p => allRoots.Contains(p.RootId)).Select(p => new { p.Id, p.ParentId, p.Name, p.Code }).ToListAsync(ct)).ToDictionary(p => p.Id);
 
         List<string> PathOf(Guid projectId)
         {
@@ -143,6 +144,7 @@ internal static class TeamTimelineEndpoints
                 var counts = TaskRules.WorkloadPerDay([.. mine.Select(r => (r.StartDate, r.DueDate, r.Status))], start, count);
                 var shown = mine
                     .Where(r => (r.StartDate ?? r.DueDate) is { } from && (r.DueDate ?? r.StartDate) is { } to && from <= end && to >= start)
+                    .Where(r => access.CanViewProject(r.RootProjectId))
                     .Where(r => project is null || r.RootProjectId == project)
                     .Where(r => statuses.Count == 0 || statuses.Contains(r.Status))
                     .Where(r => priorities.Count == 0 || priorities.Contains(r.Priority))
