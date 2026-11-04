@@ -24,6 +24,9 @@ public enum LogKind
     AssigneesChanged,
     DatesChanged,
     SubtaskAdded,
+
+    /// <summary>Task dipindahkan dari satu PIC ke PIC lain oleh supervisor atau Pengelola ("Syaikhan memindahkan task dari Rama ke Galih").</summary>
+    TaskMoved,
 }
 
 /// <summary>

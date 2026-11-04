@@ -12,8 +12,7 @@ namespace Ariadne.Api.Features.Dashboard;
 
 /// <summary>
 /// Dashboard pribadi: semua yang ditampilkan adalah task yang pengguna ini menjadi PIC-nya di proyek yang masih
-/// aktif. Orang lain tidak pernah bisa melihat dashboard orang lain lewat endpoint ini (tidak ada parameter pengguna);
-/// dashboard anggota untuk supervisor dibuat di Fase 7.
+/// aktif. Dashboard orang lain hanya bisa dibuka lewat `userId` oleh supervisor tim orang itu (selain itu 404).
 /// </summary>
 internal static class DashboardEndpoints
 {
@@ -34,6 +33,7 @@ internal static class DashboardEndpoints
 
     private static async Task<IResult> Get(
         [FromQuery] string? card,
+        [FromQuery] Guid? userId,
         HttpContext http,
         AccessService accessService,
         AppDbContext db,
@@ -46,8 +46,9 @@ internal static class DashboardEndpoints
         }
 
         var access = await accessService.CurrentAsync(http.User, ct);
+        var (target, viewing) = await ResolveTargetAsync(db, access, userId, ct);
         var today = clock.Today;
-        var mine = await LoadMineAsync(db, access.UserId, ct);
+        var mine = await LoadMineAsync(db, target, ct);
         var codes = await TaskQueries.RootCodesAsync(db, mine.Select(m => m.Task.RootProjectId), ct);
 
         // Kartu dan daftar dihitung dari himpunan yang sama (task milik saya yang belum Done)
@@ -76,13 +77,31 @@ internal static class DashboardEndpoints
         };
         var groups = await BuildGroupsAsync(db, shown, codes, today, includeUpcoming: card is not null, ct);
 
-        var attention = await BuildAttentionAsync(db, access, mine, codes, today, clock.UtcNow, ct);
-        var editable = await EditableProjectsAsync(db, access, ct);
-        return Results.Ok(new DashboardResponse(today, TaskRules.DayPart(Jakarta(clock).Hour), summary, card, groups, attention, editable));
+        var attention = await BuildAttentionAsync(db, access, target, mine, codes, today, clock.UtcNow, ct);
+        // Melihat dashboard orang lain: tidak ada tombol "Tambah task" (task baru milik dashboard sendiri)
+        var editable = viewing is null ? await EditableProjectsAsync(db, access, ct) : [];
+        return Results.Ok(new DashboardResponse(today, TaskRules.DayPart(Jakarta(clock).Hour), summary, card, groups, attention, editable, viewing));
+    }
+
+    /// <summary>
+    /// Dashboard siapa yang dibuka: diri sendiri (tanpa userId), atau anggota tim yang saya pegang sebagai supervisor.
+    /// Orang lain yang tidak boleh dilihat dijawab 404, sama seperti pengguna yang tidak ada.
+    /// </summary>
+    private static async Task<(Guid Target, TaskPerson? Viewing)> ResolveTargetAsync(AppDbContext db, UserAccess access, Guid? userId, CancellationToken ct)
+    {
+        if (userId is not { } id || id == access.UserId)
+        {
+            return (access.UserId, null);
+        }
+
+        await Supervision.EnsureCanViewMemberAsync(db, access, id, ct);
+        var name = await db.Users.AsNoTracking().Where(u => u.Id == id).Select(u => u.DisplayName).SingleAsync(ct);
+        return (id, new TaskPerson(id, name));
     }
 
     private static async Task<IResult> Timeline(
         [FromQuery] string? zoom,
+        [FromQuery] Guid? userId,
         HttpContext http,
         AccessService accessService,
         AppDbContext db,
@@ -90,6 +109,7 @@ internal static class DashboardEndpoints
         CancellationToken ct)
     {
         var access = await accessService.CurrentAsync(http.User, ct);
+        var (target, _) = await ResolveTargetAsync(db, access, userId, ct);
         var today = clock.Today;
         if (!TimelineRange.IsKnown(zoom))
         {
@@ -98,7 +118,7 @@ internal static class DashboardEndpoints
 
         var (name, start, count) = TimelineRange.For(zoom, today, wide: false);
         var end = start.AddDays(count - 1);
-        var mine = await LoadMineAsync(db, access.UserId, ct);
+        var mine = await LoadMineAsync(db, target, ct);
 
         var workload = TaskRules.WorkloadPerDay([.. mine.Select(m => (m.Task.StartDate, m.Task.DueDate, m.Task.Status))], start, count);
 
@@ -215,13 +235,14 @@ internal static class DashboardEndpoints
     private static async Task<List<AttentionItem>> BuildAttentionAsync(
         AppDbContext db,
         UserAccess access,
+        Guid me,
         IReadOnlyList<Mine> mine,
         IReadOnlyDictionary<Guid, string> codes,
         DateOnly today,
         DateTimeOffset now,
         CancellationToken ct)
     {
-        var me = access.UserId;
+        // `me` = pemilik dashboard; hak melihat kutipan tetap diperiksa terhadap `access` (yang sedang membuka).
         var since = now.AddDays(-AttentionDays);
         var events = new List<AttentionItem>();
 
@@ -252,7 +273,7 @@ internal static class DashboardEndpoints
         var myIds = mine.Select(m => m.Task.Id).ToList();
         var logs = await db.Activities.AsNoTracking()
             .Where(a => a.Kind == ActivityKind.Log
-                && (a.LogKind == LogKind.AssigneesChanged || a.LogKind == LogKind.TaskCreated)
+                && (a.LogKind == LogKind.AssigneesChanged || a.LogKind == LogKind.TaskCreated || a.LogKind == LogKind.TaskMoved)
                 && a.AuthorId != me
                 && a.CreatedAt >= since
                 && myIds.Contains(a.TaskId))
