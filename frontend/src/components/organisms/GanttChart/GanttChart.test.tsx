@@ -257,6 +257,32 @@ describe('GanttChart: tampilan proyek (detail)', () => {
     expect(document.querySelectorAll('.ar-gantt-band')).toHaveLength(1)
   })
 
+  it.each(['week', 'month'] as const)(
+    'zoom %s: tanpa label PIC di samping bar; PIC ada di tooltip bar dan kolom kiri',
+    (zoom) => {
+      detailed({ zoom, dayCount: zoom === 'week' ? 70 : 212, rangeStart: '2026-09-01' })
+
+      expect(document.querySelectorAll('.ar-bar-label')).toHaveLength(0)
+      const bars = [...document.querySelectorAll<HTMLElement>('.ar-bar')].map((el) => el.title)
+      expect(bars).toEqual([
+        'SEN-104 Integrasi log & metrics · On Progress · PIC: Ahmad, Rama',
+        'SEN-122 Validasi jam masuk shift malam · Fixing · terlambat · PIC: Ahmad',
+      ])
+      // Data penugasan tetap: avatar PIC di daftar kiri
+      expect(document.querySelectorAll('.ar-gantt-task .ar-avatar').length).toBeGreaterThanOrEqual(
+        3,
+      )
+    },
+  )
+
+  it('zoom Hari tidak berubah: tooltip bar tetap nama status', () => {
+    detailed()
+    expect([...document.querySelectorAll<HTMLElement>('.ar-bar')].map((el) => el.title)).toEqual([
+      'On Progress',
+      'Fixing · terlambat',
+    ])
+  })
+
   it('milestone digambar di baris grupnya pada harinya, dengan labelnya', () => {
     detailed()
 

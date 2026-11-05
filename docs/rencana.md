@@ -938,3 +938,10 @@ Menggantikan perubahan "lebar per hari" di atas. Zoom **Hari tidak berubah**.
 **Belum dilakukan:** halaman selain dashboard belum dirancang khusus untuk ponsel (tidak ada mockup); BRAND-BOOK baris "No motion beyond 120ms fades…" menunggu izin Ahmad untuk diperbarui; uji beban data seed ×10 (butir E7) masih tertunda.
 
 **Paket baru:** tidak ada.
+
+### Tindak lanjut Fase 10: bar Gantt tanpa label PIC di Minggu/Bulan (5 November 2026)
+
+- Di zoom **Minggu** dan **Bulan** Gantt proyek, nama PIC dan ikon prioritas di samping bar tidak lagi ditampilkan, supaya bar yang sempit tetap bersih. Zoom **Hari tidak berubah** (label tetap ada, seperti mockup 04).
+- Data penugasan tidak berubah. Kolom PIC (avatar) di daftar kiri tetap ada, dan nama PIC kini ada di **tooltip bar** saat hover: "SEN-115 Pipeline GitLab IRS · Blocked · terlambat · PIC: Ahmad, Wiwiet". Detail task tetap dibuka dari judul di kiri.
+- Timeline Tim dan Timeline saya memang tidak punya label di samping bar, jadi tidak ikut berubah.
+- Test: 3 test unit baru (Minggu dan Bulan tanpa label dan dengan tooltip; Hari tidak berubah), dan test browser Gantt proyek memeriksa label hilang di Minggu/Bulan dan kembali di Hari.

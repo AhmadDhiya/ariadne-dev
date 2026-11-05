@@ -1,4 +1,5 @@
 import { formatShortDate, parseDate } from '@/lib/dates'
+import { getStatus, type StatusKey } from '@/lib/status'
 import type { TimelineZoom } from '@/types/api'
 
 /**
@@ -188,6 +189,20 @@ export function barGeometry(
   const clippedFirst = Math.max(first, 0)
   const clippedLast = Math.min(last, dayCount - 1)
   return { start: clippedFirst, span: clippedLast - clippedFirst + 1 }
+}
+
+/** Tooltip bar di zoom Minggu/Bulan: "SEN-115 Pipeline GitLab IRS · Blocked · terlambat · PIC: Ahmad, Wiwiet". */
+export function barTooltip(task: {
+  key: string
+  title: string
+  status: StatusKey
+  overdue: boolean
+  assignees?: readonly string[]
+}): string {
+  const parts = [`${task.key} ${task.title}`, getStatus(task.status).label]
+  if (task.overdue) parts.push('terlambat')
+  if (task.assignees && task.assignees.length > 0) parts.push(`PIC: ${task.assignees.join(', ')}`)
+  return parts.join(' · ')
 }
 
 /** "21 Sep – 11 Okt" untuk rentang `dayCount` hari mulai dari `start`. */
