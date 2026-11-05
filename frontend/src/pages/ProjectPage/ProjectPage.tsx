@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Outlet, useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import { ApiError } from '@/api/client'
 import { fieldErrorsOf, messageOf } from '@/api/errors'
+import { useInvite } from '@/api/invitations'
 import { useCreateSubProject, useProject, useProjectMembers, useProjectTree } from '@/api/projects'
 import { useCreateTask, useLabels, useTasks } from '@/api/tasks'
 import { useAppContext, type ProjectContext } from '@/app/context'
@@ -12,10 +13,12 @@ import { EmptyState } from '@/components/molecules/EmptyState'
 import { ProjectProgress } from '@/components/molecules/ProjectProgress'
 import { Tabs } from '@/components/molecules/Tabs'
 import { FormDialog } from '@/components/organisms/FormDialog'
+import { InviteDialog } from '@/components/organisms/InviteDialog'
 import { TaskFormDialog } from '@/components/organisms/TaskFormDialog'
 import { ProjectLayout } from '@/components/templates/ProjectLayout'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useToast } from '@/hooks/useToast'
+import { summarizeInvites } from '@/lib/invitations'
 import { MAX_PROJECT_DEPTH } from '@/lib/projectRules'
 import {
   EMPTY_FILTERS,
@@ -50,6 +53,8 @@ export function ProjectPage() {
   const createTask = useCreateTask()
   const [subDialogOpen, setSubDialogOpen] = useState(false)
   const [taskDialogOpen, setTaskDialogOpen] = useState(false)
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const invite = useInvite(projectId ?? '')
   useDocumentTitle(project.data?.name ?? 'Proyek')
 
   const activeSegment = location.pathname.split('/')[3] ?? 'tabel'
@@ -142,12 +147,22 @@ export function ProjectPage() {
       }
       actions={
         <>
+          {data.canManage ? (
+            // Di tab Anggota, Undang adalah aksi utama halaman (mockup 08); di tab lain tombol biasa (mockup 03, 04)
+            <Button
+              variant={activeSegment === 'anggota' ? 'primary' : 'secondary'}
+              icon={activeSegment === 'anggota' ? 'mail' : 'users'}
+              onClick={() => setInviteOpen(true)}
+            >
+              Undang
+            </Button>
+          ) : null}
           {data.canManage && data.depth < MAX_PROJECT_DEPTH ? (
             <Button icon="plus" onClick={() => setSubDialogOpen(true)}>
               Tambah sub-proyek
             </Button>
           ) : null}
-          {canEditTasks ? (
+          {canEditTasks && activeSegment !== 'anggota' ? (
             <Button variant="primary" icon="plus" onClick={() => setTaskDialogOpen(true)}>
               Tambah task
             </Button>
@@ -198,6 +213,32 @@ export function ProjectPage() {
               },
             },
           )
+        }
+      />
+
+      <InviteDialog
+        open={inviteOpen}
+        onClose={() => {
+          setInviteOpen(false)
+          invite.reset()
+        }}
+        projectName={data.path[0]?.name ?? data.name}
+        submitting={invite.isPending}
+        fieldErrors={invite.isError ? fieldErrorsOf(invite.error) : undefined}
+        error={
+          invite.isError && Object.keys(fieldErrorsOf(invite.error)).length === 0
+            ? messageOf(invite.error)
+            : undefined
+        }
+        onSubmit={(input) =>
+          invite.mutate(input, {
+            onSuccess: (results) => {
+              setInviteOpen(false)
+              const summary = summarizeInvites(results)
+              if (summary.problem) toast.error(summary.text)
+              else toast.success(summary.text)
+            },
+          })
         }
       />
 

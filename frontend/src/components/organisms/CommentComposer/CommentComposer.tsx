@@ -52,6 +52,8 @@ const OPTIONS: Record<
   },
 }
 
+const GUEST_HINT = 'Komentar Anda terlihat oleh tim proyek.'
+
 /**
  * Kotak menulis di bawah drawer: Update / Komentar / Internal, dengan daftar @mention yang bisa dipakai dengan keyboard
  * (panah, Enter atau Tab memilih, Esc menutup). Orang yang ditandai dibaca dari teks akhir, bukan dari yang pernah dipilih.
@@ -79,6 +81,8 @@ export function CommentComposer({ kinds, people, onSubmit, error }: CommentCompo
   }
 
   const option = OPTIONS[kind]
+  // Tamu hanya bisa berkomentar: petunjuknya mengingatkan siapa yang membaca (mockup 09)
+  const hint = kinds.length === 1 && kind === 'Comment' ? GUEST_HINT : option.hint
 
   return (
     <div className="ar-composer">
@@ -101,7 +105,7 @@ export function CommentComposer({ kinds, people, onSubmit, error }: CommentCompo
         </p>
       ) : null}
       <div className="ar-composer-foot">
-        <span className="ar-composer-hint">{option.hint}</span>
+        <span className="ar-composer-hint">{hint}</span>
         <Button variant="primary" size="sm" disabled={!canSend} onClick={() => void send()}>
           Kirim
         </Button>

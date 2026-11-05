@@ -4,6 +4,7 @@ using Ariadne.Api.Features.Auth;
 using Ariadne.Api.Features.Dashboard;
 using Ariadne.Api.Features.Gantt;
 using Ariadne.Api.Features.Health;
+using Ariadne.Api.Features.Invitations;
 using Ariadne.Api.Features.Milestones;
 using Ariadne.Api.Features.Projects;
 using Ariadne.Api.Features.Search;
@@ -53,6 +54,7 @@ app.MapMilestoneEndpoints();
 app.MapGanttEndpoints();
 app.MapTaskMoveEndpoints();
 app.MapTeamTimelineEndpoints();
+app.MapInvitationEndpoints();
 
 await app.MigrateDatabaseIfConfiguredAsync();
 await app.CreateIfConfiguredAsync();

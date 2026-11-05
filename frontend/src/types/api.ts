@@ -117,6 +117,40 @@ export interface ProjectMemberItem {
   addedAt: string
 }
 
+export type InviteOutcome = 'Diundang' | 'Ditambahkan' | 'SudahAnggota' | 'AkunNonaktif'
+
+export interface InviteResult {
+  email: string
+  outcome: InviteOutcome
+}
+
+/** Undangan yang belum diterima (hanya untuk Pengelola dan Admin). */
+export interface InvitationItem {
+  id: string
+  email: string
+  role: ProjectRole
+  invitedBy: string
+  createdAt: string
+  expiresAt: string
+  expired: boolean
+}
+
+export interface InvitationPreview {
+  email: string
+  projectId: string
+  projectName: string
+  role: ProjectRole
+  invitedBy: string
+  message: string | null
+  /** Email itu sudah punya akun: cukup masuk seperti biasa. */
+  hasAccount: boolean
+}
+
+export interface AcceptInvitationResponse {
+  signedIn: boolean
+  projectId: string
+}
+
 /** Nama status dan prioritas persis seperti yang dikirim dan diterima API. */
 export type WorkStatusName =
   'NotStarted' | 'OnProgress' | 'Fixing' | 'Blocked' | 'OnHold' | 'OnRequest' | 'Done' | 'Rutin'

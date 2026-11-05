@@ -16,12 +16,12 @@ namespace Ariadne.Api.Tests.Platform;
 public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<WorldFixture>
 {
     // Urutan ini dipakai oleh string hasil di setiap baris
-    private static readonly string[] Actors =
+    internal static readonly string[] Actors =
     [
         "Anonim", "Admin", "Supervisor", "SupervisorLain", "Anggota", "Pengelola", "Tamu", "OrangLuar", "PengelolaLain",
     ];
 
-    private sealed record Row(string Name, HttpMethod Method, Func<World, string> Url, Func<World, object?> Body, string Expected);
+    internal sealed record Row(string Name, HttpMethod Method, Func<World, string> Url, Func<World, object?> Body, string Expected);
 
     private static Row Get(string url, string expected, string? name = null) =>
         new(name ?? $"GET {url}", HttpMethod.Get, w => Fill(url, w), _ => null, expected);
@@ -35,11 +35,12 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
         .Replace("{task}", w.TaskAlpha.ToString(), StringComparison.Ordinal)
         .Replace("{activity}", w.ActivityAlpha.ToString(), StringComparison.Ordinal)
         .Replace("{milestone}", w.MilestoneAlpha.ToString(), StringComparison.Ordinal)
+        .Replace("{invitation}", w.InvitationAlpha.ToString(), StringComparison.Ordinal)
         .Replace("{member}", w.Member.Id.ToString(), StringComparison.Ordinal)
         .Replace("{outsider}", w.Outsider.Id.ToString(), StringComparison.Ordinal);
 
     //                                                              Anon Adm Sup SupL Ang  Pgl Tamu Luar PglL
-    private static readonly Row[] Rows =
+    internal static readonly Row[] Rows =
     [
         Get("/api/health",                                          "AAAAAAAAA"),
         Get("/api/auth/me",                                         "UAAAAAAAA"),
@@ -94,6 +95,13 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
         Get("/api/tasks/{task}/move-candidates",                    "UFNNFAFNN"),
         Req(HttpMethod.Post,  "/api/tasks/{task}/move",             "UFNNFAFNN", w => new { fromUserId = w.Member.Id, toUserId = Guid.NewGuid(), notify = false }),
         Req(HttpMethod.Patch, "/api/tasks/{task}/activities/{activity}", "UFNNAFFNN", _ => new { body = "   " }),
+        // Undangan: hanya Pengelola proyek dan Admin (Admin boleh walau bukan anggota)
+        Get("/api/projects/{alpha}/invitations",                    "UANNFAFNN"),
+        Req(HttpMethod.Post,  "/api/projects/{alpha}/invitations",  "UANNFAFNN", _ => new { emails = Array.Empty<string>(), role = "Tamu" }),
+        Req(HttpMethod.Patch, "/api/invitations/{invitation}",      "UANNFAFNN", _ => new { role = "Bukan Peran" }),
+        // Halaman terima undangan dibuka tanpa login; token palsu selalu 400 (diuji rinci di InvitationTests)
+        Req(HttpMethod.Post,  "/api/invitations/preview",           "AAAAAAAAA", _ => new { token = "token-palsu" }),
+        Req(HttpMethod.Post,  "/api/invitations/accept",            "AAAAAAAAA", _ => new { token = "token-palsu", displayName = "X", password = "x" }),
     ];
 
     public static IEnumerable<object[]> Cases()
@@ -179,6 +187,7 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
             "DELETE /api/tasks/{id}", // merusak data; diuji di TaskTests (semua peran)
             "DELETE /api/tasks/{id}/activities/{activityId}", // merusak data; diuji di ActivityTests (semua peran)
             "DELETE /api/milestones/{id}", // merusak data; diuji di MilestoneTests (semua peran)
+            "DELETE /api/invitations/{invitationId}", // merusak data; diuji di InvitationTests (semua peran)
         ];
 
         var routes = fx.App.Factory.Services.GetRequiredService<EndpointDataSource>().Endpoints

@@ -814,3 +814,41 @@ Atas permintaan Ahmad: update, komentar, dan catatan internal bisa diubah dan di
 **Pembuktian:** test API (izin semua peran, memindahkan, tanggal, log aktivitas, filter), 733 test backend lolos termasuk matriks izin (diuji dengan mutasi), test unit komponen dan perhitungan, dan test browser (`vtimeline-tim.spec.ts`: tampil terang/gelap, axe, pindah task, ubah tanggal, dashboard anggota, peran Wiwiet dan Tamu).
 
 **Paket baru:** tidak ada.
+
+### Fase 8 (5 November 2026)
+
+**Yang dibuat:** tombol **Undang** di kepala halaman proyek (untuk Pengelola dan Admin) dan dialog **Undang ke …** (mockup 08): beberapa email sekaligus, pilihan peran berbentuk kartu (Tamu terpilih sejak awal), dan pesan opsional. Undangan yang belum diterima tampil di tabel Anggota dengan status "Menunggu diterima"; perannya bisa diubah dan undangannya bisa **Batalkan**. Email undangan terkirim lewat antrean yang sama (Mailpit). Ada halaman **terima undangan** (`/undangan`, gaya halaman masuk, tanpa mockup): isi nama dan password sekali, lalu langsung masuk ke proyeknya. Tampilan Tamu (mockup 09) sudah dibuat sejak Fase 3–4; di fase ini teks banner dan petunjuk kotak komentar disamakan dengan mockup.
+
+**Aturan (keputusan saya; mohon dikoreksi bila keliru)**
+
+- Undangan berlaku **7 hari** dan **sekali pakai**. Yang disimpan hanya hash token; tautannya `/undangan#token=…` (token di bagian `#`, bukan di alamat `/undangan/:token` seperti rencana awal, supaya tidak tercatat di log server; sama dengan reset password).
+- Email yang **sudah punya akun aktif** tidak diberi tautan: orangnya **langsung ditambahkan** dengan peran itu dan diberi tahu lewat email. Email yang sudah anggota dilewati; akun yang dinonaktifkan Admin tidak diundang (disebut di pesan hasil).
+- Mengundang ulang email yang sama **menggantikan** undangan lamanya (tautan lama mati). Undangan kedaluwarsa tetap tampil ("Undangan kedaluwarsa") sampai dibatalkan atau diundang ulang.
+- Akun yang dibuat orang lain setelah undangan dikirim (mis. oleh Admin) tidak disentuh password-nya: menerima undangan hanya menambahkan keanggotaan, lalu orangnya masuk seperti biasa.
+- Proyek yang diarsipkan tidak bisa mengundang, dan tautan undangannya berhenti berlaku.
+- Jumlah "10 orang · … · 2 Tamu" di tab Anggota ikut menghitung undangan yang menunggu, **hanya** untuk Pengelola dan Admin (anggota lain dan Tamu tidak melihat undangan sama sekali).
+- Di tab Anggota, Undang adalah tombol utama dan "Tambah task" tidak tampil (mockup 08). Di tab lain Undang tombol biasa (mockup 03, 04).
+
+**Perlu keputusan Ahmad**
+
+- Mockup 08 mengizinkan undangan dengan peran **Pengelola dan Anggota**, bukan hanya Tamu. Artinya Pengelola proyek bisa membuat akun untuk orang yang belum terdaftar, padahal Keputusan 3 bilang akun pegawai dibuat Admin. Saya ikuti mockup. **Diputuskan Ahmad (5 Nov 2026): undangan tetap untuk semua peran, seperti mockup.** Jadi Pengelola proyek juga boleh membuatkan akun lewat undangan, sebagai pengecualian dari Keputusan 3.
+- Banner "Anda melihat sebagai Tamu" hanya tampil untuk **tamu murni** (tidak punya peran lain di mana pun). Pegawai yang kebetulan Tamu di satu proyek tetap diperlakukan sebagai Tamu oleh server di proyek itu, tetapi tidak melihat banner.
+
+**Keamanan dan audit izin**
+
+- Hanya Pengelola proyek dan Admin yang mengundang, mengubah peran undangan, dan membatalkan (403 untuk Anggota dan Tamu, 404 untuk orang luar). Halaman terima undangan adalah satu-satunya endpoint tanpa login yang baru; keduanya dibatasi laju seperti login, dan token dikirim di badan permintaan, bukan alamat.
+- Token palsu, kedaluwarsa, dibatalkan, dan sudah dipakai memberi pesan yang sama. Dua permintaan terima bersamaan dengan satu tautan hanya membuat satu akun (baris undangan dikunci; ada test-nya).
+- Isi email (nama, nama proyek, pesan) di-encode ke HTML; email baru dikirim setelah undangan tersimpan.
+- **Audit Tamu** (`GuestAuditTests`): setiap endpoint baca di matriks izin dipanggil sebagai Tamu setelah ada catatan Internal dan undangan berisi kata rahasia; tidak satu pun jawaban boleh memuat kata itu, email undangan, atau email orang lain. Aturan "Internal tidak untuk Tamu" dirusak sengaja dan test-nya gagal seperti seharusnya. Hak ubah Tamu untuk setiap endpoint tetap dijaga kolom "Tamu" di matriks izin (lima baris baru untuk undangan).
+
+**Perbedaan dari mockup (sengaja)**
+
+- Dialog Undang muncul di tengah layar seperti dialog lain, bukan menempel di kanan seperti gambar 08.
+- Baris undangan memakai bagian depan email sebagai nama ("sari@…" → "Sari"), karena namanya baru diisi orang itu saat menerima.
+- Bar "Tambah anggota" (menambah orang yang sudah punya akun) dari Fase 2 tetap ada di atas tabel; tidak ada di mockup.
+- Subjudul tamu di topbar "Tamu", bukan "Tamu · Klien": nama organisasi tamu tidak ada di data.
+- Lonceng notifikasi menunggu Fase 9.
+
+**Pembuktian:** 12 test API undangan (kirim, email aman HTML, terima dan masuk, akun yang sudah ada, undang ulang, input salah, izin batal/ubah, kedaluwarsa, password lemah, akun yang muncul belakangan, proyek diarsipkan, terima bersamaan), audit Tamu untuk semua endpoint baca, matriks izin, test unit dialog, tabel, dan form terima, serta test browser terhadap stack sungguhan (`xundangan-tamu.spec.ts`: dialog + axe + screenshot, undang → email di Mailpit → terima → masuk sebagai Tamu yang hanya melihat Sentul, batalkan, dan tampilan Tamu terang/gelap dengan drawer SEN-115). Data contoh kini berisi undangan Sari yang menunggu (mockup 08).
+
+**Paket baru:** tidak ada.

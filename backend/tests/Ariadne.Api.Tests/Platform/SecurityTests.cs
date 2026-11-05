@@ -20,6 +20,9 @@ public sealed class SecurityTests(PostgresFixture postgres)
         "POST /api/auth/forgot-password",
         "POST /api/auth/login",
         "POST /api/auth/reset-password",
+        // Halaman terima undangan: orangnya belum punya akun (token di badan permintaan, dibatasi laju)
+        "POST /api/invitations/accept",
+        "POST /api/invitations/preview",
     ];
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;

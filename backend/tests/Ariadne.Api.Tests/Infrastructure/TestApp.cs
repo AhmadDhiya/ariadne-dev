@@ -43,7 +43,8 @@ public sealed record World(
     Guid ProjectBeta,
     Guid TaskAlpha,
     Guid ActivityAlpha,
-    Guid MilestoneAlpha);
+    Guid MilestoneAlpha,
+    Guid InvitationAlpha);
 
 /// <summary>
 /// Satu aplikasi uji (database sendiri) untuk satu kelas test. Setiap peran login sekali dan kliennya
@@ -171,10 +172,25 @@ public sealed class TestApp : IAsyncDisposable
         db.Activities.Add(comment);
         var milestone = new Milestone { Id = Guid.NewGuid(), ProjectId = alpha.Id, RootProjectId = alpha.Id, Name = "Milestone contoh", Date = new DateOnly(2030, 1, 1), CreatedAt = now };
         db.Milestones.Add(milestone);
+        // Satu undangan yang menunggu di Alpha (tokennya tidak diketahui siapa pun): dipakai matriks izin
+        var invitation = new Invitation
+        {
+            Id = Guid.NewGuid(),
+            ProjectId = alpha.Id,
+            Email = "diundang@uji.example",
+            NormalizedEmail = "DIUNDANG@UJI.EXAMPLE",
+            Role = ProjectRole.Tamu,
+            TokenHash = Convert.ToHexStringLower(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)),
+            InvitedById = manager.Id,
+            Status = InvitationStatus.Menunggu,
+            CreatedAt = now,
+            ExpiresAt = now.AddDays(7),
+        };
+        db.Invitations.Add(invitation);
         await db.SaveChangesAsync();
 
         World = new World(admin, supervisor, otherSupervisor, member, manager, guest, outsider, otherManager,
-            teamA.Id, teamB.Id, alpha.Id, child.Id, grandchild.Id, beta.Id, task.Id, comment.Id, milestone.Id);
+            teamA.Id, teamB.Id, alpha.Id, child.Id, grandchild.Id, beta.Id, task.Id, comment.Id, milestone.Id, invitation.Id);
     }
 
     /// <summary>Klien yang tidak login (tetap membawa header anti-CSRF seperti frontend).</summary>
