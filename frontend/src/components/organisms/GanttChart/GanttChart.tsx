@@ -10,11 +10,11 @@ import { WorkloadRow } from '@/components/molecules/WorkloadRow'
 import { cx } from '@/lib/cx'
 import {
   barGeometry,
-  DAY_WIDTH,
+  DAY_COLUMN,
   dayIndex,
   ganttDays,
-  headerSegments,
   layoutRows,
+  timeScale,
   TODAY_SCROLL_OFFSET,
 } from '@/lib/gantt'
 import type { PriorityKey, StatusKey } from '@/lib/status'
@@ -59,7 +59,7 @@ export interface GanttChartGroup {
 export interface GanttChartPerson {
   id: string
   name: string
-  /** Jumlah task aktif per hari, sejajar dengan kolom grafik. */
+  /** Jumlah task aktif per kolom grafik (per hari, pekan, atau bulan sesuai zoom), dari server. */
   counts: readonly number[]
 }
 
@@ -71,7 +71,7 @@ export interface GanttChartProps {
   zoom: TimelineZoom
   /** Hari ini menurut server ("YYYY-MM-DD"): letak garis "Hari ini". */
   today: string
-  /** Jumlah task aktif per hari (satu baris, mis. "Beban kerja saya"), dari server. */
+  /** Jumlah task aktif per kolom grafik (satu baris, mis. "Beban kerja saya"), dari server. */
   workload?: readonly number[]
   /** Nama baris beban kerja tunggal. */
   workloadLabel?: string
@@ -86,6 +86,13 @@ export interface GanttChartProps {
   detailed?: boolean
   /** Berubah (angka bertambah) = gulir agar hari ini terlihat (tombol "Hari ini"). */
   scrollToTodayKey?: number
+}
+
+/** Keterangan baris beban kerja per orang, mengikuti zoom. */
+const LOAD_UNIT: Record<TimelineZoom, string> = {
+  day: 'task aktif per hari',
+  week: 'task aktif per pekan',
+  month: 'task aktif per bulan',
 }
 
 const GROUP_ROW = 32
@@ -116,19 +123,21 @@ export function GanttChart({
 }: GanttChartProps) {
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set())
   const scrollRef = useRef<HTMLDivElement>(null)
-  const dayWidth = DAY_WIDTH[zoom]
   const days = useMemo(() => ganttDays(rangeStart, dayCount), [rangeStart, dayCount])
-  const segments = useMemo(() => headerSegments(days, zoom), [days, zoom])
+  const scale = useMemo(() => timeScale(days, zoom), [days, zoom])
   const todayIndex = dayIndex(rangeStart, today)
-  const weekends = days.flatMap((d, i) => (d.weekend ? [i] : []))
+  const todayX = scale.x(todayIndex) + scale.dayWidth(todayIndex) / 2
+  // Zoom Hari: satu kotak beban per hari, akhir pekan diarsir. Minggu/Bulan: satu kotak per kolom.
+  const weekends = zoom === 'day' ? days.flatMap((d, i) => (d.weekend ? [i] : [])) : []
+  const loadWidths = zoom === 'day' ? undefined : scale.columns.map((c) => c.width)
   const hasGroups = groups.length > 0
 
   // Gulir ke hari ini saat dibuka, saat zoom atau rentang berganti, dan saat tombol "Hari ini" ditekan
   useEffect(() => {
     const box = scrollRef.current
     if (!box) return
-    box.scrollLeft = Math.max(0, (todayIndex - TODAY_SCROLL_OFFSET[zoom]) * dayWidth)
-  }, [hasGroups, zoom, rangeStart, todayIndex, dayWidth, scrollToTodayKey])
+    box.scrollLeft = Math.max(0, scale.x(todayIndex) - TODAY_SCROLL_OFFSET[zoom])
+  }, [hasGroups, zoom, rangeStart, todayIndex, scale, scrollToTodayKey])
 
   if (!hasGroups) return <div className="ar-gantt-empty">{empty}</div>
 
@@ -211,7 +220,7 @@ export function GanttChart({
         {people ? (
           <div className="ar-gantt-people ar-gantt-peoplecol">
             <div className="ar-gantt-peoplehead" style={{ height: PEOPLE_HEADER }}>
-              Beban kerja per orang <span>task aktif per hari</span>
+              Beban kerja per orang <span>{LOAD_UNIT[zoom]}</span>
             </div>
             {people.map((person) => (
               <div key={person.id} className="ar-gantt-person" style={{ height: TASK_ROW }}>
@@ -234,29 +243,29 @@ export function GanttChart({
         aria-label="Grafik timeline"
         tabIndex={0}
       >
-        <div style={{ width: dayCount * dayWidth }}>
+        <div style={{ width: scale.width }}>
           <div className="ar-gantt-header" style={{ height: HEADER }}>
-            {segments.map((segment) => {
-              const day = days[segment.from]
-              const isToday = zoom === 'day' && segment.from === todayIndex
+            {scale.columns.map((column) => {
+              const day = days[column.from]
+              const isToday = zoom === 'day' && column.from === todayIndex
               return (
                 <div
-                  key={segment.from}
+                  key={column.from}
                   className={cx(
                     'ar-gantt-col',
                     zoom !== 'day' && 'is-wide',
-                    day?.weekend && zoom === 'day' && 'is-weekend',
+                    column.weekend && 'is-weekend',
                     isToday && 'is-today',
                   )}
-                  style={{ width: segment.span * dayWidth }}
+                  style={{ width: column.width }}
                 >
                   {zoom === 'day' ? <span>{day?.letter}</span> : null}
-                  <span className="ar-gantt-colnum">{segment.label}</span>
+                  <span className="ar-gantt-colnum">{column.label}</span>
                 </div>
               )
             })}
           </div>
-          <GanttTrack days={days} dayWidth={dayWidth} height={chartHeight}>
+          <GanttTrack days={days} columns={scale.columns} height={chartHeight}>
             {detailed
               ? rows.map((row) =>
                   row.kind === 'group' ? (
@@ -277,11 +286,12 @@ export function GanttChart({
                   status={row.task.status}
                   start={geometry.start}
                   span={geometry.span}
+                  left={scale.x(geometry.start)}
+                  width={scale.x(geometry.start + geometry.span) - scale.x(geometry.start)}
                   top={row.top + 8}
                   overdue={row.task.overdue}
                   label={detailed ? row.task.assignees?.join(', ') : undefined}
                   priority={detailed ? row.task.priority : undefined}
-                  dayWidth={dayWidth}
                 />
               ) : null
             })}
@@ -295,17 +305,17 @@ export function GanttChart({
                           <Milestone
                             key={m.id}
                             day={day}
+                            x={scale.x(day) + scale.dayWidth(day) / 2}
                             label={m.label}
                             done={m.done}
                             top={row.top + 8}
-                            dayWidth={dayWidth}
                           />,
                         ]
                   })
                 : [],
             )}
             {todayIndex >= 0 && todayIndex < dayCount ? (
-              <TodayMarker day={todayIndex} label={false} dayWidth={dayWidth} />
+              <TodayMarker day={todayIndex} x={todayX} label={false} />
             ) : null}
           </GanttTrack>
 
@@ -323,14 +333,20 @@ export function GanttChart({
                   <WorkloadRow
                     counts={[...person.counts]}
                     weekends={weekends}
-                    dayWidth={dayWidth}
+                    dayWidth={DAY_COLUMN}
+                    widths={loadWidths}
                   />
                 </div>
               ))}
             </div>
           ) : (
             <div className="ar-gantt-load" style={{ height: HEADER }}>
-              <WorkloadRow counts={[...workload]} weekends={weekends} dayWidth={dayWidth} />
+              <WorkloadRow
+                counts={[...workload]}
+                weekends={weekends}
+                dayWidth={DAY_COLUMN}
+                widths={loadWidths}
+              />
             </div>
           )}
         </div>

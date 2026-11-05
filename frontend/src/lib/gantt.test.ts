@@ -4,9 +4,10 @@ import {
   barGeometry,
   dayIndex,
   ganttDays,
-  headerSegments,
   layoutRows,
   rangeLabel,
+  timeScale,
+  weekLabel,
 } from './gantt'
 
 describe('tanggal kalender', () => {
@@ -34,45 +35,69 @@ describe('ganttDays', () => {
   })
 })
 
-describe('headerSegments', () => {
-  it('zoom Hari: satu kolom per hari berisi tanggalnya', () => {
-    const segments = headerSegments(ganttDays('2026-09-21', 21), 'day')
-    expect(segments).toHaveLength(21)
-    expect(segments[9]).toEqual({ label: '30', from: 9, span: 1 })
+describe('timeScale', () => {
+  it('zoom Hari tidak berubah: satu kolom 40 px per hari, akhir pekan diarsir', () => {
+    const scale = timeScale(ganttDays('2026-09-21', 21), 'day')
+    expect(scale.columns).toHaveLength(21)
+    expect(scale.columns[9]).toMatchObject({ label: '30', from: 9, span: 1, left: 360, width: 40 })
+    expect(scale.columns[5]?.weekend).toBe(true)
+    expect(scale.width).toBe(840)
+    expect(scale.x(7)).toBe(280)
   })
 
-  it('zoom Minggu: satu segmen per pekan, diberi tanggal Seninnya', () => {
-    const segments = headerSegments(ganttDays('2026-09-21', 70), 'week')
-    expect(segments).toHaveLength(10)
-    expect(segments.slice(0, 3)).toEqual([
-      { label: '21 Sep', from: 0, span: 7 },
-      { label: '28 Sep', from: 7, span: 7 },
-      { label: '5 Okt', from: 14, span: 7 },
+  it('zoom Minggu: satu kolom 112 px per pekan Senin–Minggu, judulnya rentang tanggal', () => {
+    const scale = timeScale(ganttDays('2026-10-26', 35), 'week')
+    expect(scale.columns.map((c) => [c.label, c.span, c.width])).toEqual([
+      ['26 Okt – 1 Nov', 7, 112],
+      ['2–8 Nov', 7, 112],
+      ['9–15 Nov', 7, 112],
+      ['16–22 Nov', 7, 112],
+      ['23–29 Nov', 7, 112],
+    ])
+    expect(scale.columns.every((c) => !c.weekend)).toBe(true)
+    // Bar tetap di tanggal sebenarnya, tidak ditarik ke awal pekan: Rabu 4 Nov = 1 pekan + 2 hari
+    expect(scale.x(dayIndex('2026-10-26', '2026-11-04'))).toBe(112 + 2 * 16)
+  })
+
+  it('zoom Minggu yang dimulai di tengah pekan: kolom pertama lebih sempit', () => {
+    const scale = timeScale(ganttDays('2026-09-23', 14), 'week')
+    expect(scale.columns.map((c) => [c.label, c.span, c.width])).toEqual([
+      ['23–27 Sep', 5, 80],
+      ['28 Sep – 4 Okt', 7, 112],
+      ['5–6 Okt', 2, 32],
     ])
   })
 
-  it('zoom Minggu yang dimulai di tengah pekan: segmen pertama lebih pendek', () => {
-    const segments = headerSegments(ganttDays('2026-09-23', 14), 'week')
-    expect(segments.map((s) => [s.label, s.span])).toEqual([
-      ['23 Sep', 5],
-      ['28 Sep', 7],
-      ['5 Okt', 2],
+  it('zoom Bulan: satu kolom 160 px per bulan kalender dengan tahunnya, panjang bulan diperhitungkan', () => {
+    const scale = timeScale(ganttDays('2027-12-01', 31 + 31 + 29 + 30), 'month')
+    expect(scale.columns.map((c) => [c.label, c.span, Math.round(c.width * 100) / 100])).toEqual([
+      ['Des 2027', 31, 160],
+      ['Jan 2028', 31, 160],
+      ['Feb 2028', 29, 160], // tahun kabisat
+      ['Mar 2028', 30, 154.84], // 30 dari 31 hari Maret
     ])
+    expect(scale.columns.slice(0, 3).map((c) => c.width)).toEqual([160, 160, 160])
+    // Tengah Februari kabisat (hari ke-15 dari 29) jatuh tepat di tengah kolomnya
+    const feb15 = dayIndex('2027-12-01', '2028-02-15')
+    expect(scale.x(feb15) + scale.dayWidth(feb15) / 2).toBeCloseTo(320 + 80)
+    // Task 16 Jan – 14 Feb: melewati dua bulan, lebarnya proporsional di masing-masing bulan
+    const from = dayIndex('2027-12-01', '2028-01-16')
+    const to = dayIndex('2027-12-01', '2028-02-14') + 1
+    expect(scale.x(to) - scale.x(from)).toBeCloseTo((16 / 31) * 160 + (14 / 29) * 160)
   })
 
-  it('zoom Bulan: satu segmen per bulan, tahun ditulis di yang pertama dan setiap Januari', () => {
-    const segments = headerSegments(ganttDays('2026-08-01', 210), 'month')
-    expect(segments.map((s) => s.label)).toEqual([
-      'Agu 2026',
-      'Sep',
-      'Okt',
-      'Nov',
-      'Des',
-      'Jan 2027',
-      'Feb',
+  it('Februari bukan kabisat 28 hari, tetap selebar bulan lain', () => {
+    const scale = timeScale(ganttDays('2027-02-01', 28), 'month')
+    expect(scale.columns).toEqual([
+      { label: 'Feb 2027', from: 0, span: 28, left: 0, width: 160, weekend: false },
     ])
-    expect(segments.map((s) => s.span)).toEqual([31, 30, 31, 30, 31, 31, 26])
-    expect(segments.reduce((sum, s) => sum + s.span, 0)).toBe(210)
+  })
+})
+
+describe('weekLabel', () => {
+  it('pekan dalam satu bulan dan yang melewati pergantian bulan', () => {
+    expect(weekLabel('2026-11-02', '2026-11-08')).toBe('2–8 Nov')
+    expect(weekLabel('2026-12-28', '2027-01-03')).toBe('28 Des – 3 Jan')
   })
 })
 

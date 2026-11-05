@@ -2,16 +2,20 @@ import { formatShortDate, parseDate } from '@/lib/dates'
 import type { TimelineZoom } from '@/types/api'
 
 /**
- * Lebar satu hari per zoom (px): Hari 40 (mockup 02), Minggu 28, Bulan 20. Minggu dan Bulan sengaja lebar (bukan
- * dipaksa muat di layar) supaya bar dan angka beban kerja per hari tetap terbaca; grafiknya digulir ke samping.
+ * Ukuran kolom per zoom (px). Hari: 40 per hari (mockup 02, tidak berubah). Minggu: satu kolom per pekan Senin–Minggu
+ * selebar 112 (16 per hari). Bulan: satu kolom per bulan kalender selebar 160, dibagi rata ke jumlah hari bulan itu
+ * (28–31), jadi posisi bar tetap sesuai tanggal sebenarnya. Grafik tidak dipaksa muat; digulir ke samping.
  */
-export const DAY_WIDTH: Record<TimelineZoom, number> = { day: 40, week: 28, month: 20 }
+export const DAY_COLUMN = 40
+export const WEEK_COLUMN = 112
+export const MONTH_COLUMN = 160
 
-/**
- * Berapa hari sebelum "hari ini" yang dibiarkan terlihat di tepi kiri saat grafik digulir ke hari ini
- * (mockup 04: hari ini di kolom ke-8 pada zoom Hari).
- */
-export const TODAY_SCROLL_OFFSET: Record<TimelineZoom, number> = { day: 7, week: 14, month: 30 }
+/** Jarak (px) dari tepi kiri ke "hari ini" saat grafik digulir ke hari ini: 7 hari (mockup 04), 2 pekan, atau 1 bulan. */
+export const TODAY_SCROLL_OFFSET: Record<TimelineZoom, number> = {
+  day: 7 * DAY_COLUMN,
+  week: 2 * WEEK_COLUMN,
+  month: MONTH_COLUMN,
+}
 
 export const ZOOM_LABELS: Record<TimelineZoom, string> = {
   day: 'Hari',
@@ -65,39 +69,104 @@ export function ganttDays(start: string, count: number): GanttDay[] {
   })
 }
 
-export interface HeaderSegment {
+function daysInMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate()
+}
+
+/** "2–8 Nov", atau "28 Sep – 4 Okt" bila pekannya melewati pergantian bulan. */
+export function weekLabel(first: string, last: string): string {
+  const a = parseDate(first)
+  const b = parseDate(last)
+  return a.month === b.month && a.year === b.year
+    ? `${a.day}–${b.day} ${MONTHS[b.month - 1] ?? ''}`
+    : `${formatShortDate(first)} – ${formatShortDate(last)}`
+}
+
+export interface ScaleColumn {
   label: string
-  /** Indeks hari pertama segmen. */
+  /** Indeks hari pertama kolom dan jumlah harinya. */
   from: number
-  /** Jumlah hari. */
   span: number
+  /** Letak dan lebar kolom (px). */
+  left: number
+  width: number
+  /** Hanya zoom Hari: kolom akhir pekan diarsir. */
+  weekend: boolean
+}
+
+export interface TimeScale {
+  /** Lebar seluruh grafik (px). */
+  width: number
+  /** Kolom grid dan judulnya: tiap hari, tiap pekan Senin–Minggu, atau tiap bulan kalender. */
+  columns: ScaleColumn[]
+  /** Tepi kiri hari ke-`index` (px). `index` = jumlah hari berarti tepi kanan grafik. */
+  x: (index: number) => number
+  /** Lebar satu hari ke-`index` (px); di zoom Bulan berbeda per bulan. */
+  dayWidth: (index: number) => number
 }
 
 /**
- * Judul kolom di atas grafik: tiap hari (zoom Hari), tiap pekan yang diberi tanggal Seninnya (Minggu), atau tiap bulan (Bulan).
+ * Skala waktu grafik untuk zoom ini. Semua yang digambar (bar, milestone, garis hari ini, judul, beban kerja) memakai
+ * skala yang sama, jadi selalu sejajar. Kolom sama persis dengan TimelineRange.Columns di server (beban per kolom).
  */
-export function headerSegments(days: readonly GanttDay[], zoom: TimelineZoom): HeaderSegment[] {
-  if (zoom === 'day') {
-    return days.map((d, i) => ({ label: String(d.dayOfMonth), from: i, span: 1 }))
-  }
+export function timeScale(days: readonly GanttDay[], zoom: TimelineZoom): TimeScale {
+  const widths = days.map((d) => {
+    if (zoom === 'day') return DAY_COLUMN
+    if (zoom === 'week') return WEEK_COLUMN / 7
+    const { year, month } = parseDate(d.date)
+    return MONTH_COLUMN / daysInMonth(year, month)
+  })
+  // Tepi tiap hari dihitung dari awal kolomnya (bukan dijumlah terus), supaya tepi pekan/bulan tepat tanpa sisa pembulatan
+  const edges = [0]
+  let columnLeft = 0
+  let inColumn = 0
+  days.forEach((d, i) => {
+    const startsColumn =
+      i === 0 || zoom === 'day' || (zoom === 'week' ? d.weekday === 1 : d.dayOfMonth === 1)
+    if (startsColumn) {
+      columnLeft = edges[i] ?? 0
+      inColumn = 0
+    }
+    inColumn += 1
+    edges.push(columnLeft + inColumn * (widths[i] ?? 0))
+  })
+  const x = (index: number) => edges[Math.min(Math.max(index, 0), widths.length)] ?? 0
 
-  const segments: HeaderSegment[] = []
+  const columns: ScaleColumn[] = []
   days.forEach((d, i) => {
     const { year, month } = parseDate(d.date)
-    const startsSegment =
-      zoom === 'week' ? d.weekday === 1 || i === 0 : d.dayOfMonth === 1 || i === 0
-    if (startsSegment) {
+    const starts =
+      zoom === 'day' || i === 0 || (zoom === 'week' ? d.weekday === 1 : d.dayOfMonth === 1)
+    if (starts) {
       const label =
-        zoom === 'week'
-          ? formatShortDate(d.date)
-          : `${MONTHS[month - 1] ?? ''}${i === 0 || month === 1 ? ` ${year}` : ''}`
-      segments.push({ label, from: i, span: 1 })
+        zoom === 'day'
+          ? String(d.dayOfMonth)
+          : zoom === 'month'
+            ? `${MONTHS[month - 1] ?? ''} ${year}`
+            : ''
+      columns.push({
+        label,
+        from: i,
+        span: 1,
+        left: x(i),
+        width: 0,
+        weekend: zoom === 'day' && d.weekend,
+      })
     } else {
-      const last = segments[segments.length - 1]
+      const last = columns[columns.length - 1]
       if (last) last.span += 1
     }
   })
-  return segments
+  for (const column of columns) {
+    column.width = x(column.from + column.span) - column.left
+    if (zoom === 'week') {
+      const first = days[column.from]?.date ?? ''
+      const last = days[column.from + column.span - 1]?.date ?? first
+      column.label = weekLabel(first, last)
+    }
+  }
+
+  return { width: x(days.length), columns, x, dayWidth: (index) => widths[index] ?? 0 }
 }
 
 /**

@@ -20,7 +20,8 @@ export function HeatCell({ count, width, weekend }: HeatCellProps) {
       style={width !== undefined ? { width } : undefined}
       title={`${count} task aktif`}
     >
-      {count > 0 ? (count > 9 ? '9+' : count) : ''}
+      {/* Kotak sempit (zoom Hari) menulis "9+"; kotak pekan/bulan cukup lebar untuk angka sebenarnya */}
+      {count > 0 ? (count > 9 && (width ?? 0) < 28 ? '9+' : count) : ''}
     </span>
   )
 }

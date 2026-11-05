@@ -280,8 +280,12 @@ public sealed class DashboardTests(FakeTodayWorldFixture fx) : IClassFixture<Fak
 
         Assert.Equal(("day", new DateOnly(2026, 9, 21), 21), (day.Zoom, day.Start, day.DayCount));
         Assert.Equal(("week", new DateOnly(2026, 9, 21), 70), (week.Zoom, week.Start, week.DayCount)); // Senin pekan lalu
-        Assert.Equal(("month", new DateOnly(2026, 8, 1), 210), (month.Zoom, month.Start, month.DayCount));
+        Assert.Equal(("month", new DateOnly(2026, 8, 1), 212), (month.Zoom, month.Start, month.DayCount)); // 7 bulan utuh, Agu s.d. Feb
         Assert.Equal(21, day.Workload.Count);
+        // Per kolom: Hari = per hari; Minggu = 10 pekan (a dan b aktif di pekan 21 Sep, b juga di 28 Sep); Bulan = 7 bulan
+        Assert.Equal(day.Workload, day.ColumnWorkload);
+        Assert.Equal([2, 1, 0, 0, 0, 0, 0, 0, 0, 0], week.ColumnWorkload);
+        Assert.Equal([0, 2, 0, 0, 0, 0, 0], month.ColumnWorkload);
         // 21 Sep s.d. 25 Sep: a; 24 Sep s.d. 28 Sep: b; Done tidak dihitung
         Assert.Equal([1, 1, 1, 2, 2, 1, 1, 1, 0], day.Workload.Take(9));
         Assert.Equal(day.Today, FakeTodayWorldFixture.Today);

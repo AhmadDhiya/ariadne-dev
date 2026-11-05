@@ -389,6 +389,8 @@ export interface GanttPerson {
   userId: string
   name: string
   counts: number[]
+  /** Task aktif per kolom grafik: per hari, per pekan (Senin–Minggu), atau per bulan sesuai zoom. */
+  columnCounts: number[]
 }
 
 /** Yang dibutuhkan Gantt proyek di luar daftar task: rentang, milestone, dan beban kerja per orang. */
@@ -409,6 +411,8 @@ export interface TimelineResponse {
   groups: TimelineGroup[]
   /** Task aktif per hari, mulai dari `start`. */
   workload: number[]
+  /** Task aktif per kolom grafik: per hari, per pekan (Senin–Minggu), atau per bulan sesuai zoom. */
+  columnWorkload: number[]
 }
 
 // ---------- Pencarian global ----------
@@ -472,6 +476,8 @@ export interface TeamPerson {
   name: string
   /** Task aktif per hari lintas proyek, sejajar dengan rentang; tidak tersaring. */
   counts: number[]
+  /** Task aktif per kolom grafik: per hari, per pekan (Senin–Minggu), atau per bulan sesuai zoom. */
+  columnCounts: number[]
   /** Task di rentang yang lolos filter. */
   tasks: TeamTask[]
 }

@@ -309,16 +309,18 @@ test.describe('Dashboard: interaksi', () => {
     await timeline.getByRole('button', { name: 'Minggu' }).click()
     await expect(timeline).toContainText('21 Sep – 29 Nov')
     await expect(timeline.locator('.ar-gantt-col')).toHaveCount(10)
-    await expect(timeline.getByText('28 Sep', { exact: true })).toBeVisible()
+    await expect(timeline.getByText('28 Sep – 4 Okt', { exact: true })).toBeVisible()
     await expect(timeline.locator('.ar-today')).toHaveCount(1)
+    // Beban kerja per pekan: satu kotak per kolom
+    await expect(timeline.locator('.ar-gantt-load .ar-heat')).toHaveCount(10)
 
     await timeline.getByRole('button', { name: 'Bulan' }).click()
-    await expect(timeline).toContainText('1 Agu – 26 Feb')
-    await expect(timeline.getByText('Okt', { exact: true })).toBeVisible()
-    await expect(timeline.locator('.ar-gantt-load .ar-heat')).toHaveCount(210)
-    // Tidak dipaksa muat: kotak beban tetap cukup lebar untuk angkanya, grafik digulir ke samping
+    await expect(timeline).toContainText('1 Agu – 28 Feb')
+    await expect(timeline.getByText('Okt 2026', { exact: true })).toBeVisible()
+    await expect(timeline.locator('.ar-gantt-load .ar-heat')).toHaveCount(7)
+    // Satu kolom per bulan kalender, selebar 160 px; grafik digulir ke samping
     const cell = await timeline.locator('.ar-gantt-load .ar-heat').first().boundingBox()
-    expect(cell?.width ?? 0).toBeGreaterThanOrEqual(18)
+    expect(cell?.width ?? 0).toBeGreaterThanOrEqual(150)
     const scroller = timeline.locator('.ar-gantt-right')
     expect(await scroller.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true)
 

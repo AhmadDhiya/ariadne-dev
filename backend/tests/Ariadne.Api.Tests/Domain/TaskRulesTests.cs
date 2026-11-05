@@ -134,6 +134,51 @@ public sealed class TaskRulesTests
         Assert.Equal([0, 1, 2, 1, 1, 0], counts); // 26 sampai 1 Okt; Done tidak dihitung
     }
 
+    [Fact]
+    public void Weekly_columns_run_monday_to_sunday_and_monthly_columns_follow_calendar_months()
+    {
+        // Mulai Rabu: kolom pertama terpotong sampai Minggu, lalu pekan utuh, lalu sisa
+        Assert.Equal(
+            [(D("2026-09-23"), 5), (D("2026-09-28"), 7), (D("2026-10-05"), 3)],
+            TimelineRange.Columns("week", D("2026-09-23"), 15));
+
+        // Panjang bulan 31/30/31 dan Februari tahun kabisat (2028: 29 hari)
+        Assert.Equal(
+            [(D("2027-12-01"), 31), (D("2028-01-01"), 31), (D("2028-02-01"), 29), (D("2028-03-01"), 10)],
+            TimelineRange.Columns("month", D("2027-12-01"), 101));
+        Assert.Equal(28, TimelineRange.Columns("month", D("2027-02-01"), 28).Single().Days);
+
+        Assert.Equal(3, TimelineRange.Columns("day", D("2026-09-28"), 3).Count);
+    }
+
+    [Fact]
+    public void The_month_range_is_always_whole_calendar_months()
+    {
+        Assert.Equal((D("2026-08-01"), 212), Range(TimelineRange.For("month", D("2026-09-28"), wide: false)));
+        // Melewati Februari 2028 (kabisat): 12 bulan = 366 hari
+        Assert.Equal((D("2027-09-01"), 366), Range(TimelineRange.For("month", D("2027-10-15"), wide: true)));
+
+        static (DateOnly, int) Range((string Name, DateOnly Start, int Count) r) => (r.Start, r.Count);
+    }
+
+    [Fact]
+    public void Workload_per_column_counts_each_task_once_per_week_or_month()
+    {
+        (DateOnly? Start, DateOnly? Due, WorkStatus Status)[] tasks =
+        [
+            (D("2026-09-28"), D("2026-10-09"), WorkStatus.OnProgress), // dua pekan, satu bulan (Okt) setelah Sep
+            (D("2026-09-29"), D("2026-09-30"), WorkStatus.Fixing),
+            (D("2026-10-05"), D("2026-10-06"), WorkStatus.Done), // Done tidak dihitung
+            (D("2026-11-02"), D("2026-11-30"), WorkStatus.OnProgress),
+        ];
+
+        // Pekan 28 Sep, 5 Okt, 12 Okt
+        Assert.Equal([2, 1, 0], TaskRules.WorkloadPerColumn(tasks, "week", D("2026-09-28"), 21));
+        // Sep, Okt, Nov: task pertama dihitung di Sep dan Okt, tidak dua kali di satu bulan
+        Assert.Equal([2, 1, 1], TaskRules.WorkloadPerColumn(tasks, "month", D("2026-09-01"), 91));
+        Assert.Equal(TaskRules.WorkloadPerDay(tasks, D("2026-09-28"), 5), TaskRules.WorkloadPerColumn(tasks, "day", D("2026-09-28"), 5));
+    }
+
     [Theory]
     [InlineData(3, "malam")]
     [InlineData(4, "pagi")]

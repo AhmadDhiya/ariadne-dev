@@ -110,6 +110,14 @@ public static class TaskRules
         return counts;
     }
 
+    /// <summary>
+    /// Beban per kolom grafik (pekan atau bulan): jumlah task BERBEDA yang aktif setidaknya satu hari di kolom itu, dengan
+    /// aturan aktif yang sama seperti per hari. Untuk zoom Hari hasilnya sama dengan WorkloadPerDay.
+    /// </summary>
+    public static int[] WorkloadPerColumn(IReadOnlyCollection<(DateOnly? Start, DateOnly? Due, WorkStatus Status)> tasks, string zoom, DateOnly from, int days) =>
+        [.. TimelineRange.Columns(zoom, from, days)
+            .Select(c => tasks.Count(t => Enumerable.Range(0, c.Days).Any(i => IsActiveOn(t.Start, t.Due, t.Status, c.From.AddDays(i)))))];
+
     /// <summary>Sapaan menurut jam di Asia/Jakarta: pagi 04-10, siang 11-14, sore 15-17, selain itu malam.</summary>
     public static string DayPart(int hour) => hour switch
     {

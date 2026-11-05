@@ -99,14 +99,14 @@ test.describe('Gantt proyek: interaksi', () => {
 
     await page.getByRole('button', { name: 'Minggu' }).click()
     await expect(gantt.locator('.ar-gantt-col')).toHaveCount(26)
-    await expect(gantt.getByText('28 Sep', { exact: true })).toBeVisible()
+    await expect(gantt.getByText('28 Sep – 4 Okt', { exact: true })).toBeVisible()
     await expect(gantt.locator('.ar-bar').first()).toBeVisible()
-    await expect(gantt.locator('.ar-gantt-personrow').first().locator('.ar-heat')).toHaveCount(182)
+    await expect(gantt.locator('.ar-gantt-personrow').first().locator('.ar-heat')).toHaveCount(26)
 
     await page.getByRole('button', { name: 'Bulan' }).click()
-    await expect(gantt.getByText('Okt', { exact: true })).toBeVisible()
-    await expect(gantt.locator('.ar-gantt-personrow').first().locator('.ar-heat')).toHaveCount(366)
-    expect(await scroller.evaluate((el) => el.scrollWidth)).toBeGreaterThan(7000) // 366 hari x 20 px, tidak dipaksa muat
+    await expect(gantt.getByText('Okt 2026', { exact: true })).toBeVisible()
+    await expect(gantt.locator('.ar-gantt-personrow').first().locator('.ar-heat')).toHaveCount(12)
+    expect(await scroller.evaluate((el) => el.scrollWidth)).toBeGreaterThan(1800) // 12 bulan x 160 px, tidak dipaksa muat
 
     await page.getByRole('button', { name: 'Hari', exact: true }).click()
     await expect(gantt.locator('.ar-gantt-col')).toHaveCount(91)

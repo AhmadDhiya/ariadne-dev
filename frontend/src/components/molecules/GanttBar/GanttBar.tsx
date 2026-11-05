@@ -16,6 +16,12 @@ export interface GanttBarProps {
   overdue?: boolean
   top?: number
   dayWidth?: number
+  /**
+   * Letak dan lebar dalam px, menggantikan start/span × dayWidth. Dipakai zoom Minggu dan Bulan, yang lebar harinya
+   * tidak sama (bulan 28–31 hari dalam kolom yang sama lebar).
+   */
+  left?: number
+  width?: number
 }
 
 /** Bar task: warna status + ikon status; label dan ikon prioritas di kanan. */
@@ -28,13 +34,15 @@ export function GanttBar({
   overdue,
   top = 8,
   dayWidth = 28,
+  left,
+  width,
 }: GanttBarProps) {
   const st = getStatus(status)
   return (
-    <div className="ar-bar-wrap" style={{ left: start * dayWidth, top }}>
+    <div className="ar-bar-wrap" style={{ left: left ?? start * dayWidth, top }}>
       <div
         className={cx('ar-bar', `ar-bar-${st.key}`, overdue && 'is-overdue')}
-        style={{ width: Math.max(span * dayWidth - 2, 8) }}
+        style={{ width: Math.max((width ?? span * dayWidth) - 2, 8) }}
         title={overdue ? `${st.label} · terlambat` : st.label}
       >
         <Icon name={`status-${st.key}`} size={12} title={st.label} />

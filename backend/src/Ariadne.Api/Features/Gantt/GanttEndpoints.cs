@@ -9,8 +9,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Ariadne.Api.Features.Gantt;
 
-/// <summary>Beban kerja satu orang di proyek ini: jumlah task aktif per hari, mulai dari Start.</summary>
-public sealed record GanttPerson(Guid UserId, string Name, IReadOnlyList<int> Counts);
+/// <summary>
+/// Beban kerja satu orang di proyek ini: jumlah task aktif per hari mulai dari Start, dan per kolom grafik (pekan atau
+/// bulan: task berbeda yang aktif di kolom itu; zoom Hari: sama dengan per hari).
+/// </summary>
+public sealed record GanttPerson(Guid UserId, string Name, IReadOnlyList<int> Counts, IReadOnlyList<int> ColumnCounts);
 
 /// <summary>
 /// Yang dibutuhkan Gantt proyek di luar daftar task (yang datang dari endpoint task): rentang tanggal sesuai zoom,
@@ -67,10 +70,11 @@ internal static class GanttEndpoints
 
         var workload = people
             .OrderBy(p => p.DisplayName, StringComparer.Ordinal)
-            .Select(p => new GanttPerson(
-                p.UserId,
-                p.DisplayName,
-                TaskRules.WorkloadPerDay([.. byUser[p.UserId].Select(a => (a.StartDate, a.DueDate, a.Status))], start, count)))
+            .Select(p =>
+            {
+                var load = byUser[p.UserId].Select(a => (a.StartDate, a.DueDate, a.Status)).ToList();
+                return new GanttPerson(p.UserId, p.DisplayName, TaskRules.WorkloadPerDay(load, start, count), TaskRules.WorkloadPerColumn(load, name, start, count));
+            })
             .ToList();
 
         return Results.Ok(new GanttResponse(name, start, count, today, await MilestoneEndpoints.ItemsAsync(db, milestones, ct), workload));

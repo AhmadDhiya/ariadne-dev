@@ -883,3 +883,17 @@ Notifikasi dibuat untuk lima kejadian: **di-mention** (Update, Komentar, Interna
 **Pembuktian:** `scripts/check` 15/15 lulus (katalog komponen lulus setelah screenshot acuannya diperbarui karena demo notifikasi baru). Backend: 875 test, termasuk 11 test notifikasi (mention dan email segera, ubah/hapus entri, penugasan, pemindahan dengan dan tanpa kabari, tab dan halaman dan tandai dibaca, notifikasi orang lain 404, jadi Tamu lalu dikeluarkan, task dihapus, job harian sekali dan tanpa dobel, tiga job bersamaan, akun nonaktif), lima baris baru di matriks izin, dan audit Tamu yang kini ikut memeriksa endpoint notifikasi. Frontend: 415 test unit. Browser: 114 test terhadap stack sungguhan, termasuk `wnotifikasi.spec.ts` (panel terang/gelap + axe + screenshot, halaman Semua notifikasi, mention → email di Mailpit → lonceng → klik membuka task dan menandai dibaca) dan test zoom Timeline yang memastikan kotak beban cukup lebar dan grafik bisa digulir.
 
 **Paket baru:** tidak ada. Ikon PNG untuk email dibuat sekali dengan `scripts/render-email-icons.mjs`, yang memakai Playwright yang sudah terpasang.
+
+### Tindak lanjut Fase 9: kolom Minggu dan Bulan di Gantt (5 November 2026)
+
+Menggantikan perubahan "lebar per hari" di atas. Zoom **Hari tidak berubah**.
+
+- **Minggu:** satu kolom per pekan Senin–Minggu selebar 112 px. Judul kolom berupa rentang tanggal ("2–8 Nov", atau "28 Sep – 4 Okt" bila melewati pergantian bulan). Garis grid hanya per pekan, tanpa garis harian dan tanpa arsiran akhir pekan.
+- **Bulan:** satu kolom per bulan kalender selebar 160 px, berjudul "Nov 2026". Garis grid hanya per bulan. Rentang zoom Bulan kini selalu bulan utuh: Timeline saya 1 Agu – 28 Feb (7 bulan), Gantt proyek 12 bulan.
+- **Bar tetap di tanggal sebenarnya** (tidak ditarik ke awal pekan atau bulan). Di zoom Bulan, satu hari selebar 160 ÷ jumlah hari bulan itu (28, 29, 30, atau 31), jadi tahun kabisat dan task yang melewati beberapa bulan tetap tepat. Bar, milestone, garis "Hari ini", judul, dan beban kerja memakai satu skala yang sama (`timeScale` di `lib/gantt.ts`), jadi selalu sejajar. Grafik tetap digulir ke samping.
+- **Beban kerja per kolom:** di zoom Minggu angkanya = jumlah task berbeda yang aktif di pekan itu; di zoom Bulan = di bulan itu. Judul kolom orang: "task aktif per hari/pekan/bulan".
+- **Perubahan backend (kecil, tanpa perubahan database):** angka per pekan dan per bulan dihitung di server (`columnWorkload` dan `columnCounts`, di samping angka per hari yang tetap ada). Ini perlu karena di Timeline Tim angkanya ikut menghitung task di proyek yang tidak terlihat oleh supervisor, jadi browser tidak bisa menghitungnya sendiri. Satu task yang aktif Senin dan Selasa dihitung sekali per pekan, bukan dua.
+
+**Pembuktian:** `scripts/check` 15/15 lulus. Test baru: kolom pekan/bulan dan Februari kabisat 2028 (backend dan frontend), beban per kolom, task yang melewati dua bulan, judul "2–8 Nov" / "Okt 2026"; test browser zoom di dashboard dan Gantt proyek disesuaikan (114 lulus). Screenshot zoom Minggu dan Bulan di ketiga halaman sudah diperiksa.
+
+**Paket baru:** tidak ada.

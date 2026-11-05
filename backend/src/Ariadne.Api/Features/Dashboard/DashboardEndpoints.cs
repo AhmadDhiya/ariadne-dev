@@ -120,7 +120,9 @@ internal static class DashboardEndpoints
         var end = start.AddDays(count - 1);
         var mine = await LoadMineAsync(db, target, target == access.UserId ? null : access, ct);
 
-        var workload = TaskRules.WorkloadPerDay([.. mine.Select(m => (m.Task.StartDate, m.Task.DueDate, m.Task.Status))], start, count);
+        var load = mine.Select(m => (m.Task.StartDate, m.Task.DueDate, m.Task.Status)).ToList();
+        var workload = TaskRules.WorkloadPerDay(load, start, count);
+        var columnWorkload = TaskRules.WorkloadPerColumn(load, name, start, count);
 
         var inRange = mine
             .Where(m => (m.Task.StartDate ?? m.Task.DueDate) is { } from && (m.Task.DueDate ?? m.Task.StartDate) is { } to && from <= end && to >= start)
@@ -164,7 +166,7 @@ internal static class DashboardEndpoints
                 [.. milestonesByRoot[g.Key]]))
             .ToList();
 
-        return Results.Ok(new TimelineResponse(name, start, count, today, groups, workload));
+        return Results.Ok(new TimelineResponse(name, start, count, today, groups, workload, columnWorkload));
     }
 
     private static DateTime Jakarta(IClock clock) => TimeZoneInfo.ConvertTime(clock.UtcNow, clock.TimeZone).DateTime;

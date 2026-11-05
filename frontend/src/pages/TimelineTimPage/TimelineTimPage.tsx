@@ -90,6 +90,7 @@ export function TimelineTimPage() {
         id: person.userId,
         name: person.name,
         counts: person.counts,
+        columnCounts: person.columnCounts,
         tasks: person.tasks.map((task) => ({
           id: task.id,
           key: task.key,
@@ -277,7 +278,7 @@ export function TimelineTimPage() {
         />
         <span className="ar-tt-spacer" />
         <span className="ar-tt-legend">
-          Task aktif per hari: 0
+          Task aktif per {zoom === 'week' ? 'pekan' : zoom === 'month' ? 'bulan' : 'hari'}: 0
           {[0, 1, 2, 3, 4, 5].map((step) => (
             <span key={step} className={`ar-heat ar-heat-${step}`} />
           ))}

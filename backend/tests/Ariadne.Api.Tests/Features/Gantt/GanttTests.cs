@@ -31,7 +31,9 @@ public sealed class GanttTests(FakeTodayWorldFixture fx) : IClassFixture<FakeTod
 
         Assert.Equal(("day", new DateOnly(2026, 9, 21), 91), (day.Zoom, day.Start, day.DayCount));
         Assert.Equal(("week", new DateOnly(2026, 9, 14), 182), (week.Zoom, week.Start, week.DayCount)); // Senin, dua pekan sebelum hari ini
-        Assert.Equal(("month", new DateOnly(2026, 8, 1), 366), (month.Zoom, month.Start, month.DayCount));
+        Assert.Equal(("month", new DateOnly(2026, 8, 1), 365), (month.Zoom, month.Start, month.DayCount)); // 12 bulan utuh
+        Assert.All(week.Workload, p => Assert.Equal(26, p.ColumnCounts.Count));
+        Assert.All(month.Workload, p => Assert.Equal(12, p.ColumnCounts.Count));
         Assert.Equal(FakeTodayWorldFixture.Today, day.Today);
         Assert.Equal(DayOfWeek.Monday, week.Start.DayOfWeek);
     }

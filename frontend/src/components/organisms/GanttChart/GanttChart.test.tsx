@@ -117,10 +117,16 @@ describe('GanttChart', () => {
   it('zoom Minggu memakai segmen pekan, dan zoom Bulan segmen bulan', () => {
     const { rerender } = renderWith('week', 70)
     expect(document.querySelectorAll('.ar-gantt-col')).toHaveLength(10)
-    expect(screen.getByText('28 Sep')).toBeInTheDocument()
+    expect(screen.getByText('28 Sep – 4 Okt')).toBeInTheDocument()
+    expect(screen.getByText('5–11 Okt')).toBeInTheDocument()
+    // Hanya garis per pekan, tanpa garis harian dan arsiran akhir pekan
+    expect(document.querySelectorAll('.ar-track-day')).toHaveLength(10)
+    expect(document.querySelectorAll('.ar-track-day.is-weekend')).toHaveLength(0)
 
-    rerender('month', 210)
-    expect(screen.getByText('Sep')).toBeInTheDocument()
+    rerender('month', 212)
+    expect(screen.getByText('Sep 2026')).toBeInTheDocument()
+    expect(screen.getByText('Jan 2027')).toBeInTheDocument()
+    expect(document.querySelectorAll('.ar-track-day')).toHaveLength(7)
   })
 
   it('grup bisa dilipat: task dan bar-nya hilang, daftar lain tetap', async () => {
