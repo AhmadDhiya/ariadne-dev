@@ -42,3 +42,40 @@
   font-size: 12px;
   color: var(--ink-muted);
 }
+
+/* Gerak (Fase 10) */
+.ar-topbar-user {
+  transition: var(--hover-transition);
+}
+.ar-topbar-search {
+  display: contents;
+}
+.ar-topbar-mobile {
+  display: none;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* Layar sempit (mockup 11): menu + logo di kiri, lonceng dan avatar di kanan */
+@media (max-width: 767px) {
+  .ar-topbar {
+    padding: 0 var(--space-2) 0 var(--space-1);
+    gap: var(--space-2);
+  }
+  .ar-topbar-mobile {
+    display: flex;
+  }
+  .ar-topbar-menu {
+    width: 44px;
+    height: 44px;
+    color: var(--ink);
+  }
+  .ar-topbar-search,
+  .ar-topbar-who,
+  .ar-topbar-chevron {
+    display: none;
+  }
+  .ar-topbar-user {
+    padding: 0 var(--space-1);
+  }
+}

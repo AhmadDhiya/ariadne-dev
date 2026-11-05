@@ -36,6 +36,8 @@ export const ICONS = {
   'priority-medium': [path('M6 9h12'), path('M6 15h12')],
   'priority-low': [path('m6 9 6 6 6-6')],
   search: [['circle', { cx: 11, cy: 11, r: 7 }], path('m20 20-4-4')],
+  // Tombol menu di header mobile (mockup 11)
+  menu: [path('M4 6h16'), path('M4 12h16'), path('M4 18h16')],
   bell: [path('M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'), path('M10.3 21a1.94 1.94 0 0 0 3.4 0')],
   'chevron-down': [path('m6 9 6 6 6-6')],
   'chevron-right': [path('m9 18 6-6-6-6')],

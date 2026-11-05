@@ -22,6 +22,8 @@ export interface GanttBarProps {
    */
   left?: number
   width?: number
+  /** Tooltip saat hover, menggantikan nama status (mis. dengan PIC, bila labelnya tidak ditampilkan). */
+  tooltip?: string
 }
 
 /** Bar task: warna status + ikon status; label dan ikon prioritas di kanan. */
@@ -36,16 +38,18 @@ export function GanttBar({
   dayWidth = 28,
   left,
   width,
+  tooltip,
 }: GanttBarProps) {
   const st = getStatus(status)
+  const title = tooltip ?? (overdue ? `${st.label} · terlambat` : st.label)
   return (
     <div className="ar-bar-wrap" style={{ left: left ?? start * dayWidth, top }}>
       <div
         className={cx('ar-bar', `ar-bar-${st.key}`, overdue && 'is-overdue')}
         style={{ width: Math.max((width ?? span * dayWidth) - 2, 8) }}
-        title={overdue ? `${st.label} · terlambat` : st.label}
+        title={title}
       >
-        <Icon name={`status-${st.key}`} size={12} title={st.label} />
+        <Icon name={`status-${st.key}`} size={12} title={tooltip ?? st.label} />
       </div>
       {label ? (
         <span className="ar-bar-label">

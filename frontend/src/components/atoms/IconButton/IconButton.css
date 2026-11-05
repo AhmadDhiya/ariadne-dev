@@ -36,3 +36,11 @@
   box-shadow: 0 0 0 2px var(--surface);
   font-variant-numeric: tabular-nums;
 }
+
+/* Gerak (Fase 10) */
+.ar-iconbtn {
+  transition: var(--hover-transition);
+}
+.ar-iconbtn:not([disabled]):active {
+  transform: scale(0.94);
+}

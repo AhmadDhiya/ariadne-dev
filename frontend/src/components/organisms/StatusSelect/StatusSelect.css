@@ -1,0 +1,42 @@
+/* Layar sempit (mockup 11): pill + panah sebagai tombol setinggi 36px, pilihan dalam sheet */
+.ar-statussheet-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.ar-statussheet {
+  display: flex;
+  flex-direction: column;
+  margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) 0;
+}
+.ar-statussheet-opt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--hover-transition);
+}
+.ar-statussheet-opt:hover {
+  background: var(--surface-muted);
+}
+.ar-statussheet-check {
+  margin-left: auto;
+  color: var(--primary);
+}

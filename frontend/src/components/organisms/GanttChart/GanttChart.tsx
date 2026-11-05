@@ -10,6 +10,7 @@ import { WorkloadRow } from '@/components/molecules/WorkloadRow'
 import { cx } from '@/lib/cx'
 import {
   barGeometry,
+  barTooltip,
   DAY_COLUMN,
   dayIndex,
   ganttDays,
@@ -32,7 +33,10 @@ export interface GanttChartTask {
   due: string | null
   /** Dihitung di server. */
   overdue: boolean
-  /** Nama PIC: tampil sebagai avatar di daftar kiri dan sebagai label di kanan bar (bila `barLabels`). */
+  /**
+   * Nama PIC: tampil sebagai avatar di daftar kiri. Di zoom Hari juga sebagai label di kanan bar; di zoom Minggu dan
+   * Bulan label itu tidak ditampilkan (bar sempit) dan namanya ada di tooltip bar.
+   */
   assignees?: string[]
   priority?: PriorityKey
   /** Sub-task: menjorok di daftar kiri. */
@@ -290,8 +294,10 @@ export function GanttChart({
                   width={scale.x(geometry.start + geometry.span) - scale.x(geometry.start)}
                   top={row.top + 8}
                   overdue={row.task.overdue}
-                  label={detailed ? row.task.assignees?.join(', ') : undefined}
-                  priority={detailed ? row.task.priority : undefined}
+                  // Label PIC di samping bar hanya di zoom Hari; di Minggu/Bulan PIC ada di tooltip dan kolom kiri
+                  label={detailed && zoom === 'day' ? row.task.assignees?.join(', ') : undefined}
+                  priority={detailed && zoom === 'day' ? row.task.priority : undefined}
+                  tooltip={zoom === 'day' ? undefined : barTooltip(row.task)}
                 />
               ) : null
             })}

@@ -102,14 +102,22 @@ test.describe('Gantt proyek: interaksi', () => {
     await expect(gantt.getByText('28 Sep – 4 Okt', { exact: true })).toBeVisible()
     await expect(gantt.locator('.ar-bar').first()).toBeVisible()
     await expect(gantt.locator('.ar-gantt-personrow').first().locator('.ar-heat')).toHaveCount(26)
+    // Minggu/Bulan: tanpa label PIC di samping bar; nama PIC ada di tooltip bar
+    await expect(gantt.locator('.ar-bar-label')).toHaveCount(0)
+    await expect(gantt.locator('.ar-bar[title^="SEN-115 "]')).toHaveAttribute(
+      'title',
+      'SEN-115 Pipeline GitLab IRS · Blocked · terlambat · PIC: Ahmad, Wiwiet',
+    )
 
     await page.getByRole('button', { name: 'Bulan' }).click()
     await expect(gantt.getByText('Okt 2026', { exact: true })).toBeVisible()
     await expect(gantt.locator('.ar-gantt-personrow').first().locator('.ar-heat')).toHaveCount(12)
+    await expect(gantt.locator('.ar-bar-label')).toHaveCount(0)
     expect(await scroller.evaluate((el) => el.scrollWidth)).toBeGreaterThan(1800) // 12 bulan x 160 px, tidak dipaksa muat
 
     await page.getByRole('button', { name: 'Hari', exact: true }).click()
     await expect(gantt.locator('.ar-gantt-col')).toHaveCount(91)
+    await expect(gantt.locator('.ar-bar-label').filter({ hasText: 'Ahmad, Wiwiet' })).toHaveCount(1)
   })
 
   test('filter PIC, Status, dan Terlambat menyaring bar; tersimpan di alamat; beban kerja tidak ikut', async ({

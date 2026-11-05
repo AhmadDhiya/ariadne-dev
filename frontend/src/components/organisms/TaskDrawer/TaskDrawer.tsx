@@ -51,6 +51,8 @@ export interface TaskFieldChanges {
 export interface TaskDrawerProps {
   open: boolean
   onClose: () => void
+  /** Dipanggil setelah drawer selesai bergeser keluar. */
+  onClosed?: () => void
   /** Rincian task; kosong selama dimuat atau gagal dimuat. */
   detail?: TaskDetail
   loading?: boolean
@@ -102,6 +104,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 export function TaskDrawer({
   open,
   onClose,
+  onClosed,
   detail,
   loading,
   loadError,
@@ -196,6 +199,7 @@ export function TaskDrawer({
     <Drawer
       open={open}
       onClose={onClose}
+      onClosed={onClosed}
       ariaLabel={task ? `${task.key} ${task.title}` : 'Detail task'}
       title={
         task ? (

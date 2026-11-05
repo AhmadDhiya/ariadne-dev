@@ -1,4 +1,5 @@
 .ar-dialog {
+  width: var(--dialog-width, 480px);
   max-width: calc(100vw - 2 * var(--space-4));
   max-height: calc(100vh - 2 * var(--space-8));
   padding: 0;
@@ -11,6 +12,18 @@
 }
 .ar-dialog::backdrop {
   background: var(--overlay);
+}
+.ar-dialog[open] {
+  animation: ar-pop-in var(--motion-enter) var(--ease-out);
+}
+.ar-dialog[open]::backdrop {
+  animation: ar-fade-in var(--motion-enter) var(--ease-out);
+}
+.ar-dialog[data-closing] {
+  animation: ar-pop-out var(--motion-exit) var(--ease-in) forwards;
+}
+.ar-dialog[data-closing]::backdrop {
+  animation: ar-fade-out var(--motion-exit) var(--ease-in) forwards;
 }
 .ar-dialog-inner {
   display: flex;
@@ -48,4 +61,36 @@
   display: flex;
   justify-content: flex-end;
   gap: var(--space-2);
+}
+
+/* Layar sempit (mockup 11): sheet selebar layar dari bawah, dengan pegangan kecil di atas */
+@media (max-width: 767px) {
+  .ar-dialog {
+    width: 100%;
+    max-width: 100vw;
+    max-height: calc(100vh - var(--space-8));
+    margin: auto 0 0;
+    border-radius: 10px 10px 0 0;
+  }
+  .ar-dialog[open] {
+    animation: ar-slide-in-up var(--motion-enter) var(--ease-out);
+  }
+  .ar-dialog[data-closing] {
+    animation: ar-slide-out-down var(--motion-exit) var(--ease-in) forwards;
+  }
+  .ar-dialog-inner {
+    padding: var(--space-2) var(--space-4) var(--space-4);
+  }
+  .ar-dialog-inner::before {
+    content: '';
+    width: 36px;
+    height: 4px;
+    margin: 0 auto;
+    border-radius: var(--radius-full);
+    background: var(--line-strong);
+  }
+  .ar-dialog-title {
+    font-size: 15px;
+    line-height: 22px;
+  }
 }

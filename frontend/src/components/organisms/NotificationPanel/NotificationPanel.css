@@ -117,3 +117,8 @@
   font-size: 13px;
   font-weight: 500;
 }
+
+/* Gerak (Fase 10) */
+.ar-notifpanel-action {
+  transition: var(--hover-transition);
+}

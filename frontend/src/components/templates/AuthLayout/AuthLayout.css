@@ -47,3 +47,12 @@
     display: none;
   }
 }
+
+/* Tema gelap (Fase 10): primary di tema gelap adalah periwinkle terang, terlalu menyilaukan untuk panel selebar
+   640px. Panel memakai navy lembut (primary-soft) dengan teks ink, seperti permukaan gelap lainnya. */
+[data-theme='dark'] .ar-auth-art {
+  background: var(--primary-soft);
+}
+[data-theme='dark'] .ar-auth-copy {
+  color: var(--ink);
+}

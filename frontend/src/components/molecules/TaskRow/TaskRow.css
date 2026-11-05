@@ -120,3 +120,10 @@ button.ar-taskrow-name:hover {
   gap: 4px;
   overflow: hidden;
 }
+
+/* Gerak (Fase 10) */
+.ar-taskrow,
+button.ar-taskrow-name,
+.ar-taskrow-expand {
+  transition: var(--hover-transition);
+}

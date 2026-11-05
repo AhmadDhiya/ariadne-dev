@@ -70,3 +70,8 @@
 .ar-movetask-note.is-error {
   color: var(--danger);
 }
+
+/* Gerak (Fase 10) */
+.ar-movetask-row {
+  transition: var(--hover-transition);
+}

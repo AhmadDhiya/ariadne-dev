@@ -73,3 +73,8 @@ button.ar-nav-caret {
   text-decoration: none;
   border-radius: var(--radius-sm);
 }
+
+/* Gerak (Fase 10) */
+.ar-nav {
+  transition: var(--hover-transition);
+}

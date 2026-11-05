@@ -23,7 +23,10 @@ export interface TodayRowProps {
   highlighted?: boolean
 }
 
-/** Satu baris task di daftar "Hari Ini" (mockup 02): prioritas, ID, judul dan jalur proyek, tenggat, status, dan aksi. */
+/**
+ * Satu baris task di daftar "Hari Ini" (mockup 02): prioritas, ID, judul dan jalur proyek, tenggat, status, dan aksi.
+ * Di layar sempit (mockup 11) menjadi kartu: prioritas, ID, dan tenggat di atas; judul; status dan aksi di bawah.
+ */
 export function TodayRow({
   priority,
   id,
@@ -49,7 +52,7 @@ export function TodayRow({
       </div>
       <div className="ar-todayrow-due">{due}</div>
       <div className="ar-todayrow-status">{status}</div>
-      {action}
+      {action ? <div className="ar-todayrow-action">{action}</div> : null}
     </div>
   )
 }

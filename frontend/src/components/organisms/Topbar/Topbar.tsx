@@ -1,6 +1,8 @@
 import { useCallback, useState, type ReactNode } from 'react'
 import { Avatar } from '@/components/atoms/Avatar'
 import { Icon } from '@/components/atoms/Icon'
+import { IconButton } from '@/components/atoms/IconButton'
+import { Logo } from '@/components/molecules/Logo'
 import { Popover } from '@/components/molecules/Popover'
 import { Menu } from '@/components/organisms/Menu'
 import './Topbar.css'
@@ -17,9 +19,14 @@ export interface TopbarProps {
   search?: ReactNode
   /** Lonceng notifikasi beserta panelnya, ditaruh di kiri menu akun (mockup 10). */
   notifications?: ReactNode
+  /** Layar sempit (mockup 11): tombol menu di kiri yang membuka sidebar. */
+  onOpenMenu?: () => void
 }
 
-/** Topbar 56px: pencarian global di kiri; lonceng notifikasi dan menu akun di kanan. */
+/**
+ * Topbar 56px: pencarian global di kiri; lonceng notifikasi dan menu akun di kanan. Di layar < 768px (mockup 11):
+ * tombol menu dan logo di kiri, pencarian disembunyikan, dan menu akun hanya avatar.
+ */
 export function Topbar({
   userName,
   subtitle,
@@ -29,13 +36,25 @@ export function Topbar({
   onLogout,
   search,
   notifications,
+  onOpenMenu,
 }: TopbarProps) {
   const [open, setOpen] = useState(false)
   const close = useCallback(() => setOpen(false), [])
 
   return (
     <header className="ar-topbar">
-      {search}
+      {onOpenMenu ? (
+        <span className="ar-topbar-mobile">
+          <IconButton
+            icon="menu"
+            label="Buka menu"
+            className="ar-topbar-menu"
+            onClick={onOpenMenu}
+          />
+          <Logo size={26} subtitle={false} />
+        </span>
+      ) : null}
+      <span className="ar-topbar-search">{search}</span>
       <div className="ar-topbar-spacer" />
       {notifications}
       <Popover
@@ -56,7 +75,9 @@ export function Topbar({
               <span className="ar-topbar-name">{userName}</span>
               <span className="ar-topbar-role">{subtitle}</span>
             </span>
-            <Icon name="chevron-down" size={14} />
+            <span className="ar-topbar-chevron">
+              <Icon name="chevron-down" size={14} />
+            </span>
           </button>
         }
       >

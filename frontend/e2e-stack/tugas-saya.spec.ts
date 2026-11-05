@@ -356,6 +356,7 @@ test.describe('Pencarian global', () => {
       page.locator('dialog.ar-drawer').getByRole('button', { name: 'Pipeline GitLab IRS' }),
     ).toBeVisible()
     await page.keyboard.press('Escape')
+    await expect(page.locator('dialog.ar-drawer')).toBeHidden()
 
     await searchBox(page).fill('Smartclass')
     await results.getByRole('option', { name: /Smartclassroom/ }).click()

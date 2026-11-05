@@ -72,3 +72,32 @@
   align-items: center;
   gap: var(--space-2);
 }
+.ar-dashboard-attention {
+  display: contents;
+}
+
+/* Layar sempit (mockup 11): hanya ringkasan dan daftar Hari Ini */
+@media (max-width: 767px) {
+  .ar-dashboard {
+    gap: var(--space-4);
+  }
+  .ar-dashboard-date {
+    font-size: 12px;
+    line-height: 16px;
+  }
+  .ar-dashboard-add,
+  .ar-dashboard-attention,
+  .ar-dashboard-timeline {
+    display: none;
+  }
+  .ar-dashboard-cards {
+    gap: var(--space-2);
+  }
+  .ar-dashboard-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ar-dashboard-banner {
+    margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) 0;
+  }
+}

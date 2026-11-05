@@ -17,6 +17,18 @@
 .ar-drawer::backdrop {
   background: var(--overlay);
 }
+.ar-drawer[open] {
+  animation: ar-slide-in-right var(--motion-enter) var(--ease-out);
+}
+.ar-drawer[open]::backdrop {
+  animation: ar-fade-in var(--motion-enter) var(--ease-out);
+}
+.ar-drawer[data-closing] {
+  animation: ar-slide-out-right var(--motion-exit) var(--ease-in) forwards;
+}
+.ar-drawer[data-closing]::backdrop {
+  animation: ar-fade-out var(--motion-exit) var(--ease-in) forwards;
+}
 .ar-drawer-inner {
   display: flex;
   flex-direction: column;
@@ -61,4 +73,20 @@
 .ar-drawer-foot {
   padding: var(--space-3) var(--space-6) var(--space-4);
   border-top: 1px solid var(--line);
+}
+
+/* Layar sempit: drawer selebar layar dengan tepi lebih rapat */
+@media (max-width: 767px) {
+  .ar-drawer {
+    border-left: 0;
+  }
+  .ar-drawer-head {
+    padding: var(--space-3) var(--space-4);
+  }
+  .ar-drawer-body {
+    padding: var(--space-4);
+  }
+  .ar-drawer-foot {
+    padding: var(--space-3) var(--space-4);
+  }
 }

@@ -596,6 +596,8 @@ Setiap fase: satu branch (`fase-N-nama`), test hijau, aplikasi dijalankan, scree
 
 **13. Email saat pengembangan.** Rekomendasi: semua email masuk ke **Mailpit** (kotak surat palsu di laptop) sampai hosting dan SMTP asli diputuskan, jadi tidak ada email yang terkirim ke orang sungguhan.
 
+**14. Animasi.** (Diputuskan Ahmad, 5 November 2026.) BRAND-BOOK menulis "No motion beyond 120ms fades and the caret rotation". Ahmad meminta animasi saat interaksi: drawer detail task bergeser masuk dan keluar, dan efek saat hover. Yang dibuat tetap singkat dan tenang (lihat catatan Fase 10). Pengguna yang memilih "kurangi gerakan" di perangkatnya tidak mendapat animasi. BRAND-BOOK.md belum diubah; perlu izin Ahmad untuk memperbarui kalimat itu.
+
 ---
 
 ## 7. Catatan hasil per fase
@@ -897,3 +899,49 @@ Menggantikan perubahan "lebar per hari" di atas. Zoom **Hari tidak berubah**.
 **Pembuktian:** `scripts/check` 15/15 lulus. Test baru: kolom pekan/bulan dan Februari kabisat 2028 (backend dan frontend), beban per kolom, task yang melewati dua bulan, judul "2–8 Nov" / "Okt 2026"; test browser zoom di dashboard dan Gantt proyek disesuaikan (114 lulus). Screenshot zoom Minggu dan Bulan di ketiga halaman sudah diperiksa.
 
 **Paket baru:** tidak ada.
+
+### Fase 10 (5 November 2026)
+
+**Yang dibuat: tampilan ponsel (< 768px, mockup 11)**
+
+- Header: tombol menu (☰), logo, lonceng, dan avatar. Pencarian global dan nama/peran disembunyikan.
+- Sidebar menjadi **panel yang bergeser dari kiri** di atas latar gelap; tertutup dengan Esc, klik latar, atau setelah memilih halaman.
+- Dashboard hanya berisi tanggal, judul "Hari Ini", empat kartu ringkas (Terlambat, Minggu ini, Dikerjakan, Tertahan), lalu daftar Hari Ini per kelompok ("Terlambat · 3") dengan **satu kartu per task**: prioritas, ID, tenggat; judul dan jalur proyek; status dan "Tambah update". "Perlu perhatian", Timeline saya, dan "Tambah task" tidak tampil di ponsel (sesuai BRAND-BOOK: "the dashboard Today list only").
+- Status diubah lewat **sheet dari bawah** berisi delapan status (baris 48px, tanda centang pada yang aktif). Semua dialog (Tambah update, alasan tertahan, dll.) di ponsel menjadi sheet dari bawah dengan pegangan kecil di atas.
+- Drawer detail task di ponsel memenuhi layar dengan tepi lebih rapat.
+- Halaman lain belum dirancang untuk ponsel (tidak ada mockup), tetapi tidak rusak: header halaman bertumpuk dan tabel digulir ke samping di dalam kartunya.
+
+**Animasi (permintaan Ahmad; lihat keputusan 14)**
+
+- Drawer detail task **bergeser masuk dari kanan** (220 ms) dan **keluar kembali** (160 ms); latarnya memudar. Isi drawer tetap tampil selama bergeser keluar, baru dilepas setelah tertutup.
+- Dialog memudar sambil sedikit membesar; di ponsel bergeser naik dari bawah. Menu, panel notifikasi, dan editor kecil memudar turun (120 ms). Toast muncul dengan memudar.
+- Hover: warna latar dan garis tombol, baris tabel, item menu, tab, item sidebar, dan baris notifikasi berubah halus (120 ms). Tombol sedikit turun saat ditekan. Kartu ringkasan dashboard dan kartu tim sedikit terangkat saat hover (hanya dengan mouse, tidak di layar sentuh).
+- Semua durasi dan kurva ada di satu tempat (`src/styles/motion.css`). Bila "kurangi gerakan" aktif di perangkat, semua animasi menjadi seketika.
+- Selama dialog bergeser keluar (160 ms), halaman di belakangnya belum bisa diklik, dan pembaca layar sudah menganggapnya tertutup.
+
+**Tema gelap**
+
+- Semua halaman (masuk, lupa password, dashboard, tabel, Gantt, milestone, anggota, drawer, Timeline Tim, Tim, Pengaturan, Notifikasi, 404) diperiksa di tema gelap pada lebar 1440 dan 390: **tidak ada pelanggaran kontras axe**, dan screenshot-nya diperiksa satu per satu.
+- Diperbaiki: panel ilustrasi di halaman masuk. Di tema gelap `primary` berwarna periwinkle terang, sehingga separuh layar menyilaukan. Panelnya kini navy lembut (`primary-soft`) dengan teks `ink`, dan dinding labirin `primary` tipis.
+
+**Perbedaan dari mockup 11 (sengaja / dari data)**
+
+- Angka dan isi dari data contoh: Terlambat 3 (SEN-122 juga terlambat), lonceng 4, kelompok "Sedang berjalan" ikut tampil di bawah.
+- Tenggat yang lewat ditulis "25 Sep · telat 3 hari", sama seperti di desktop (mockup hanya "25 Sep").
+- Sheet "Tambah update" memakai dialog yang sama dengan desktop: label "Update", tombol "Batal" dan "Kirim update" (mockup: "Update progres", tanpa Batal).
+
+
+**Pembuktian:** `scripts/check` 15/15 lulus (katalog komponen lulus setelah screenshot acuannya diperbarui karena ikon `menu` baru). Frontend: 421 test unit, termasuk 4 test baru untuk animasi tutup dialog (isi tetap tampil sampai animasi selesai, batas tunggu bila `animationend` tidak datang, dibuka lagi di tengah animasi). Browser: 121 test terhadap stack sungguhan, termasuk `ymobile.spec.ts` (dashboard 390px terang/gelap + axe + screenshot, tanpa gulir ke samping, panel menu, sheet status dengan ubah lalu kembalikan, sheet Tambah update, drawer bergeser masuk/keluar, dan "kurangi gerakan"). Screenshot acuan login tema gelap diperbarui karena panel ilustrasinya sengaja diubah.
+
+**Test lama yang diubah:** pencarian global di `tugas-saya.spec.ts` kini menunggu drawer selesai menutup setelah Esc sebelum mengetik di kotak cari (karena animasi keluar 160 ms). Tidak ada test yang dilemahkan.
+
+**Belum dilakukan:** halaman selain dashboard belum dirancang khusus untuk ponsel (tidak ada mockup); BRAND-BOOK baris "No motion beyond 120ms fades…" menunggu izin Ahmad untuk diperbarui; uji beban data seed ×10 (butir E7) masih tertunda.
+
+**Paket baru:** tidak ada.
+
+### Tindak lanjut Fase 10: bar Gantt tanpa label PIC di Minggu/Bulan (5 November 2026)
+
+- Di zoom **Minggu** dan **Bulan** Gantt proyek, nama PIC dan ikon prioritas di samping bar tidak lagi ditampilkan, supaya bar yang sempit tetap bersih. Zoom **Hari tidak berubah** (label tetap ada, seperti mockup 04).
+- Data penugasan tidak berubah. Kolom PIC (avatar) di daftar kiri tetap ada, dan nama PIC kini ada di **tooltip bar** saat hover: "SEN-115 Pipeline GitLab IRS · Blocked · terlambat · PIC: Ahmad, Wiwiet". Detail task tetap dibuka dari judul di kiri.
+- Timeline Tim dan Timeline saya memang tidak punya label di samping bar, jadi tidak ikut berubah.
+- Test: 3 test unit baru (Minggu dan Bulan tanpa label dan dengan tooltip; Hari tidak berubah), dan test browser Gantt proyek memeriksa label hilang di Minggu/Bulan dan kembali di Hari.

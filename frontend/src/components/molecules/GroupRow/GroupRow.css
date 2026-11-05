@@ -39,3 +39,8 @@
 .ar-grouprow-meta {
   color: var(--ink-muted);
 }
+
+/* Gerak (Fase 10) */
+.ar-grouprow-toggle {
+  transition: var(--hover-transition);
+}

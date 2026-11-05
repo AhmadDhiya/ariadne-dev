@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react'
+import { useId, type CSSProperties, type ReactNode } from 'react'
 import { IconButton } from '@/components/atoms/IconButton'
 import { useModalDialog } from '@/hooks/useModalDialog'
 import './Dialog.css'
@@ -15,7 +15,10 @@ export interface DialogProps {
   width?: number
 }
 
-/** Dialog modal ("Pindahkan ke…", "Undang ke Sentul"). Esc, tombol ×, atau klik latar menutupnya. */
+/**
+ * Dialog modal ("Pindahkan ke…", "Undang ke Sentul"). Esc, tombol ×, atau klik latar menutupnya.
+ * Di layar < 768px menjadi sheet dari bawah (mockup 11) yang bergeser naik.
+ */
 export function Dialog({
   open,
   onClose,
@@ -25,7 +28,7 @@ export function Dialog({
   footer,
   width = 480,
 }: DialogProps) {
-  const ref = useModalDialog(open)
+  const { ref, visible } = useModalDialog(open)
   const titleId = useId()
   const descId = useId()
 
@@ -33,7 +36,7 @@ export function Dialog({
     <dialog
       ref={ref}
       className="ar-dialog"
-      style={{ width }}
+      style={{ '--dialog-width': `${width}px` } as CSSProperties}
       aria-labelledby={titleId}
       aria-describedby={description ? descId : undefined}
       onCancel={(e) => {
@@ -44,7 +47,7 @@ export function Dialog({
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      {open ? (
+      {visible ? (
         <div className="ar-dialog-inner">
           <header className="ar-dialog-head">
             <div className="ar-dialog-heading">

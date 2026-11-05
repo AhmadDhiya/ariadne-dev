@@ -22,6 +22,7 @@ import { Sidebar, type TopLevelKey } from '@/components/organisms/Sidebar'
 import { Topbar } from '@/components/organisms/Topbar'
 import { AppShell } from '@/components/templates/AppShell'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { MOBILE_QUERY, useMediaQuery } from '@/hooks/useMediaQuery'
 import { useTheme } from '@/hooks/useTheme'
 import { TaskDrawerPage } from '@/pages/TaskDrawerPage'
 import { notificationHref } from '@/lib/notifications'
@@ -105,6 +106,10 @@ export function AppLayoutPage() {
   const tree = useProjectTree(Boolean(me.data))
   const [searchText, setSearchText] = useState('')
   const search = useSearch(useDebouncedValue(searchText, 200))
+  // Panel menu di layar sempit; tertutup sendiri saat pindah halaman atau layar melebar
+  const mobile = useMediaQuery(MOBILE_QUERY)
+  const [navOpenAt, setNavOpenAt] = useState<string | null>(null)
+  const navOpen = mobile && navOpenAt === location.key
 
   // Pilihan tema yang tersimpan di akun berlaku saat login di perangkat mana pun
   const serverTheme = me.data?.theme
@@ -156,6 +161,8 @@ export function AppLayoutPage() {
 
   return (
     <AppShell
+      navOpen={navOpen}
+      onNavClose={() => setNavOpenAt(null)}
       sidebar={
         <Sidebar
           projects={tree.data ?? []}
@@ -164,7 +171,10 @@ export function AppLayoutPage() {
           showTimeline={user.isSupervisor}
           showTeams={!user.isGuestOnly}
           showSettings={user.isAdmin}
-          onNavigate={(href) => void navigate(href)}
+          onNavigate={(href) => {
+            setNavOpenAt(null)
+            void navigate(href)
+          }}
         />
       }
       topbar={
@@ -177,6 +187,7 @@ export function AppLayoutPage() {
             setTheme(next)
             updateMe.mutate({ theme: next })
           }}
+          onOpenMenu={() => setNavOpenAt(location.key)}
           notifications={<NotificationsMenu onNavigate={(href) => void navigate(href)} />}
           search={
             <GlobalSearch

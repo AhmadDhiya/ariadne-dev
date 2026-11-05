@@ -42,3 +42,44 @@
 .ar-todaylist-empty {
   padding: var(--space-4);
 }
+
+/* Layar sempit (mockup 11): tanpa bingkai kartu; judul kelompok "Terlambat · 2", task berupa kartu */
+@media (max-width: 767px) {
+  /* .ar-card dari base.css dimuat belakangan, jadi pemilihnya dibuat lebih spesifik */
+  .ar-card.ar-todaylist {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .ar-todaylist-head {
+    display: none;
+  }
+  .ar-todaylist > [role='group'] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .ar-todaylist-group {
+    height: auto;
+    margin-top: var(--space-1);
+    padding: 0;
+    gap: 0;
+    background: transparent;
+    font-size: 13px;
+    line-height: 18px;
+  }
+  .ar-todaylist-count {
+    font-weight: 600;
+    color: inherit;
+  }
+  .ar-todaylist-count::before {
+    content: ' · ';
+    white-space: pre;
+  }
+  .ar-todaylist-empty {
+    padding: 0;
+  }
+}

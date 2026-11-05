@@ -38,3 +38,8 @@
   background: var(--surface-raised);
   box-shadow: var(--shadow-md);
 }
+
+/* Gerak (Fase 10) */
+.ar-editpop-trigger {
+  transition: var(--hover-transition);
+}
