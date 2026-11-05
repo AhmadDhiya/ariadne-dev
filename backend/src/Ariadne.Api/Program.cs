@@ -6,6 +6,7 @@ using Ariadne.Api.Features.Gantt;
 using Ariadne.Api.Features.Health;
 using Ariadne.Api.Features.Invitations;
 using Ariadne.Api.Features.Milestones;
+using Ariadne.Api.Features.Notifications;
 using Ariadne.Api.Features.Projects;
 using Ariadne.Api.Features.Search;
 using Ariadne.Api.Features.Tasks;
@@ -27,7 +28,7 @@ builder.Services.AddAriadneDatabase(builder.Configuration);
 builder.Services.AddAriadneAuth(builder.Environment);
 builder.Services.AddAriadneEmail(builder.Configuration);
 builder.Services.AddAriadneRateLimiting(builder.Configuration);
-builder.Services.AddScoped<ITaskMoveNotifier, NoopTaskMoveNotifier>();
+builder.Services.AddAriadneNotifications(builder.Configuration);
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 
@@ -55,6 +56,7 @@ app.MapGanttEndpoints();
 app.MapTaskMoveEndpoints();
 app.MapTeamTimelineEndpoints();
 app.MapInvitationEndpoints();
+app.MapNotificationEndpoints();
 
 await app.MigrateDatabaseIfConfiguredAsync();
 await app.CreateIfConfiguredAsync();

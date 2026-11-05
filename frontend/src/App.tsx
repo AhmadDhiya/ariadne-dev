@@ -6,6 +6,7 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { NotificationsPage } from '@/pages/NotificationsPage'
 import { ProjectMembersPage } from '@/pages/ProjectMembersPage'
 import { ProjectPage } from '@/pages/ProjectPage'
 import { ProjectTablePage } from '@/pages/ProjectTablePage'
@@ -47,6 +48,7 @@ const router = createBrowserRouter([
       { path: 'tim', Component: TeamsPage },
       { path: 'tim/:teamId', Component: TeamsPage },
       { path: 'pengaturan', Component: SettingsPage },
+      { path: 'notifikasi', Component: NotificationsPage },
       {
         path: 'proyek/:projectId',
         Component: ProjectPage,

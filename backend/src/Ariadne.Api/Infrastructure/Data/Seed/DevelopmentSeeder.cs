@@ -1,4 +1,5 @@
 using Ariadne.Api.Domain;
+using Ariadne.Api.Features.Notifications;
 using Ariadne.Api.Infrastructure.Clock;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -188,7 +189,8 @@ internal static partial class DevelopmentSeeder
             ExpiresAt = now + Invitation.Lifetime,
         });
 
-        var timeline = SeedTasks(db, now, sentulProject, migrasi, dispatch, slms, temuan, smartclassroom, faq, menagih, testing, ahmad, syaikhan, wiwiet, manto, rama, khalil, galih, bintang, budi);
+        var notifications = new List<Notification>();
+        var timeline = SeedTasks(db, now, notifications, sentulProject, migrasi, dispatch, slms, temuan, smartclassroom, faq, menagih, testing, ahmad, syaikhan, wiwiet, manto, rama, khalil, galih, bintang, budi);
 
         await db.SaveChangesAsync();
 
@@ -200,6 +202,9 @@ internal static partial class DevelopmentSeeder
             await db.SaveChangesAsync();
         }
 
+        // Notifikasi merujuk entri aktivitas, jadi disimpan setelahnya
+        db.Notifications.AddRange(notifications);
+        await db.SaveChangesAsync();
     }
 
     /// <summary>
@@ -209,6 +214,7 @@ internal static partial class DevelopmentSeeder
     private static List<Activity> SeedTasks(
         AppDbContext db,
         DateTimeOffset now,
+        List<Notification> notifications,
         Project sentul,
         Project migrasi,
         Project dispatch,
@@ -320,8 +326,9 @@ internal static partial class DevelopmentSeeder
 
         void Update(ProjectTask task, AppUser author, string wib, string body) => Note(task, ActivityKind.Update, author, wib, body);
 
-        void Log(ProjectTask task, AppUser author, string wib, LogKind kind, ActivityData data) =>
-            timeline.Add(new Activity
+        Activity Log(ProjectTask task, AppUser author, string wib, LogKind kind, ActivityData data)
+        {
+            var activity = new Activity
             {
                 Id = Guid.NewGuid(),
                 TaskId = task.Id,
@@ -331,7 +338,32 @@ internal static partial class DevelopmentSeeder
                 LogKind = kind,
                 Data = data,
                 CreatedAt = Wib(wib),
+            };
+            timeline.Add(activity);
+            return activity;
+        }
+
+        // Notifikasi lonceng Ahmad (mockup 10). Yang dari orang merujuk entrinya; yang dari job harian 07.00 memakai kunci
+        // pencegah dobel yang sama dengan job, jadi job yang jalan saat API menyala tidak membuatnya lagi.
+        void Notify(NotificationKind kind, ProjectTask task, string wib, bool read, Activity? source = null, int lateDays = 0)
+        {
+            var at = Wib(wib);
+            notifications.Add(new Notification
+            {
+                Id = Guid.NewGuid(),
+                RecipientId = ahmad.Id,
+                Kind = kind,
+                TaskId = task.Id,
+                RootProjectId = task.RootProjectId,
+                ActorId = source?.AuthorId,
+                ActivityId = source?.Id,
+                LateDays = lateDays,
+                CreatedAt = at,
+                ReadAt = read ? at.AddMinutes(30) : null,
+                EmailedAt = at, // data contoh: dianggap sudah dikirim, supaya tidak ada email saat seed
+                DedupeKey = source is null ? DailyNotificationJob.DedupeKey(kind, task.Id, DateOnly.FromDateTime(DateTime.Parse(wib, System.Globalization.CultureInfo.InvariantCulture))) : null,
             });
+        }
 
         // Dispatch
         var server = Add(sentul, dispatch, 101, "Pengisian Kebutuhan Server", Priority.High, WorkStatus.Done, "2026-09-14", "2026-09-18", [ahmad], ["Infra"]);
@@ -377,13 +409,13 @@ internal static partial class DevelopmentSeeder
         Update(recap, galih, "2026-09-28T11:20", "Index baru dipasang, 2,1 dtk → 0,4 dtk");
         Update(vpn, ahmad, "2026-09-26T10:00", "Formulir akses sudah dikirim ulang");
         Update(scenario, rama, "2026-09-25T09:00", "Ditunda sampai jadwal UAT final");
-        Note(pentest, ActivityKind.Comment, khalil, "2026-09-27T15:00", "@Ahmad Draf laporan PenTest sudah saya unggah, mohon review.", ahmad);
+        var pentestMention = Note(pentest, ActivityKind.Comment, khalil, "2026-09-27T15:00", "@Ahmad Draf laporan PenTest sudah saya unggah, mohon review.", ahmad);
 
         // Drawer SEN-115 (mockup 05). Urutan timeline mengikuti urutan penyimpanan, jadi disimpan dari yang terlama
         Log(pipeline, syaikhan, "2026-09-22T10:00", LogKind.AssigneesChanged, new ActivityData { Added = ["Wiwiet"], Removed = ["Rama"] });
         Log(pipeline, wiwiet, "2026-09-28T08:38", LogKind.StatusChanged, new ActivityData { From = "OnProgress", To = "Blocked", Reason = pipeline.HoldReason });
         Update(pipeline, wiwiet, "2026-09-28T08:40", "Runner gagal konek ke staging");
-        Note(pipeline, ActivityKind.Comment, syaikhan, "2026-09-28T08:55", "@Ahmad bisa dicek apakah runner boleh lewat proxy sementara?", ahmad);
+        var pipelineMention = Note(pipeline, ActivityKind.Comment, syaikhan, "2026-09-28T08:55", "@Ahmad bisa dicek apakah runner boleh lewat proxy sementara?", ahmad);
         Note(pipeline, ActivityKind.Internal, syaikhan, "2026-09-28T09:02", "Kalau firewall belum dibuka Rabu, eskalasi ke manajer infrastruktur klien.");
         Note(pipeline, ActivityKind.Comment, budi, "2026-09-28T09:30", "Tim kami sedang memproses permintaan firewall-nya, estimasi Rabu.");
 
@@ -392,8 +424,17 @@ internal static partial class DevelopmentSeeder
         Add(migrasi, migrasi, 18, "Konfirmasi jadwal akses gedung", Priority.Low, WorkStatus.OnProgress, "2026-09-26", "2026-09-28", [ahmad], ["Infra"]);
         Add(migrasi, migrasi, 21, "Inventaris rak & kabel", Priority.High, WorkStatus.OnProgress, "2026-09-24", "2026-09-30", [ahmad], ["Infra"]);
         var cutover = Add(migrasi, migrasi, 24, "Rencana cut-over", Priority.Medium, WorkStatus.NotStarted, "2026-10-05", "2026-10-09", [ahmad], ["Infra"]);
-        Log(cutover, wiwiet, "2026-09-28T08:30", LogKind.TaskCreated, new ActivityData { Added = ["Ahmad"], AddedIds = [ahmad.Id] });
+        var cutoverCreated = Log(cutover, wiwiet, "2026-09-28T08:30", LogKind.TaskCreated, new ActivityData { Added = ["Ahmad"], AddedIds = [ahmad.Id] });
         migrasi.NextTaskNumber = 25;
+
+        // Lonceng Ahmad (mockup 10): 4 belum dibaca. Mockup juga memuat SEN-117 dan MDC-025 yang tidak ada di tabel
+        // (03) dan dashboard (02); keduanya tidak dibuat supaya kedua mockup itu tetap cocok. Terlambat = hasil job harian.
+        Notify(NotificationKind.Mention, pentest, "2026-09-27T15:00", read: true, pentestMention);
+        Notify(NotificationKind.Overdue, uat, "2026-09-28T07:00:01", read: true, lateDays: 2);
+        Notify(NotificationKind.Overdue, shift, "2026-09-28T07:00", read: false, lateDays: 2);
+        Notify(NotificationKind.Overdue, pipeline, "2026-09-28T07:00:02", read: false, lateDays: 3);
+        Notify(NotificationKind.Assigned, cutover, "2026-09-28T08:30", read: false, cutoverCreated);
+        Notify(NotificationKind.Mention, pipeline, "2026-09-28T08:55", read: false, pipelineMention);
 
         // Milestone dari mockup 02 dan 04
         void Milestone(Project root, Project project, string name, string date) =>

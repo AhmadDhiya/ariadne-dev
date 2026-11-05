@@ -389,6 +389,8 @@ export interface GanttPerson {
   userId: string
   name: string
   counts: number[]
+  /** Task aktif per kolom grafik: per hari, per pekan (Senin–Minggu), atau per bulan sesuai zoom. */
+  columnCounts: number[]
 }
 
 /** Yang dibutuhkan Gantt proyek di luar daftar task: rentang, milestone, dan beban kerja per orang. */
@@ -409,6 +411,8 @@ export interface TimelineResponse {
   groups: TimelineGroup[]
   /** Task aktif per hari, mulai dari `start`. */
   workload: number[]
+  /** Task aktif per kolom grafik: per hari, per pekan (Senin–Minggu), atau per bulan sesuai zoom. */
+  columnWorkload: number[]
 }
 
 // ---------- Pencarian global ----------
@@ -472,6 +476,8 @@ export interface TeamPerson {
   name: string
   /** Task aktif per hari lintas proyek, sejajar dengan rentang; tidak tersaring. */
   counts: number[]
+  /** Task aktif per kolom grafik: per hari, per pekan (Senin–Minggu), atau per bulan sesuai zoom. */
+  columnCounts: number[]
   /** Task di rentang yang lolos filter. */
   tasks: TeamTask[]
 }
@@ -502,4 +508,38 @@ export interface MoveCandidates {
   dayCount: number
   assignees: TaskPerson[]
   candidates: MoveCandidate[]
+}
+
+export type NotificationKind = 'Mention' | 'Assigned' | 'Moved' | 'DueTomorrow' | 'Overdue'
+
+/** Tab di panel lonceng dan halaman Semua notifikasi. */
+export type NotificationFilter = 'all' | 'unread' | 'mentions'
+
+/** Satu notifikasi; kalimatnya disusun di layar (lib/notifications). projectId = proyek root. */
+export interface NotificationItem {
+  id: string
+  kind: NotificationKind
+  taskId: string
+  taskKey: string
+  taskTitle: string
+  status: WorkStatusName
+  projectId: string
+  path: string[]
+  actorName: string | null
+  fromName: string | null
+  excerpt: string | null
+  startDate: string | null
+  dueDate: string | null
+  lateDays: number
+  createdAt: string
+  read: boolean
+}
+
+export interface NotificationPage {
+  items: NotificationItem[]
+  unread: number
+  /** Penanda halaman berikutnya; kosong bila sudah habis. */
+  next: string | null
+  /** Hari ini menurut server ("YYYY-MM-DD"). */
+  today: string
 }

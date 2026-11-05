@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react'
 import { Icon } from '@/components/atoms/Icon'
 import { attentionView } from '@/lib/dashboard'
 import type { AttentionItem } from '@/types/api'
@@ -9,17 +10,37 @@ export interface AttentionPanelProps {
   today: string
   /** Membuka task dari butir itu. */
   onOpenTask: (key: string) => void
+  /** "Lihat semua" di kepala kartu (mockup 02) membuka halaman Semua notifikasi; tanpa ini tautannya tidak tampil. */
+  onSeeAll?: () => void
+  seeAllHref?: string
 }
 
 /**
- * "Perlu perhatian" (mockup 02): di-mention, task baru ditugaskan, tenggat besok, dan terlambat. Sumbernya dihitung
- * server dari data yang ada; tanda "sudah dibaca" menunggu tabel notifikasi di Fase 9.
+ * "Perlu perhatian" (mockup 02): di-mention, task baru ditugaskan, tenggat besok, dan terlambat, dihitung server dari
+ * keadaan task saat ini (tenggat dan terlambat selalu yang sekarang). Riwayat dan tanda "sudah dibaca" ada di lonceng.
  */
-export function AttentionPanel({ items, today, onOpenTask }: AttentionPanelProps) {
+export function AttentionPanel({
+  items,
+  today,
+  onOpenTask,
+  onSeeAll,
+  seeAllHref = '/notifikasi',
+}: AttentionPanelProps) {
+  function seeAll(e: MouseEvent<HTMLAnchorElement>) {
+    if (!onSeeAll || e.ctrlKey || e.metaKey || e.shiftKey) return
+    e.preventDefault()
+    onSeeAll()
+  }
+
   return (
     <section className="ar-card ar-attention" aria-label="Perlu perhatian">
       <div className="ar-attention-head">
         <h2>Perlu perhatian</h2>
+        {onSeeAll ? (
+          <a className="ar-attention-all" href={seeAllHref} onClick={seeAll}>
+            Lihat semua
+          </a>
+        ) : null}
       </div>
       {items.length === 0 ? (
         <p className="ar-attention-empty">Tidak ada yang perlu perhatian saat ini.</p>

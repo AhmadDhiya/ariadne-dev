@@ -139,7 +139,11 @@ export function ProjectGanttPage() {
           dayCount={data.dayCount}
           zoom={data.zoom}
           today={data.today}
-          people={data.workload.map((p) => ({ id: p.userId, name: p.name, counts: p.counts }))}
+          people={data.workload.map((p) => ({
+            id: p.userId,
+            name: p.name,
+            counts: p.columnCounts,
+          }))}
           scrollToTodayKey={todayKey}
           onOpenTask={(key) => taskParam.open(key)}
           empty={

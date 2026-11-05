@@ -324,6 +324,7 @@ export function DashboardPage() {
             items={data.attention}
             today={data.today}
             onOpenTask={(key) => taskParam.open(key)}
+            onSeeAll={() => void navigate('/notifikasi')}
           />
         )}
       </div>
@@ -380,7 +381,7 @@ export function DashboardPage() {
               dayCount={timelineData.dayCount}
               zoom={timelineData.zoom}
               today={timelineData.today}
-              workload={timelineData.workload}
+              workload={timelineData.columnWorkload}
               workloadLabel="Beban kerja saya"
               onOpenTask={(key) => taskParam.open(key)}
               empty={

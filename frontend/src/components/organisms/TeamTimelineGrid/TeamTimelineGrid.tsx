@@ -10,10 +10,10 @@ import { WorkloadRow } from '@/components/molecules/WorkloadRow'
 import { cx } from '@/lib/cx'
 import {
   barGeometry,
-  DAY_WIDTH,
+  DAY_COLUMN,
   dayIndex,
   ganttDays,
-  headerSegments,
+  timeScale,
   TODAY_SCROLL_OFFSET,
 } from '@/lib/gantt'
 import type { PriorityKey, StatusKey } from '@/lib/status'
@@ -40,8 +40,10 @@ export interface TeamGridTask {
 export interface TeamGridPerson {
   id: string
   name: string
-  /** Task aktif per hari lintas proyek, sejajar dengan kolom grafik (dari server). */
+  /** Task aktif per hari lintas proyek (dari server): dasar "N aktif hari ini". */
   counts: readonly number[]
+  /** Task aktif per kolom grafik (per hari, pekan, atau bulan sesuai zoom), dari server; untuk heatmap. */
+  columnCounts?: readonly number[]
   tasks: readonly TeamGridTask[]
 }
 
@@ -98,18 +100,18 @@ export function TeamTimelineGrid({
   empty,
 }: TeamTimelineGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
-  const dayWidth = DAY_WIDTH[zoom]
   const days = useMemo(() => ganttDays(rangeStart, dayCount), [rangeStart, dayCount])
-  const segments = useMemo(() => headerSegments(days, zoom), [days, zoom])
+  const scale = useMemo(() => timeScale(days, zoom), [days, zoom])
   const todayIndex = dayIndex(rangeStart, today)
-  const weekends = days.flatMap((d, i) => (d.weekend ? [i] : []))
+  const weekends = zoom === 'day' ? days.flatMap((d, i) => (d.weekend ? [i] : [])) : []
+  const loadWidths = zoom === 'day' ? undefined : scale.columns.map((c) => c.width)
   const hasPeople = people.length > 0
 
   useEffect(() => {
     const box = scrollRef.current
     if (!box) return
-    box.scrollLeft = Math.max(0, (todayIndex - TODAY_SCROLL_OFFSET[zoom]) * dayWidth)
-  }, [hasPeople, zoom, rangeStart, todayIndex, dayWidth, scrollToTodayKey])
+    box.scrollLeft = Math.max(0, scale.x(todayIndex) - TODAY_SCROLL_OFFSET[zoom])
+  }, [hasPeople, zoom, rangeStart, todayIndex, scale, scrollToTodayKey])
 
   if (!hasPeople) return <div className="ar-ttg-empty">{empty}</div>
 
@@ -207,24 +209,24 @@ export function TeamTimelineGrid({
         aria-label="Grafik timeline tim"
         tabIndex={0}
       >
-        <div className="ar-ttg-canvas" style={{ width: dayCount * dayWidth }}>
+        <div className="ar-ttg-canvas" style={{ width: scale.width }}>
           <div className="ar-ttg-header" style={{ height: HEADER }}>
-            {segments.map((segment) => {
-              const day = days[segment.from]
-              const isToday = zoom === 'day' && segment.from === todayIndex
+            {scale.columns.map((column) => {
+              const day = days[column.from]
+              const isToday = zoom === 'day' && column.from === todayIndex
               return (
                 <div
-                  key={segment.from}
+                  key={column.from}
                   className={cx(
                     'ar-ttg-col',
                     zoom !== 'day' && 'is-wide',
-                    day?.weekend && zoom === 'day' && 'is-weekend',
+                    column.weekend && 'is-weekend',
                     isToday && 'is-today',
                   )}
-                  style={{ width: segment.span * dayWidth }}
+                  style={{ width: column.width }}
                 >
                   {zoom === 'day' ? <span>{day?.letter}</span> : null}
-                  <span className="ar-ttg-colnum">{segment.label}</span>
+                  <span className="ar-ttg-colnum">{column.label}</span>
                 </div>
               )
             })}
@@ -238,9 +240,10 @@ export function TeamTimelineGrid({
                   style={{ height: PERSON_ROW }}
                 >
                   <WorkloadRow
-                    counts={[...row.person.counts]}
+                    counts={[...(row.person.columnCounts ?? row.person.counts)]}
                     weekends={weekends}
-                    dayWidth={dayWidth}
+                    dayWidth={DAY_COLUMN}
+                    widths={loadWidths}
                   />
                 </div>
               )
@@ -252,7 +255,7 @@ export function TeamTimelineGrid({
                   className="ar-ttg-line"
                   style={{ height: TASK_ROW }}
                 >
-                  <GanttTrack days={days} dayWidth={dayWidth} height={TASK_ROW} />
+                  <GanttTrack days={days} columns={scale.columns} height={TASK_ROW} />
                 </div>
               )
             }
@@ -264,15 +267,16 @@ export function TeamTimelineGrid({
                 className="ar-ttg-line"
                 style={{ height: TASK_ROW }}
               >
-                <GanttTrack days={days} dayWidth={dayWidth} height={TASK_ROW}>
+                <GanttTrack days={days} columns={scale.columns} height={TASK_ROW}>
                   {geometry ? (
                     <GanttBar
                       status={task.status}
                       start={geometry.start}
                       span={geometry.span}
+                      left={scale.x(geometry.start)}
+                      width={scale.x(geometry.start + geometry.span) - scale.x(geometry.start)}
                       top={8}
                       overdue={task.overdue}
-                      dayWidth={dayWidth}
                     />
                   ) : null}
                 </GanttTrack>
@@ -281,7 +285,11 @@ export function TeamTimelineGrid({
           })}
           {todayIndex >= 0 && todayIndex < dayCount ? (
             <div className="ar-ttg-today" style={{ top: HEADER, height }}>
-              <TodayMarker day={todayIndex} label={false} dayWidth={dayWidth} />
+              <TodayMarker
+                day={todayIndex}
+                x={scale.x(todayIndex) + scale.dayWidth(todayIndex) / 2}
+                label={false}
+              />
             </div>
           ) : null}
         </div>

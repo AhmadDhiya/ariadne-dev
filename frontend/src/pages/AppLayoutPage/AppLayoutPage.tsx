@@ -1,21 +1,86 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Navigate, Outlet, matchPath, useLocation, useNavigate } from 'react-router'
 import { useLogout, useMe, useUpdateMe } from '@/api/auth'
+import {
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useNotifications,
+  useUnreadCount,
+} from '@/api/notifications'
 import { useProjectTree } from '@/api/projects'
 import { useSearch } from '@/api/search'
 import { messageOf } from '@/api/errors'
 import type { AppContext } from '@/app/context'
 import { Button } from '@/components/atoms/Button'
+import { IconButton } from '@/components/atoms/IconButton'
 import { Banner } from '@/components/molecules/Banner'
 import { EmptyState } from '@/components/molecules/EmptyState'
+import { Popover } from '@/components/molecules/Popover'
 import { GlobalSearch, type SearchSelection } from '@/components/organisms/GlobalSearch'
+import { NotificationPanel } from '@/components/organisms/NotificationPanel'
 import { Sidebar, type TopLevelKey } from '@/components/organisms/Sidebar'
 import { Topbar } from '@/components/organisms/Topbar'
 import { AppShell } from '@/components/templates/AppShell'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useTheme } from '@/hooks/useTheme'
 import { TaskDrawerPage } from '@/pages/TaskDrawerPage'
+import { notificationHref } from '@/lib/notifications'
 import { roleSubtitle } from '@/lib/roles'
+import type { NotificationFilter } from '@/types/api'
+
+/**
+ * Lonceng di topbar (mockup 10): angka belum dibaca diperbarui berkala; daftar baru dimuat saat panel dibuka.
+ * Klik notifikasi menandainya dibaca lalu membuka task-nya.
+ */
+function NotificationsMenu({ onNavigate }: { onNavigate: (href: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const [filter, setFilter] = useState<NotificationFilter>('all')
+  const close = useCallback(() => setOpen(false), [])
+  const unread = useUnreadCount()
+  const list = useNotifications(filter, open)
+  const markRead = useMarkNotificationRead()
+  const markAll = useMarkAllNotificationsRead()
+  const first = list.data?.pages[0]
+  const count = unread.data ?? 0
+
+  return (
+    <Popover
+      open={open}
+      onClose={close}
+      placement="bottom-end"
+      anchor={
+        <IconButton
+          icon="bell"
+          label="Notifikasi"
+          badge={count}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+        />
+      }
+    >
+      <NotificationPanel
+        items={list.data?.pages.flatMap((p) => p.items) ?? []}
+        today={first?.today}
+        unread={first?.unread ?? count}
+        filter={filter}
+        onFilterChange={setFilter}
+        loading={list.isPending}
+        error={list.isError ? messageOf(list.error) : undefined}
+        onOpen={(item) => {
+          if (!item.read) markRead.mutate(item.id)
+          close()
+          onNavigate(notificationHref(item))
+        }}
+        onMarkAllRead={() => markAll.mutate()}
+        onSeeAll={() => {
+          close()
+          onNavigate('/notifikasi')
+        }}
+      />
+    </Popover>
+  )
+}
 
 function topLevelKey(pathname: string): TopLevelKey | null {
   if (pathname === '/') return 'dashboard'
@@ -112,6 +177,7 @@ export function AppLayoutPage() {
             setTheme(next)
             updateMe.mutate({ theme: next })
           }}
+          notifications={<NotificationsMenu onNavigate={(href) => void navigate(href)} />}
           search={
             <GlobalSearch
               query={searchText}

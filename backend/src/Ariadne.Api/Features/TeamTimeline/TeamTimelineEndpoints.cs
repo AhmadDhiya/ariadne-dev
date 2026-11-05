@@ -24,8 +24,11 @@ public sealed record TeamTask(
     Guid RootProjectId,
     IReadOnlyList<string> ProjectPath);
 
-/// <summary>Satu baris orang: beban kerja lintas proyek (tanpa filter) dan task-nya di rentang (sesudah filter).</summary>
-public sealed record TeamPerson(Guid UserId, string Name, IReadOnlyList<int> Counts, IReadOnlyList<TeamTask> Tasks);
+/// <summary>
+/// Satu baris orang: beban kerja lintas proyek (tanpa filter) per hari dan per kolom grafik (pekan/bulan), dan task-nya
+/// di rentang (sesudah filter).
+/// </summary>
+public sealed record TeamPerson(Guid UserId, string Name, IReadOnlyList<int> Counts, IReadOnlyList<int> ColumnCounts, IReadOnlyList<TeamTask> Tasks);
 
 public sealed record TeamTimelineResponse(
     IReadOnlyList<TeamOption> Teams,
@@ -141,7 +144,9 @@ internal static class TeamTimelineEndpoints
             {
                 var mine = rows.Where(r => r.UserId == m.UserId).ToList();
                 // Heatmap = seluruh pekerjaan orang itu (tidak ikut tersaring); daftar task = yang lolos filter dan ada di rentang
-                var counts = TaskRules.WorkloadPerDay([.. mine.Select(r => (r.StartDate, r.DueDate, r.Status))], start, count);
+                var load = mine.Select(r => (r.StartDate, r.DueDate, r.Status)).ToList();
+                var counts = TaskRules.WorkloadPerDay(load, start, count);
+                var columnCounts = TaskRules.WorkloadPerColumn(load, zoomName, start, count);
                 var shown = mine
                     .Where(r => (r.StartDate ?? r.DueDate) is { } from && (r.DueDate ?? r.StartDate) is { } to && from <= end && to >= start)
                     .Where(r => access.CanViewProject(r.RootProjectId))
@@ -164,7 +169,7 @@ internal static class TeamTimelineEndpoints
                         r.RootProjectId,
                         PathOf(r.ProjectId)))
                     .ToList();
-                return new TeamPerson(m.UserId, m.DisplayName, counts, shown);
+                return new TeamPerson(m.UserId, m.DisplayName, counts, columnCounts, shown);
             })
             .ToList();
 

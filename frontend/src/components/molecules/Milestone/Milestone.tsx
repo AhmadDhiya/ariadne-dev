@@ -10,12 +10,14 @@ export interface MilestoneProps {
   done?: boolean
   top?: number
   dayWidth?: number
+  /** Titik tengah dalam px, menggantikan day × dayWidth (zoom Minggu dan Bulan). */
+  x?: number
 }
 
 /** Milestone: belah ketupat ink (berlubang bila selesai) dengan label tebal. */
-export function Milestone({ day, label, done, top = 10, dayWidth = 28 }: MilestoneProps) {
+export function Milestone({ day, label, done, top = 10, dayWidth = 28, x }: MilestoneProps) {
   return (
-    <div className="ar-ms" style={{ left: day * dayWidth + dayWidth / 2, top }}>
+    <div className="ar-ms" style={{ left: x ?? day * dayWidth + dayWidth / 2, top }}>
       <span className={cx('ar-ms-diamond', done && 'is-done')} aria-hidden />
       <span className="ar-ms-label">
         {label}

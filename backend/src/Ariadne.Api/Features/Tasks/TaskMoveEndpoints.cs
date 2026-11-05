@@ -1,5 +1,6 @@
 using Ariadne.Api.Auth;
 using Ariadne.Api.Domain;
+using Ariadne.Api.Features.Notifications;
 using Ariadne.Api.Infrastructure.Clock;
 using Ariadne.Api.Infrastructure.Data;
 using Ariadne.Api.Infrastructure.Web;
@@ -14,20 +15,6 @@ public sealed record MoveCandidate(Guid UserId, string Name, bool IsAssignee, IR
 public sealed record MoveCandidates(DateOnly Start, int DayCount, IReadOnlyList<TaskPerson> Assignees, IReadOnlyList<MoveCandidate> Candidates);
 
 public sealed record MoveTaskRequest(Guid FromUserId, Guid ToUserId, bool Notify);
-
-/// <summary>
-/// Titik sambung notifikasi "task dipindahkan ke Anda". Notifikasi sungguhan baru dibuat di Fase 9; sampai itu
-/// implementasinya tidak melakukan apa-apa, tetapi pilihan "kabari" dari dialog sudah sampai ke sini.
-/// </summary>
-public interface ITaskMoveNotifier
-{
-    Task NotifyAsync(Guid taskId, Guid fromUserId, Guid toUserId, Guid actorId, CancellationToken ct);
-}
-
-internal sealed class NoopTaskMoveNotifier : ITaskMoveNotifier
-{
-    public Task NotifyAsync(Guid taskId, Guid fromUserId, Guid toUserId, Guid actorId, CancellationToken ct) => Task.CompletedTask;
-}
 
 internal static class TaskMoveEndpoints
 {
@@ -72,7 +59,7 @@ internal static class TaskMoveEndpoints
         return Results.Ok(new MoveCandidates(start, count, assignees, candidates));
     }
 
-    private static async Task<IResult> Move(Guid id, MoveTaskRequest request, HttpContext http, AccessService accessService, AppDbContext db, IClock clock, ITaskMoveNotifier notifier, CancellationToken ct)
+    private static async Task<IResult> Move(Guid id, MoveTaskRequest request, HttpContext http, AccessService accessService, AppDbContext db, IClock clock, Notifier notifier, CancellationToken ct)
     {
         var access = await accessService.CurrentAsync(http.User, ct);
         var task = await db.Tasks.Include(t => t.Assignees).SingleOrDefaultAsync(t => t.Id == id, ct) ?? throw new NotFoundException();
@@ -100,14 +87,17 @@ internal static class TaskMoveEndpoints
         }
 
         var now = clock.UtcNow;
-        db.Activities.Add(ActivityLog.TaskMoved(task, access.UserId, fromName, to.Name, to.UserId, now));
-        task.UpdatedAt = now;
-        await db.SaveOrConflictAsync("Task tidak bisa dipindahkan karena bentrok. Coba lagi.", ct);
-
+        var log = ActivityLog.TaskMoved(task, access.UserId, fromName, to.Name, to.UserId, now);
+        db.Activities.Add(log);
+        // "Kabari lewat notifikasi" di dialog (06a): penerima mendapat notifikasi in-app dan email
         if (request.Notify)
         {
-            await notifier.NotifyAsync(task.Id, request.FromUserId, to.UserId, access.UserId, ct);
+            notifier.Moved(log, to.UserId);
         }
+
+        task.UpdatedAt = now;
+        await db.SaveOrConflictAsync("Task tidak bisa dipindahkan karena bentrok. Coba lagi.", ct);
+        await notifier.SendPendingAsync(ct);
 
         return Results.Ok(await TaskQueries.RowAsync(db, id, clock.Today, ct));
     }

@@ -10,10 +10,18 @@ export interface WorkloadRowProps {
   /** Indeks hari akhir pekan. */
   weekends?: number[]
   dayWidth?: number
+  /** Lebar tiap kotak dalam px, menggantikan dayWidth (zoom Minggu: per pekan; Bulan: per bulan). */
+  widths?: readonly number[]
 }
 
 /** Beban kerja satu orang per hari sebagai heatmap, sejajar dengan kolom Gantt di atasnya. */
-export function WorkloadRow({ name, counts, weekends = [], dayWidth = 28 }: WorkloadRowProps) {
+export function WorkloadRow({
+  name,
+  counts,
+  weekends = [],
+  dayWidth = 28,
+  widths,
+}: WorkloadRowProps) {
   const weekendSet = new Set(weekends)
   return (
     <div className="ar-load">
@@ -25,7 +33,12 @@ export function WorkloadRow({ name, counts, weekends = [], dayWidth = 28 }: Work
       ) : null}
       <div className="ar-load-cells">
         {counts.map((count, i) => (
-          <HeatCell key={i} count={count} width={dayWidth - 2} weekend={weekendSet.has(i)} />
+          <HeatCell
+            key={i}
+            count={count}
+            width={(widths?.[i] ?? dayWidth) - 2}
+            weekend={weekendSet.has(i)}
+          />
         ))}
       </div>
     </div>

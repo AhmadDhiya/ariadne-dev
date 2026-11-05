@@ -73,4 +73,5 @@ public sealed record TimelineResponse(
     int DayCount,
     DateOnly Today,
     IReadOnlyList<TimelineGroup> Groups,
-    IReadOnlyList<int> Workload);
+    IReadOnlyList<int> Workload,
+    IReadOnlyList<int> ColumnWorkload);

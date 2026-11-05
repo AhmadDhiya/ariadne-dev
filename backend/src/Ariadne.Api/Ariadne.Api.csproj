@@ -20,4 +20,9 @@
     <InternalsVisibleTo Include="Ariadne.Api.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Ikon status untuk email notifikasi (dibuat oleh scripts/render-email-icons.mjs) -->
+    <EmbeddedResource Include="Features\Notifications\EmailIcons\*.png" LogicalName="EmailIcons.%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>
