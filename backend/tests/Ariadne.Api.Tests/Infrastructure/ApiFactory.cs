@@ -17,6 +17,8 @@ public sealed class ApiFactory(
         builder.UseEnvironment(environment);
         builder.UseSetting("ConnectionStrings:Default", connectionString);
         builder.UseSetting("Database:MigrateOnStartup", "true");
+        // Job notifikasi harian dijalankan langsung oleh test yang membutuhkannya, bukan oleh jadwal di latar belakang
+        builder.UseSetting("Notifications:DailyJob", "false");
         foreach (var (key, value) in settings ?? new Dictionary<string, string?>())
         {
             builder.UseSetting(key, value);

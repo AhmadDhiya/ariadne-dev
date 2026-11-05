@@ -15,12 +15,11 @@ export interface TopbarProps {
   onLogout: () => void
   /** Pencarian global (GlobalSearch), ditaruh di kiri. Kosong bila belum tersedia. */
   search?: ReactNode
+  /** Lonceng notifikasi beserta panelnya, ditaruh di kiri menu akun (mockup 10). */
+  notifications?: ReactNode
 }
 
-/**
- * Topbar 56px: pencarian global di kiri, menu akun di kanan. Lonceng notifikasi ditambahkan di Fase 9:
- * kontrol yang belum berfungsi sengaja tidak ditampilkan.
- */
+/** Topbar 56px: pencarian global di kiri; lonceng notifikasi dan menu akun di kanan. */
 export function Topbar({
   userName,
   subtitle,
@@ -29,6 +28,7 @@ export function Topbar({
   onThemeChange,
   onLogout,
   search,
+  notifications,
 }: TopbarProps) {
   const [open, setOpen] = useState(false)
   const close = useCallback(() => setOpen(false), [])
@@ -37,6 +37,7 @@ export function Topbar({
     <header className="ar-topbar">
       {search}
       <div className="ar-topbar-spacer" />
+      {notifications}
       <Popover
         open={open}
         onClose={close}

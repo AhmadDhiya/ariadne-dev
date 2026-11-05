@@ -5,7 +5,14 @@ using MimeKit;
 
 namespace Ariadne.Api.Infrastructure.Email;
 
-public sealed record EmailMessage(string To, string Subject, string TextBody, string HtmlBody);
+public sealed record EmailMessage(string To, string Subject, string TextBody, string HtmlBody)
+{
+    /// <summary>Gambar yang disisipkan di email (dirujuk dari HTML sebagai "cid:{ContentId}"), mis. ikon status.</summary>
+    public IReadOnlyList<EmailImage> Images { get; init; } = [];
+}
+
+/// <summary>Satu gambar sisipan email. PNG dipakai karena banyak aplikasi email tidak menampilkan SVG.</summary>
+public sealed record EmailImage(string ContentId, string FileName, byte[] Png);
 
 /// <summary>
 /// Pengirim email aplikasi. Dibuat sebagai interface supaya test bisa menangkap email (mis. tautan reset
@@ -46,7 +53,14 @@ internal sealed partial class SmtpEmailSender(IOptions<EmailOptions> options, IL
             mime.From.Add(new MailboxAddress(config.FromName, config.FromAddress));
             mime.To.Add(MailboxAddress.Parse(message.To));
             mime.Subject = message.Subject;
-            mime.Body = new BodyBuilder { TextBody = message.TextBody, HtmlBody = message.HtmlBody }.ToMessageBody();
+            var body = new BodyBuilder { TextBody = message.TextBody, HtmlBody = message.HtmlBody };
+            foreach (var image in message.Images)
+            {
+                var resource = body.LinkedResources.Add(image.FileName, image.Png, new ContentType("image", "png"));
+                resource.ContentId = image.ContentId;
+            }
+
+            mime.Body = body.ToMessageBody();
 
             using var client = new SmtpClient();
             var security = Enum.TryParse<SecureSocketOptions>(config.Security, ignoreCase: true, out var parsed)

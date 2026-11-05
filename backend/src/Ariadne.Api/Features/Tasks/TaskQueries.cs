@@ -132,6 +132,27 @@ internal static class TaskQueries
         return path;
     }
 
+    /// <summary>Jalur nama proyek (seperti ProjectPathAsync) untuk banyak proyek sekaligus, dengan satu query per root.</summary>
+    public static async Task<Dictionary<Guid, List<string>>> ProjectPathsAsync(AppDbContext db, IEnumerable<Guid> rootIds, IEnumerable<Guid> projectIds, CancellationToken ct)
+    {
+        var roots = rootIds.Distinct().ToList();
+        var family = await db.Projects.AsNoTracking().Where(p => roots.Contains(p.RootId)).Select(p => new { p.Id, p.ParentId, p.Name }).ToListAsync(ct);
+        var byId = family.ToDictionary(p => p.Id);
+        var result = new Dictionary<Guid, List<string>>();
+        foreach (var projectId in projectIds.Distinct())
+        {
+            var path = new List<string>();
+            for (Guid? id = projectId; id is { } at && byId.TryGetValue(at, out var node); id = node.ParentId)
+            {
+                path.Insert(0, node.Name);
+            }
+
+            result[projectId] = path;
+        }
+
+        return result;
+    }
+
     /// <summary>Id proyek ini beserta semua sub-proyeknya yang belum diarsipkan.</summary>
     public static HashSet<Guid> Subtree(IEnumerable<(Guid Id, Guid? ParentId)> family, Guid projectId)
     {

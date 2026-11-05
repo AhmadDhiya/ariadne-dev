@@ -316,6 +316,11 @@ test.describe('Dashboard: interaksi', () => {
     await expect(timeline).toContainText('1 Agu – 26 Feb')
     await expect(timeline.getByText('Okt', { exact: true })).toBeVisible()
     await expect(timeline.locator('.ar-gantt-load .ar-heat')).toHaveCount(210)
+    // Tidak dipaksa muat: kotak beban tetap cukup lebar untuk angkanya, grafik digulir ke samping
+    const cell = await timeline.locator('.ar-gantt-load .ar-heat').first().boundingBox()
+    expect(cell?.width ?? 0).toBeGreaterThanOrEqual(18)
+    const scroller = timeline.locator('.ar-gantt-right')
+    expect(await scroller.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true)
 
     await timeline.getByRole('button', { name: 'Hari' }).click()
     await expect(timeline.locator('.ar-gantt-col')).toHaveCount(21)

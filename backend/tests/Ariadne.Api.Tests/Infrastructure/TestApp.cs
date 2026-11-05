@@ -44,7 +44,8 @@ public sealed record World(
     Guid TaskAlpha,
     Guid ActivityAlpha,
     Guid MilestoneAlpha,
-    Guid InvitationAlpha);
+    Guid InvitationAlpha,
+    Guid NotificationAlpha);
 
 /// <summary>
 /// Satu aplikasi uji (database sendiri) untuk satu kelas test. Setiap peran login sekali dan kliennya
@@ -187,10 +188,23 @@ public sealed class TestApp : IAsyncDisposable
             ExpiresAt = now.AddDays(7),
         };
         db.Invitations.Add(invitation);
+        // Satu notifikasi milik Anggota (Pengelola menyebutnya di komentar contoh): dipakai matriks izin
+        var notification = new Notification
+        {
+            Id = Guid.NewGuid(),
+            RecipientId = member.Id,
+            Kind = NotificationKind.Mention,
+            TaskId = task.Id,
+            RootProjectId = alpha.Id,
+            ActorId = manager.Id,
+            ActivityId = comment.Id,
+            CreatedAt = now,
+        };
+        db.Notifications.Add(notification);
         await db.SaveChangesAsync();
 
         World = new World(admin, supervisor, otherSupervisor, member, manager, guest, outsider, otherManager,
-            teamA.Id, teamB.Id, alpha.Id, child.Id, grandchild.Id, beta.Id, task.Id, comment.Id, milestone.Id, invitation.Id);
+            teamA.Id, teamB.Id, alpha.Id, child.Id, grandchild.Id, beta.Id, task.Id, comment.Id, milestone.Id, invitation.Id, notification.Id);
     }
 
     /// <summary>Klien yang tidak login (tetap membawa header anti-CSRF seperti frontend).</summary>

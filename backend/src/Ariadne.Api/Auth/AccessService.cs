@@ -25,13 +25,24 @@ public sealed class AccessService(AppDbContext db)
             throw new ApiException(StatusCodes.Status401Unauthorized, "Silakan masuk.");
         }
 
+        _current = await ForUserAsync(db, userId, cancellationToken)
+            ?? throw new ApiException(StatusCodes.Status401Unauthorized, "Silakan masuk.");
+        return _current;
+    }
+
+    /// <summary>
+    /// Hak seseorang yang tidak sedang membuat permintaan (mis. penerima email notifikasi), dengan aturan yang sama
+    /// persis. Null bila akunnya tidak ada atau nonaktif.
+    /// </summary>
+    public static async Task<UserAccess?> ForUserAsync(AppDbContext db, Guid userId, CancellationToken cancellationToken)
+    {
         var user = await db.Users.AsNoTracking()
             .Where(u => u.Id == userId)
             .Select(u => new { u.IsAdmin, u.IsActive })
             .SingleOrDefaultAsync(cancellationToken);
         if (user is not { IsActive: true })
         {
-            throw new ApiException(StatusCodes.Status401Unauthorized, "Silakan masuk.");
+            return null;
         }
 
         var teams = await db.TeamMembers.AsNoTracking()
@@ -41,8 +52,7 @@ public sealed class AccessService(AppDbContext db)
             .Where(m => m.UserId == userId)
             .ToDictionaryAsync(m => m.ProjectId, m => m.Role, cancellationToken);
 
-        _current = new UserAccess(userId, user.IsAdmin, teams, projects);
-        return _current;
+        return new UserAccess(userId, user.IsAdmin, teams, projects);
     }
 }
 

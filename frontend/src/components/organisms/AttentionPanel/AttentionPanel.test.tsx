@@ -69,4 +69,21 @@ describe('AttentionPanel', () => {
 
     expect(screen.getByText('Tidak ada yang perlu perhatian saat ini.')).toBeInTheDocument()
   })
+
+  it('"Lihat semua" hanya tampil bila ada tujuannya, dan membukanya', async () => {
+    const user = userEvent.setup()
+    const onSeeAll = vi.fn()
+    const { rerender } = render(
+      <AttentionPanel items={ITEMS} today="2026-09-28" onOpenTask={vi.fn()} />,
+    )
+    expect(screen.queryByRole('link', { name: 'Lihat semua' })).not.toBeInTheDocument()
+
+    rerender(
+      <AttentionPanel items={ITEMS} today="2026-09-28" onOpenTask={vi.fn()} onSeeAll={onSeeAll} />,
+    )
+    const link = screen.getByRole('link', { name: 'Lihat semua' })
+    expect(link).toHaveAttribute('href', '/notifikasi')
+    await user.click(link)
+    expect(onSeeAll).toHaveBeenCalledOnce()
+  })
 })

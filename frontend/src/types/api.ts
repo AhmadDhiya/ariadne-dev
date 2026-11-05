@@ -503,3 +503,37 @@ export interface MoveCandidates {
   assignees: TaskPerson[]
   candidates: MoveCandidate[]
 }
+
+export type NotificationKind = 'Mention' | 'Assigned' | 'Moved' | 'DueTomorrow' | 'Overdue'
+
+/** Tab di panel lonceng dan halaman Semua notifikasi. */
+export type NotificationFilter = 'all' | 'unread' | 'mentions'
+
+/** Satu notifikasi; kalimatnya disusun di layar (lib/notifications). projectId = proyek root. */
+export interface NotificationItem {
+  id: string
+  kind: NotificationKind
+  taskId: string
+  taskKey: string
+  taskTitle: string
+  status: WorkStatusName
+  projectId: string
+  path: string[]
+  actorName: string | null
+  fromName: string | null
+  excerpt: string | null
+  startDate: string | null
+  dueDate: string | null
+  lateDays: number
+  createdAt: string
+  read: boolean
+}
+
+export interface NotificationPage {
+  items: NotificationItem[]
+  unread: number
+  /** Penanda halaman berikutnya; kosong bila sudah habis. */
+  next: string | null
+  /** Hari ini menurut server ("YYYY-MM-DD"). */
+  today: string
+}

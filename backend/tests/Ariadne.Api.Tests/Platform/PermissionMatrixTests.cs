@@ -36,6 +36,7 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
         .Replace("{activity}", w.ActivityAlpha.ToString(), StringComparison.Ordinal)
         .Replace("{milestone}", w.MilestoneAlpha.ToString(), StringComparison.Ordinal)
         .Replace("{invitation}", w.InvitationAlpha.ToString(), StringComparison.Ordinal)
+        .Replace("{notification}", w.NotificationAlpha.ToString(), StringComparison.Ordinal)
         .Replace("{member}", w.Member.Id.ToString(), StringComparison.Ordinal)
         .Replace("{outsider}", w.Outsider.Id.ToString(), StringComparison.Ordinal);
 
@@ -102,6 +103,12 @@ public sealed class PermissionMatrixTests(WorldFixture fx) : IClassFixture<World
         // Halaman terima undangan dibuka tanpa login; token palsu selalu 400 (diuji rinci di InvitationTests)
         Req(HttpMethod.Post,  "/api/invitations/preview",           "AAAAAAAAA", _ => new { token = "token-palsu" }),
         Req(HttpMethod.Post,  "/api/invitations/accept",            "AAAAAAAAA", _ => new { token = "token-palsu", displayName = "X", password = "x" }),
+        // Notifikasi: setiap orang hanya miliknya sendiri; notifikasi orang lain selalu 404 (diuji rinci di NotificationTests)
+        Get("/api/notifications",                                   "UAAAAAAAA"),
+        Get("/api/notifications?filter=mentions",                   "UAAAAAAAA"),
+        Get("/api/notifications/unread-count",                      "UAAAAAAAA"),
+        Req(HttpMethod.Post,  "/api/notifications/{notification}/read", "UNNNANNNN"),
+        Req(HttpMethod.Post,  "/api/notifications/read-all",        "UAAAAAAAA"),
     ];
 
     public static IEnumerable<object[]> Cases()

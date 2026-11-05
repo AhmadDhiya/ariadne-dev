@@ -324,6 +324,7 @@ export function DashboardPage() {
             items={data.attention}
             today={data.today}
             onOpenTask={(key) => taskParam.open(key)}
+            onSeeAll={() => void navigate('/notifikasi')}
           />
         )}
       </div>

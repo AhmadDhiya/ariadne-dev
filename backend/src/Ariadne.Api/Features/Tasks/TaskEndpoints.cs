@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Ariadne.Api.Auth;
 using Ariadne.Api.Domain;
+using Ariadne.Api.Features.Notifications;
 using Ariadne.Api.Infrastructure.Clock;
 using Ariadne.Api.Infrastructure.Data;
 using Ariadne.Api.Infrastructure.Web;
@@ -134,17 +135,17 @@ internal static partial class TaskEndpoints
 
     // ---------- membuat ----------
 
-    private static async Task<IResult> Create(Guid id, CreateTaskRequest request, HttpContext http, AccessService accessService, AppDbContext db, IClock clock, CancellationToken ct)
+    private static async Task<IResult> Create(Guid id, CreateTaskRequest request, HttpContext http, AccessService accessService, AppDbContext db, IClock clock, Notifier notifier, CancellationToken ct)
     {
         var access = await accessService.CurrentAsync(http.User, ct);
         var project = await ActiveProjectAsync(db, id, ct);
         access.EnsureCanEditTasks(project.RootId);
 
-        var row = await CreateCoreAsync(db, clock, access, project.RootId, project.Id, null, request, ct);
+        var row = await CreateCoreAsync(db, clock, notifier, access, project.RootId, project.Id, null, request, ct);
         return Results.Created($"/api/tasks/{row.Id}", row);
     }
 
-    private static async Task<IResult> CreateSubtask(Guid id, CreateTaskRequest request, HttpContext http, AccessService accessService, AppDbContext db, IClock clock, CancellationToken ct)
+    private static async Task<IResult> CreateSubtask(Guid id, CreateTaskRequest request, HttpContext http, AccessService accessService, AppDbContext db, IClock clock, Notifier notifier, CancellationToken ct)
     {
         var access = await accessService.CurrentAsync(http.User, ct);
         var parent = await db.Tasks.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id, ct) ?? throw new NotFoundException();
@@ -154,13 +155,14 @@ internal static partial class TaskEndpoints
             throw new ValidationFailedException("parentTaskId", "Sub-task tidak boleh punya sub-task lagi.");
         }
 
-        var row = await CreateCoreAsync(db, clock, access, parent.RootProjectId, parent.ProjectId, parent.Id, request, ct);
+        var row = await CreateCoreAsync(db, clock, notifier, access, parent.RootProjectId, parent.ProjectId, parent.Id, request, ct);
         return Results.Created($"/api/tasks/{row.Id}", row);
     }
 
     private static async Task<TaskRow> CreateCoreAsync(
         AppDbContext db,
         IClock clock,
+        Notifier notifier,
         UserAccess access,
         Guid rootId,
         Guid projectId,
@@ -214,7 +216,9 @@ internal static partial class TaskEndpoints
         var assigneeNames = assigneeIds.Count == 0
             ? new Dictionary<Guid, string>()
             : await db.Users.AsNoTracking().Where(u => assigneeIds.Contains(u.Id)).ToDictionaryAsync(u => u.Id, u => u.DisplayName, ct);
-        db.Activities.Add(ActivityLog.TaskCreated(task, access.UserId, [.. assigneeIds.Select(i => assigneeNames.GetValueOrDefault(i, "?")).Order(StringComparer.Ordinal)], assigneeIds, now));
+        var created = ActivityLog.TaskCreated(task, access.UserId, [.. assigneeIds.Select(i => assigneeNames.GetValueOrDefault(i, "?")).Order(StringComparer.Ordinal)], assigneeIds, now);
+        db.Activities.Add(created);
+        notifier.Assigned(created, assigneeIds);
         if (parentTaskId is { } parentId)
         {
             var code = await db.Projects.AsNoTracking().Where(p => p.Id == rootId).Select(p => p.Code).SingleAsync(ct);
@@ -223,6 +227,7 @@ internal static partial class TaskEndpoints
 
         await db.SaveOrConflictAsync("Task tidak bisa disimpan karena bentrok. Coba lagi.", ct);
         await transaction.CommitAsync(ct);
+        await notifier.SendPendingAsync(ct);
 
         return await TaskQueries.RowAsync(db, task.Id, clock.Today, ct);
     }
@@ -328,7 +333,7 @@ internal static partial class TaskEndpoints
         return Results.Ok(await TaskQueries.RowAsync(db, id, clock.Today, ct));
     }
 
-    private static async Task<IResult> SetAssignees(Guid id, SetAssigneesRequest request, HttpContext http, AccessService accessService, AppDbContext db, IClock clock, CancellationToken ct)
+    private static async Task<IResult> SetAssignees(Guid id, SetAssigneesRequest request, HttpContext http, AccessService accessService, AppDbContext db, IClock clock, Notifier notifier, CancellationToken ct)
     {
         var access = await accessService.CurrentAsync(http.User, ct);
         var task = await db.Tasks.Include(t => t.Assignees).SingleOrDefaultAsync(t => t.Id == id, ct) ?? throw new NotFoundException();
@@ -349,11 +354,14 @@ internal static partial class TaskEndpoints
             var changed = removedIds.Concat(addedIds).ToList();
             var names = await db.Users.AsNoTracking().Where(u => changed.Contains(u.Id)).ToDictionaryAsync(u => u.Id, u => u.DisplayName, ct);
             string[] Named(IEnumerable<Guid> ids) => [.. ids.Select(i => names.GetValueOrDefault(i, "?")).Order(StringComparer.Ordinal)];
-            db.Activities.Add(ActivityLog.AssigneesChanged(task, access.UserId, Named(addedIds), Named(removedIds), addedIds, now));
+            var log = ActivityLog.AssigneesChanged(task, access.UserId, Named(addedIds), Named(removedIds), addedIds, now);
+            db.Activities.Add(log);
+            notifier.Assigned(log, addedIds);
         }
 
         task.UpdatedAt = now;
         await db.SaveOrConflictAsync("Task tidak bisa disimpan karena bentrok. Coba lagi.", ct);
+        await notifier.SendPendingAsync(ct);
         return Results.Ok(await TaskQueries.RowAsync(db, id, clock.Today, ct));
     }
 

@@ -42,6 +42,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Invitation> Invitations => Set<Invitation>();
 
+    public DbSet<Notification> Notifications => Set<Notification>();
+
     private static readonly JsonSerializerOptions DataJson = new(JsonSerializerDefaults.Web)
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -252,6 +254,35 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
             mention.HasOne(m => m.User).WithMany().HasForeignKey(m => m.UserId).OnDelete(DeleteBehavior.Restrict);
             mention.HasIndex(m => m.UserId);
             mention.HasQueryFilter(m => m.Activity!.Task!.DeletedAt == null && m.Activity.DeletedAt == null);
+        });
+
+        builder.Entity<Notification>(notification =>
+        {
+            notification.ToTable("notifications", t =>
+            {
+                // Notifikasi job harian selalu punya kunci pencegah dobel; notifikasi dari orang selalu punya pelaku dan entri
+                t.HasCheckConstraint(
+                    "ck_notifications_shape",
+                    "(kind IN ('DueTomorrow', 'Overdue') AND dedupe_key IS NOT NULL AND actor_id IS NULL) "
+                    + "OR (kind IN ('Mention', 'Assigned', 'Moved') AND dedupe_key IS NULL AND actor_id IS NOT NULL AND activity_id IS NOT NULL)");
+            });
+            notification.HasKey(n => n.Id);
+            notification.Property(n => n.Seq).ValueGeneratedOnAdd().UseIdentityByDefaultColumn();
+            notification.HasIndex(n => n.Seq).IsUnique();
+            notification.Property(n => n.Kind).HasConversion<string>().HasMaxLength(20);
+            notification.Property(n => n.DedupeKey).HasMaxLength(100);
+            // Panel lonceng: milik saya, terbaru dulu; jumlah belum dibaca
+            notification.HasIndex(n => new { n.RecipientId, n.ReadAt, n.CreatedAt });
+            notification.HasIndex(n => new { n.RecipientId, n.CreatedAt });
+            notification.HasIndex(n => new { n.RecipientId, n.DedupeKey }).IsUnique();
+            notification.HasIndex(n => n.ActivityId);
+            notification.HasOne(n => n.Recipient).WithMany().HasForeignKey(n => n.RecipientId).OnDelete(DeleteBehavior.Cascade);
+            notification.HasOne(n => n.Actor).WithMany().HasForeignKey(n => n.ActorId).OnDelete(DeleteBehavior.Restrict);
+            notification.HasOne(n => n.Task).WithMany().HasForeignKey(n => n.TaskId).OnDelete(DeleteBehavior.Cascade);
+            notification.HasOne(n => n.Activity).WithMany().HasForeignKey(n => n.ActivityId).OnDelete(DeleteBehavior.Cascade);
+            notification.HasOne<Project>().WithMany().HasForeignKey(n => n.RootProjectId).OnDelete(DeleteBehavior.Restrict);
+            // Task yang dihapus (disembunyikan) ikut menyembunyikan notifikasinya
+            notification.HasQueryFilter(n => n.Task!.DeletedAt == null);
         });
     }
 }

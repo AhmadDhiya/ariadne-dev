@@ -1,5 +1,6 @@
 using Ariadne.Api.Auth;
 using Ariadne.Api.Domain;
+using Ariadne.Api.Features.Notifications;
 using Ariadne.Api.Infrastructure.Clock;
 using Ariadne.Api.Infrastructure.Data;
 using Ariadne.Api.Infrastructure.Web;
@@ -77,6 +78,7 @@ internal static class ActivityEndpoints
         AccessService accessService,
         AppDbContext db,
         IClock clock,
+        Notifier notifier,
         CancellationToken ct)
     {
         var access = await accessService.CurrentAsync(http.User, ct);
@@ -111,7 +113,9 @@ internal static class ActivityEndpoints
         }
 
         db.Activities.Add(activity);
+        notifier.Mentioned(activity, mentions.Select(m => m.Id));
         await db.SaveOrConflictAsync("Entri tidak bisa disimpan karena bentrok. Coba lagi.", ct);
+        await notifier.SendPendingAsync(ct);
 
         var saved = await db.Activities.AsNoTracking().Where(a => a.Id == activity.Id).Select(Projection).SingleAsync(ct);
         var item = (await ToItemsAsync(db, root, [saved], ct))[0];
@@ -126,6 +130,7 @@ internal static class ActivityEndpoints
         AccessService accessService,
         AppDbContext db,
         IClock clock,
+        Notifier notifier,
         CancellationToken ct)
     {
         var access = await accessService.CurrentAsync(http.User, ct);
@@ -145,14 +150,20 @@ internal static class ActivityEndpoints
         if (!unchanged)
         {
             activity.Body = body;
+            var removed = activity.Mentions.Where(m => !wanted.Contains(m.UserId)).Select(m => m.UserId).ToList();
             activity.Mentions.RemoveAll(m => !wanted.Contains(m.UserId));
-            foreach (var person in mentions.Where(p => activity.Mentions.All(m => m.UserId != p.Id)))
+            var added = mentions.Where(p => activity.Mentions.All(m => m.UserId != p.Id)).ToList();
+            foreach (var person in added)
             {
                 activity.Mentions.Add(new Mention { ActivityId = activity.Id, UserId = person.Id, DisplayName = person.Name });
             }
 
+            // Yang baru ditandai mendapat notifikasi; yang tidak lagi ditandai kehilangan notifikasinya
+            notifier.Mentioned(activity, added.Select(p => p.Id));
             activity.EditedAt = clock.UtcNow;
             await db.SaveOrConflictAsync("Entri tidak bisa disimpan karena bentrok. Coba lagi.", ct);
+            await notifier.ForgetMentionsAsync(activity.Id, removed, ct);
+            await notifier.SendPendingAsync(ct);
         }
 
         var saved = await db.Activities.AsNoTracking().Where(a => a.Id == activityId).Select(Projection).SingleAsync(ct);
@@ -166,6 +177,7 @@ internal static class ActivityEndpoints
         AccessService accessService,
         AppDbContext db,
         IClock clock,
+        Notifier notifier,
         CancellationToken ct)
     {
         var access = await accessService.CurrentAsync(http.User, ct);
@@ -184,6 +196,7 @@ internal static class ActivityEndpoints
 
         activity.DeletedAt = clock.UtcNow;
         await db.SaveOrConflictAsync("Entri tidak bisa dihapus karena bentrok. Coba lagi.", ct);
+        await notifier.ForgetActivityAsync(activity.Id, ct);
         return Results.NoContent();
     }
 

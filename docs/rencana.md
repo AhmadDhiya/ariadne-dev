@@ -327,7 +327,7 @@ Pindahkan dan ubah tanggal memakai `POST /api/tasks/{id}/move` dan `PUT /api/tas
 
 | Endpoint                                                                | Guna                                  | Izin                             |
 | ----------------------------------------------------------------------- | ------------------------------------- | -------------------------------- |
-| `GET /api/notifications?filter=all\|unread\|mentions`                   | isi panel & halaman "Lihat semua"     | Masuk (hanya miliknya)           |
+| `GET /api/notifications?filter=all\|unread\|mentions&before=&limit=`    | isi panel & halaman "Lihat semua"     | Masuk (hanya miliknya)           |
 | `GET /api/notifications/unread-count`                                   | angka di lonceng                      | Masuk                            |
 | `POST /api/notifications/{id}/read`, `POST /api/notifications/read-all` | tandai dibaca                         | Masuk                            |
 | `GET /api/search?q=`                                                    | pencarian global: task, proyek, orang | Masuk (hanya yang boleh dilihat) |
@@ -847,8 +847,39 @@ Atas permintaan Ahmad: update, komentar, dan catatan internal bisa diubah dan di
 - Baris undangan memakai bagian depan email sebagai nama ("sari@…" → "Sari"), karena namanya baru diisi orang itu saat menerima.
 - Bar "Tambah anggota" (menambah orang yang sudah punya akun) dari Fase 2 tetap ada di atas tabel; tidak ada di mockup.
 - Subjudul tamu di topbar "Tamu", bukan "Tamu · Klien": nama organisasi tamu tidak ada di data.
-- Lonceng notifikasi menunggu Fase 9.
+- Lonceng notifikasi menunggu Fase 9 (sudah dibuat di Fase 9).
 
 **Pembuktian:** 12 test API undangan (kirim, email aman HTML, terima dan masuk, akun yang sudah ada, undang ulang, input salah, izin batal/ubah, kedaluwarsa, password lemah, akun yang muncul belakangan, proyek diarsipkan, terima bersamaan), audit Tamu untuk semua endpoint baca, matriks izin, test unit dialog, tabel, dan form terima, serta test browser terhadap stack sungguhan (`xundangan-tamu.spec.ts`: dialog + axe + screenshot, undang → email di Mailpit → terima → masuk sebagai Tamu yang hanya melihat Sentul, batalkan, dan tampilan Tamu terang/gelap dengan drawer SEN-115). Data contoh kini berisi undangan Sari yang menunggu (mockup 08).
 
 **Paket baru:** tidak ada.
+
+### Fase 9 (5 November 2026)
+
+**Yang dibuat:** tabel `notifications` dan **lonceng** di topbar dengan angka belum dibaca (diperbarui tiap menit dan saat jendela kembali dibuka). Klik lonceng membuka **panel Notifikasi** (mockup 10) dengan tab Semua / Belum dibaca · N / Di-mention, pengelompokan Hari ini / Kemarin / tanggal, titik merah untuk yang belum dibaca, "Tandai semua dibaca", dan "Lihat semua notifikasi" ke halaman baru **`/notifikasi`** (tanpa mockup; isi sama, dimuat per 30 dengan "Muat lebih banyak"). Kartu "Perlu perhatian" di dashboard kini punya tautan "Lihat semua" seperti mockup 02. Klik satu notifikasi menandainya dibaca lalu membuka task-nya di drawer.
+
+Notifikasi dibuat untuk lima kejadian: **di-mention** (Update, Komentar, Internal), **ditugaskan** (task baru atau PIC ditambahkan), **dipindahkan ke saya** (dialog "Pindahkan ke…" dengan pilihan kabari), serta **tenggat besok** dan **terlambat** dari **job harian pukul 07.00 WIB**. Email: **segera** untuk mention, penugasan, dan pemindahan; **satu email ringkasan per orang** setiap pagi untuk tenggat besok dan terlambat. Email memuat ikon status (PNG dari `assets/Icons`, disisipkan di email) beserta teks statusnya. Pengiriman di luar aplikasi lewat satu interface `INotificationChannel` (sekarang hanya email; Telegram nanti cukup ditambah satu implementasi).
+
+**Aturan (keputusan saya; mohon dikoreksi bila keliru)**
+
+- Orang **tidak pernah** diberi notifikasi atas aksinya sendiri (menandai diri sendiri, menugaskan diri sendiri).
+- Kalimat notifikasi tidak disimpan. Saat dibaca, kalimat disusun dari task dan entri aslinya, dan **hak melihat diperiksa ulang setiap kali**. Contoh: orang yang kemudian diturunkan menjadi Tamu tidak lagi melihat notifikasi yang berasal dari catatan Internal; orang yang dikeluarkan dari proyek tidak melihat notifikasi dari proyek itu; task yang dihapus dan proyek yang diarsipkan ikut menyembunyikan notifikasinya.
+- Entri yang diubah: orang yang **baru** ditandai mendapat notifikasi, orang yang **tidak lagi** ditandai kehilangan notifikasinya. Entri yang dihapus menghapus notifikasinya. Kutipan selalu memakai teks terbaru.
+- Job harian: tenggat besok = tenggat tepat besok; terlambat = lewat tenggat, belum Done, bukan Rutin. Penerimanya PIC aktif yang masih anggota proyeknya. **Terlambat diulang setiap pagi** selama masih terlambat ("lewat tenggat 3 hari"), seperti mockup.
+- **Tidak dobel**: setiap notifikasi harian punya kunci unik (jenis + task + tanggal) per orang. Email ringkasan hanya untuk notifikasi yang belum pernah dikirim. Dua job yang berjalan bersamaan antre lewat kunci di database. Saat API menyala setelah pukul 07.00, job dijalankan sekali; tidak dobel karena aturan tadi.
+- "Perlu perhatian" di dashboard **tetap dihitung dari keadaan task saat ini** (bukan dari tabel notifikasi), supaya tenggat dan "terlambat" di sana selalu yang terbaru, dan dashboard anggota yang dibuka supervisor (06b) tidak berubah. Riwayat dan tanda dibaca ada di lonceng.
+- Akun nonaktif tidak menerima email.
+
+**Perubahan tampilan Timeline (permintaan Ahmad hari ini)**
+
+- Zoom **Minggu** dan **Bulan** tidak lagi dipaksa muat di layar. Lebar per hari kini Minggu 28 px (sebelumnya 12) dan Bulan 20 px (sebelumnya 4), jadi bar dan angka beban kerja per hari terbaca, dan grafiknya digulir ke samping. Zoom Hari tetap 40 px.
+- Berlaku sama di Timeline saya (dashboard), Gantt proyek, dan Timeline Tim (ketiganya memakai ukuran yang sama).
+
+**Perbedaan dari mockup 10 (sengaja)**
+
+- Mockup memuat **SEN-117** ("dipindahkan dari Rama") dan **MDC-025** ("tenggat besok"), yang tidak ada di mockup tabel (03) dan dashboard (02). Keduanya tidak dibuat, supaya dua mockup itu tetap cocok. Lonceng Ahmad di data contoh berisi notifikasi dari data yang memang ada: mention SEN-115, penugasan MDC-24, terlambat SEN-115, SEN-121, dan SEN-122 (hasil job harian), serta mention SEN-112 kemarin. Tetap **4 belum dibaca**.
+- Nomor task tampil "MDC-24", bukan "MDC-024", sama seperti di seluruh aplikasi.
+- Mention SEN-112 kemarin pukul 15.00 (jam entri di data contoh), bukan 16.40.
+
+**Pembuktian:** `scripts/check` 15/15 lulus (katalog komponen lulus setelah screenshot acuannya diperbarui karena demo notifikasi baru). Backend: 875 test, termasuk 11 test notifikasi (mention dan email segera, ubah/hapus entri, penugasan, pemindahan dengan dan tanpa kabari, tab dan halaman dan tandai dibaca, notifikasi orang lain 404, jadi Tamu lalu dikeluarkan, task dihapus, job harian sekali dan tanpa dobel, tiga job bersamaan, akun nonaktif), lima baris baru di matriks izin, dan audit Tamu yang kini ikut memeriksa endpoint notifikasi. Frontend: 415 test unit. Browser: 114 test terhadap stack sungguhan, termasuk `wnotifikasi.spec.ts` (panel terang/gelap + axe + screenshot, halaman Semua notifikasi, mention → email di Mailpit → lonceng → klik membuka task dan menandai dibaca) dan test zoom Timeline yang memastikan kotak beban cukup lebar dan grafik bisa digulir.
+
+**Paket baru:** tidak ada. Ikon PNG untuk email dibuat sekali dengan `scripts/render-email-icons.mjs`, yang memakai Playwright yang sudah terpasang.

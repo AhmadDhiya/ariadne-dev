@@ -5,6 +5,7 @@
 .ar-attention-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   min-height: 52px;
   padding: 0 var(--space-4);
   border-bottom: 1px solid var(--line);
@@ -98,4 +99,7 @@
   font-size: 12px;
   color: var(--ink-muted);
   white-space: nowrap;
+}
+.ar-attention-all {
+  font-size: 13px;
 }

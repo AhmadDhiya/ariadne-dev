@@ -410,6 +410,102 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                     b.ToTable("milestones", (string)null);
                 });
 
+            modelBuilder.Entity("Ariadne.Api.Domain.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ActivityId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("activity_id");
+
+                    b.Property<Guid?>("ActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DedupeKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("dedupe_key");
+
+                    b.Property<DateTimeOffset?>("EmailedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("emailed_at");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<int>("LateDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("late_days");
+
+                    b.Property<DateTimeOffset?>("ReadAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("read_at");
+
+                    b.Property<Guid>("RecipientId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipient_id");
+
+                    b.Property<Guid>("RootProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("root_project_id");
+
+                    b.Property<long>("Seq")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("seq");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Seq"));
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("task_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_notifications");
+
+                    b.HasIndex("ActivityId")
+                        .HasDatabaseName("ix_notifications_activity_id");
+
+                    b.HasIndex("ActorId")
+                        .HasDatabaseName("ix_notifications_actor_id");
+
+                    b.HasIndex("RootProjectId")
+                        .HasDatabaseName("ix_notifications_root_project_id");
+
+                    b.HasIndex("Seq")
+                        .IsUnique()
+                        .HasDatabaseName("ix_notifications_seq");
+
+                    b.HasIndex("TaskId")
+                        .HasDatabaseName("ix_notifications_task_id");
+
+                    b.HasIndex("RecipientId", "CreatedAt")
+                        .HasDatabaseName("ix_notifications_recipient_id_created_at");
+
+                    b.HasIndex("RecipientId", "DedupeKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_notifications_recipient_id_dedupe_key");
+
+                    b.HasIndex("RecipientId", "ReadAt", "CreatedAt")
+                        .HasDatabaseName("ix_notifications_recipient_id_read_at_created_at");
+
+                    b.ToTable("notifications", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_notifications_shape", "(kind IN ('DueTomorrow', 'Overdue') AND dedupe_key IS NOT NULL AND actor_id IS NULL) OR (kind IN ('Mention', 'Assigned', 'Moved') AND dedupe_key IS NULL AND actor_id IS NOT NULL AND activity_id IS NOT NULL)");
+                        });
+                });
+
             modelBuilder.Entity("Ariadne.Api.Domain.Project", b =>
                 {
                     b.Property<Guid>("Id")
@@ -944,6 +1040,50 @@ namespace Ariadne.Api.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_milestones_projects_root_project_id");
+                });
+
+            modelBuilder.Entity("Ariadne.Api.Domain.Notification", b =>
+                {
+                    b.HasOne("Ariadne.Api.Domain.Activity", "Activity")
+                        .WithMany()
+                        .HasForeignKey("ActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_notifications_activities_activity_id");
+
+                    b.HasOne("Ariadne.Api.Domain.AppUser", "Actor")
+                        .WithMany()
+                        .HasForeignKey("ActorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_notifications_users_actor_id");
+
+                    b.HasOne("Ariadne.Api.Domain.AppUser", "Recipient")
+                        .WithMany()
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_notifications_users_recipient_id");
+
+                    b.HasOne("Ariadne.Api.Domain.Project", null)
+                        .WithMany()
+                        .HasForeignKey("RootProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_notifications_projects_root_project_id");
+
+                    b.HasOne("Ariadne.Api.Domain.ProjectTask", "Task")
+                        .WithMany()
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_notifications_tasks_task_id");
+
+                    b.Navigation("Activity");
+
+                    b.Navigation("Actor");
+
+                    b.Navigation("Recipient");
+
+                    b.Navigation("Task");
                 });
 
             modelBuilder.Entity("Ariadne.Api.Domain.Project", b =>

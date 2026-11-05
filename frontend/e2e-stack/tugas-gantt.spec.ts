@@ -106,7 +106,7 @@ test.describe('Gantt proyek: interaksi', () => {
     await page.getByRole('button', { name: 'Bulan' }).click()
     await expect(gantt.getByText('Okt', { exact: true })).toBeVisible()
     await expect(gantt.locator('.ar-gantt-personrow').first().locator('.ar-heat')).toHaveCount(366)
-    expect(await scroller.evaluate((el) => el.scrollWidth)).toBeGreaterThan(1000) // 366 hari x 4 px, tidak patah
+    expect(await scroller.evaluate((el) => el.scrollWidth)).toBeGreaterThan(7000) // 366 hari x 20 px, tidak dipaksa muat
 
     await page.getByRole('button', { name: 'Hari', exact: true }).click()
     await expect(gantt.locator('.ar-gantt-col')).toHaveCount(91)

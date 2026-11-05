@@ -1,8 +1,11 @@
 import { formatShortDate, parseDate } from '@/lib/dates'
 import type { TimelineZoom } from '@/types/api'
 
-/** Lebar satu hari per zoom (px): Hari 40 (mockup 02), Minggu 12, Bulan 4 (design system). */
-export const DAY_WIDTH: Record<TimelineZoom, number> = { day: 40, week: 12, month: 4 }
+/**
+ * Lebar satu hari per zoom (px): Hari 40 (mockup 02), Minggu 28, Bulan 20. Minggu dan Bulan sengaja lebar (bukan
+ * dipaksa muat di layar) supaya bar dan angka beban kerja per hari tetap terbaca; grafiknya digulir ke samping.
+ */
+export const DAY_WIDTH: Record<TimelineZoom, number> = { day: 40, week: 28, month: 20 }
 
 /**
  * Berapa hari sebelum "hari ini" yang dibiarkan terlihat di tepi kiri saat grafik digulir ke hari ini
