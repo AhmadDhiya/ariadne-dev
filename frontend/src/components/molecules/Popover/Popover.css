@@ -13,3 +13,8 @@
 .ar-popover-bottom-end {
   right: 0;
 }
+
+/* Gerak (Fase 10): isi popover (menu, panel notifikasi, editor) memudar masuk */
+.ar-popover {
+  animation: ar-drop-in var(--motion-fast) var(--ease-out);
+}

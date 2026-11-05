@@ -23,3 +23,8 @@
   color: var(--primary);
   margin-left: auto;
 }
+
+/* Gerak (Fase 10) */
+.ar-menu-item {
+  transition: var(--hover-transition);
+}

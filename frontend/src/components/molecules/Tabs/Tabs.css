@@ -21,3 +21,8 @@
   color: var(--primary);
   border-bottom-color: var(--primary);
 }
+
+/* Gerak (Fase 10) */
+.ar-tab {
+  transition: var(--hover-transition);
+}

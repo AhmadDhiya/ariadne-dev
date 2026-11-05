@@ -31,3 +31,8 @@
   border-color: var(--line-strong);
   color: var(--ink);
 }
+
+/* Gerak (Fase 10) */
+.ar-seg-btn {
+  transition: var(--hover-transition);
+}

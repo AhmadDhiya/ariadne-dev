@@ -38,7 +38,11 @@ import type { ActivityItem } from '@/types/api'
  * Halaman inilah yang memanggil API; komponen drawer hanya menerima data lewat props.
  */
 export function TaskDrawerPage() {
-  const { key, open, close } = useTaskParam()
+  const { key: paramKey, open, close } = useTaskParam()
+  // Task terakhir tetap ditampilkan selama drawer bergeser keluar; dilepas setelah drawer benar-benar tertutup
+  const [lastKey, setLastKey] = useState(paramKey)
+  if (paramKey && paramKey !== lastKey) setLastKey(paramKey)
+  const key = paramKey ?? lastKey
   const location = useLocation()
   const toast = useToast()
   const detail = useTask(key)
@@ -156,8 +160,9 @@ export function TaskDrawerPage() {
   return (
     <>
       <TaskDrawer
-        open
+        open={paramKey !== undefined}
         onClose={closeDrawer}
+        onClosed={() => setLastKey(undefined)}
         detail={detail.data}
         loading={detail.isPending}
         loadError={loadError}

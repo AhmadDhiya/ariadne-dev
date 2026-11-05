@@ -16,9 +16,14 @@ export interface DrawerProps {
   children: ReactNode
   /** Bagian bawah yang tetap terlihat saat isi digulir (kotak komentar). */
   footer?: ReactNode
+  /** Dipanggil setelah animasi keluar selesai dan panel benar-benar tertutup. */
+  onClosed?: () => void
 }
 
-/** Panel samping 520px dari kanan (detail task). Esc, tombol ×, atau klik latar menutupnya. */
+/**
+ * Panel samping 520px dari kanan (detail task). Esc, tombol ×, atau klik latar menutupnya.
+ * Masuk dengan bergeser dari kanan dan keluar bergeser kembali, latarnya memudar.
+ */
 export function Drawer({
   open,
   onClose,
@@ -28,8 +33,9 @@ export function Drawer({
   actions,
   children,
   footer,
+  onClosed,
 }: DrawerProps) {
-  const ref = useModalDialog(open)
+  const { ref, visible } = useModalDialog(open, onClosed)
   const titleId = useId()
 
   return (
@@ -46,7 +52,7 @@ export function Drawer({
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      {open ? (
+      {visible ? (
         <div className="ar-drawer-inner">
           <header className="ar-drawer-head">
             <div className="ar-drawer-top">

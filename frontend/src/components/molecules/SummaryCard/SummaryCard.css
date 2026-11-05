@@ -47,3 +47,53 @@
 .ar-summary-action[aria-pressed='true'] {
   border-color: var(--primary);
 }
+
+/* Gerak (Fase 10) */
+.ar-summary-action {
+  transition: var(--hover-transition);
+}
+/* Kartu yang bisa diklik sedikit terangkat saat hover (hanya dengan mouse; di layar sentuh hover tertinggal) */
+@media (hover: hover) {
+  .ar-summary-action:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+}
+.ar-summary-short {
+  display: none;
+}
+
+/* Layar sempit (mockup 11): empat kartu kecil sebaris, angka di atas dan label pendek di bawah */
+@media (max-width: 767px) {
+  .ar-card.ar-summary {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 10px var(--space-2);
+    box-shadow: none;
+    gap: 2px;
+  }
+  .ar-summary-head {
+    order: 2;
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 400;
+  }
+  .ar-summary-head svg,
+  .ar-summary-hint,
+  .ar-summary-long {
+    display: none;
+  }
+  .ar-summary-short {
+    display: inline;
+  }
+  .ar-summary-value {
+    margin-top: 0;
+    font-size: 20px;
+    line-height: 24px;
+  }
+  .ar-summary.is-held .ar-summary-head,
+  .ar-summary.is-danger .ar-summary-head {
+    color: var(--ink-muted);
+  }
+}

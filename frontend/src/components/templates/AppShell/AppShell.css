@@ -44,3 +44,47 @@
 .ar-skip:focus {
   top: var(--space-2);
 }
+
+/* Panel menu di layar sempit: sidebar yang sama, bergeser dari kiri */
+.ar-shell-nav {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--sidebar-width);
+  max-width: calc(100vw - 48px);
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: var(--canvas);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+.ar-shell-nav::backdrop {
+  background: var(--overlay);
+}
+.ar-shell-nav[open] {
+  animation: ar-slide-in-left var(--motion-enter) var(--ease-out);
+}
+.ar-shell-nav[open]::backdrop {
+  animation: ar-fade-in var(--motion-enter) var(--ease-out);
+}
+.ar-shell-nav[data-closing] {
+  animation: ar-slide-out-left var(--motion-exit) var(--ease-in) forwards;
+}
+.ar-shell-nav[data-closing]::backdrop {
+  animation: ar-fade-out var(--motion-exit) var(--ease-in) forwards;
+}
+
+@media (max-width: 767px) {
+  .ar-shell-side {
+    display: none;
+  }
+  .ar-shell-content {
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+}

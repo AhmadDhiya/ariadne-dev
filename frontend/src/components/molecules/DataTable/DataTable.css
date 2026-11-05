@@ -36,3 +36,10 @@
 .ar-table-empty {
   border-top: 1px solid var(--line);
 }
+
+/* Layar sempit: tabel tidak diperas, digulir ke samping */
+@media (max-width: 767px) {
+  .ar-table {
+    min-width: 720px;
+  }
+}

@@ -36,3 +36,8 @@
   display: flex;
   gap: var(--space-2);
 }
+
+/* Gerak (Fase 10) */
+.ar-editable-text {
+  transition: var(--hover-transition);
+}

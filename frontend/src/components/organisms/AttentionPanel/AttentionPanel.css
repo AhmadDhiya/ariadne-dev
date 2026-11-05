@@ -103,3 +103,8 @@
 .ar-attention-all {
   font-size: 13px;
 }
+
+/* Gerak (Fase 10) */
+.ar-attention-item {
+  transition: var(--hover-transition);
+}

@@ -5,6 +5,7 @@ import { queryClient } from '@/api/queryClient'
 import { App } from './App'
 import './styles/tokens.css'
 import './styles/base.css'
+import './styles/motion.css'
 
 const root = document.getElementById('root')
 if (!root) throw new Error('Elemen #root tidak ditemukan di index.html')

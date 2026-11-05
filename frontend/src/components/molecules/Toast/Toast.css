@@ -33,3 +33,8 @@
 .ar-toast-error > .ar-icon {
   color: var(--danger);
 }
+
+/* Gerak (Fase 10) */
+.ar-toast {
+  animation: ar-pop-in var(--motion-enter) var(--ease-out);
+}

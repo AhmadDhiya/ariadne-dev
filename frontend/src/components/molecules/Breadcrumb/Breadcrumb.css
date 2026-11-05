@@ -29,3 +29,8 @@
   color: var(--ink);
   font-weight: 500;
 }
+
+/* Gerak (Fase 10) */
+.ar-crumbs a {
+  transition: var(--hover-transition);
+}

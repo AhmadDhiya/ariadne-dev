@@ -5,6 +5,8 @@ import './SummaryCard.css'
 
 export interface SummaryCardProps {
   label: string
+  /** Label pendek untuk layar sempit (mockup 11), mis. "Minggu ini". */
+  shortLabel?: string
   value: ReactNode
   icon?: IconName
   /** `danger` untuk Terlambat (hanya bila > 0), `held` untuk Tertahan. */
@@ -17,13 +19,23 @@ export interface SummaryCardProps {
 }
 
 /** Satu angka di dashboard pribadi. */
-export function SummaryCard({ label, value, icon, tone, hint, onClick, active }: SummaryCardProps) {
+export function SummaryCard({
+  label,
+  shortLabel,
+  value,
+  icon,
+  tone,
+  hint,
+  onClick,
+  active,
+}: SummaryCardProps) {
   const classes = cx('ar-card', 'ar-summary', tone && `is-${tone}`, onClick && 'ar-summary-action')
   const content = (
     <>
       <div className="ar-summary-head">
         {icon ? <Icon name={icon} size={16} /> : null}
-        <span>{label}</span>
+        <span className={shortLabel ? 'ar-summary-long' : undefined}>{label}</span>
+        {shortLabel ? <span className="ar-summary-short">{shortLabel}</span> : null}
       </div>
       <div className="ar-summary-value">{value}</div>
       {hint ? <div className="ar-summary-hint">{hint}</div> : null}

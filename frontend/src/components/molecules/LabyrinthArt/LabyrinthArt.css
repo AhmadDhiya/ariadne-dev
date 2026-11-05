@@ -21,3 +21,8 @@
 .ar-labyrinth-knot {
   fill: var(--thread);
 }
+
+/* Tema gelap: dinding labirin sedikit lebih terang dari panelnya yang navy lembut */
+[data-theme='dark'] .ar-labyrinth-wall {
+  stroke: var(--primary);
+}

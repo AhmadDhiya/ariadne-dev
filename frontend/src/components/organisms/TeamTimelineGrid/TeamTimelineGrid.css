@@ -40,7 +40,7 @@
   color: var(--ink-muted);
   cursor: pointer;
   transform: rotate(-90deg);
-  transition: transform 0.12s;
+  transition: var(--hover-transition);
 }
 .ar-ttg-caret.is-open {
   transform: none;
@@ -198,4 +198,13 @@
   left: 0;
   width: 100%;
   pointer-events: none;
+}
+
+/* Gerak (Fase 10) */
+.ar-ttg-name,
+.ar-ttg-task {
+  transition: var(--hover-transition);
+}
+.ar-ttg-actions {
+  transition: opacity var(--motion-fast) ease;
 }

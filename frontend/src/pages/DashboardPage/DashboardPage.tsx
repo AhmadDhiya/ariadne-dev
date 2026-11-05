@@ -23,6 +23,7 @@ import { ProjectPickDialog } from '@/components/organisms/ProjectPickDialog'
 import { TaskFormDialog } from '@/components/organisms/TaskFormDialog'
 import { TodayList } from '@/components/organisms/TodayList'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { MOBILE_QUERY, useMediaQuery } from '@/hooks/useMediaQuery'
 import { useTaskParam } from '@/hooks/useTaskParam'
 import { useToast } from '@/hooks/useToast'
 import { greeting, heldHint, isCard, lateHint, weekHint, workingHint } from '@/lib/dashboard'
@@ -54,6 +55,14 @@ const CARD_LABELS: Record<DashboardCard, string> = {
   tertahan: 'Tertahan',
 }
 
+/** Label kartu di layar sempit (mockup 11). */
+const SHORT_LABELS: Record<DashboardCard, string> = {
+  terlambat: 'Terlambat',
+  minggu: 'Minggu ini',
+  dikerjakan: 'Dikerjakan',
+  tertahan: 'Tertahan',
+}
+
 /**
  * Dashboard pribadi (mockup 02): sapaan, empat kartu ringkasan yang menyaring daftar "Hari Ini", daftar Hari Ini
  * dengan ubah status dan "Tambah update" langsung dari baris, "Perlu perhatian", dan Timeline saya dengan beban kerja.
@@ -71,6 +80,7 @@ export function DashboardPage() {
   const [params, setParams] = useSearchParams()
   const taskParam = useTaskParam()
   useDocumentTitle('Dashboard')
+  const mobile = useMediaQuery(MOBILE_QUERY)
 
   const rawCard = params.get('kartu')
   const card = isCard(rawCard) ? rawCard : null
@@ -196,7 +206,10 @@ export function DashboardPage() {
         ) : (
           <div>
             <div className="ar-dashboard-date">{formatLongDate(data.today)}</div>
-            <h1 className="ar-dashboard-title">{greeting(data.dayPart, me.displayName)}</h1>
+            {/* Layar sempit (mockup 11): judulnya "Hari Ini" */}
+            <h1 className="ar-dashboard-title">
+              {mobile ? 'Hari Ini' : greeting(data.dayPart, me.displayName)}
+            </h1>
           </div>
         )}
         {viewing ? (
@@ -204,9 +217,11 @@ export function DashboardPage() {
             Anda bisa memindahkan task dan mengubah tanggal dari sini.
           </p>
         ) : data.editableProjects.length > 0 ? (
-          <Button variant="primary" icon="plus" onClick={startNewTask}>
-            Tambah task
-          </Button>
+          <span className="ar-dashboard-add">
+            <Button variant="primary" icon="plus" onClick={startNewTask}>
+              Tambah task
+            </Button>
+          </span>
         ) : null}
       </div>
 
@@ -217,6 +232,7 @@ export function DashboardPage() {
       >
         <SummaryCard
           label={CARD_LABELS.terlambat}
+          shortLabel={SHORT_LABELS.terlambat}
           value={summary.late}
           icon="calendar"
           tone={summary.late > 0 ? 'danger' : undefined}
@@ -226,6 +242,7 @@ export function DashboardPage() {
         />
         <SummaryCard
           label={CARD_LABELS.minggu}
+          shortLabel={SHORT_LABELS.minggu}
           value={summary.dueThisWeek}
           icon="calendar"
           hint={weekHint(summary.weekEnd)}
@@ -234,6 +251,7 @@ export function DashboardPage() {
         />
         <SummaryCard
           label={CARD_LABELS.dikerjakan}
+          shortLabel={SHORT_LABELS.dikerjakan}
           value={summary.inProgress}
           icon="status-progress"
           hint={workingHint(summary.inProgressProjects)}
@@ -242,6 +260,7 @@ export function DashboardPage() {
         />
         <SummaryCard
           label={CARD_LABELS.tertahan}
+          shortLabel={SHORT_LABELS.tertahan}
           value={summary.held}
           icon="status-hold"
           tone="held"
@@ -320,12 +339,14 @@ export function DashboardPage() {
           }
         />
         {viewing ? null : (
-          <AttentionPanel
-            items={data.attention}
-            today={data.today}
-            onOpenTask={(key) => taskParam.open(key)}
-            onSeeAll={() => void navigate('/notifikasi')}
-          />
+          <div className="ar-dashboard-attention">
+            <AttentionPanel
+              items={data.attention}
+              today={data.today}
+              onOpenTask={(key) => taskParam.open(key)}
+              onSeeAll={() => void navigate('/notifikasi')}
+            />
+          </div>
         )}
       </div>
 

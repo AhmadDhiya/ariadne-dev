@@ -90,3 +90,8 @@
   border-radius: var(--radius-full);
   background: var(--thread);
 }
+
+/* Gerak (Fase 10) */
+.ar-notif {
+  transition: var(--hover-transition);
+}

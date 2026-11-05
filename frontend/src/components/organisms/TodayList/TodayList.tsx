@@ -34,6 +34,7 @@ export interface TodayListProps {
 /**
  * Daftar "Hari Ini" (mockup 02): task milik saya per kelompok (Terlambat, Jatuh tempo hari ini, Sedang berjalan),
  * diurutkan menurut prioritas oleh server. Status dan "Tambah update" bisa dilakukan langsung dari baris.
+ * Di layar sempit (mockup 11) tiap kelompok menjadi judul berwarna dan tiap task menjadi kartu.
  */
 export function TodayList({
   groups,
@@ -94,6 +95,8 @@ export function TodayList({
                   onChangeStatus ? (
                     <StatusSelect
                       status={statusFromApi(task.status)}
+                      taskKey={task.key}
+                      taskTitle={task.title}
                       onChange={(next) => onChangeStatus(task, next)}
                     />
                   ) : (

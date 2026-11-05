@@ -1,0 +1,89 @@
+/* Gerak antarmuka (Fase 10, permintaan Ahmad 5 November 2026). Singkat dan tenang: drawer dan sheet bergeser,
+   dialog dan menu memudar sambil sedikit membesar, hover mengubah warna dengan halus.
+   Pengguna yang memilih "kurangi gerakan" di perangkatnya hanya mendapat perubahan seketika. */
+:root {
+  --motion-fast: 120ms;
+  --motion-enter: 220ms;
+  --motion-exit: 160ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  /* Properti yang berubah saat hover pada tombol, baris, dan kartu */
+  --hover-transition:
+    background-color var(--motion-fast) ease, border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease, box-shadow var(--motion-fast) ease,
+    transform var(--motion-fast) ease;
+}
+
+@keyframes ar-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes ar-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes ar-slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes ar-slide-out-right {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes ar-slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+}
+@keyframes ar-slide-out-left {
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes ar-slide-in-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes ar-slide-out-down {
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes ar-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+}
+@keyframes ar-pop-out {
+  to {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+}
+@keyframes ar-drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0.01ms;
+    --motion-enter: 0.01ms;
+    --motion-exit: 0.01ms;
+  }
+  *,
+  *::before,
+  *::after,
+  ::backdrop {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

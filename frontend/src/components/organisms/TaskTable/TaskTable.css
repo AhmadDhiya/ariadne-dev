@@ -35,3 +35,13 @@
 .ar-tasktable-empty {
   box-shadow: none;
 }
+
+/* Layar sempit: tabel tidak diperas, digulir ke samping di dalam kartunya */
+@media (max-width: 767px) {
+  .ar-tasktable {
+    overflow-x: auto;
+  }
+  .ar-tasktable table {
+    min-width: 1120px;
+  }
+}

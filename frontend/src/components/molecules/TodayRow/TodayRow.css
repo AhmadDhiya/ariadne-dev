@@ -55,3 +55,74 @@
   width: 128px;
   flex-shrink: 0;
 }
+
+/* Gerak (Fase 10) */
+.ar-todayrow {
+  transition: var(--hover-transition);
+}
+.ar-todayrow-action {
+  display: contents;
+}
+
+/* Layar sempit (mockup 11): satu kartu per task */
+@media (max-width: 767px) {
+  .ar-todayrow {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'prio id due'
+      'main main main'
+      'status status action';
+    align-items: center;
+    column-gap: var(--space-2);
+    row-gap: var(--space-2);
+    height: auto;
+    padding: var(--space-3);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+  }
+  .ar-todayrow > :first-child {
+    grid-area: prio;
+  }
+  /* Di layar sentuh, hover tertinggal setelah diketuk: kartu tidak disorot */
+  .ar-todayrow:hover {
+    background: var(--surface);
+  }
+  .ar-todayrow-id {
+    grid-area: id;
+    width: auto;
+  }
+  .ar-todayrow-main {
+    grid-area: main;
+  }
+  .ar-todayrow-title {
+    font-size: 15px;
+    white-space: normal;
+  }
+  .ar-todayrow-path {
+    white-space: normal;
+  }
+  .ar-todayrow-due {
+    grid-area: due;
+    width: auto;
+    text-align: right;
+  }
+  .ar-todayrow-status {
+    grid-area: status;
+    width: auto;
+  }
+  .ar-todayrow-action {
+    grid-area: action;
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2);
+  }
+  /* Tombol cukup besar untuk disentuh */
+  .ar-todayrow-action .ar-btn {
+    height: 36px;
+    padding: 0 var(--space-3);
+    font-size: 13px;
+    gap: 6px;
+  }
+}

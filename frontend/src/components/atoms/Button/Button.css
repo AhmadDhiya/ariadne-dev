@@ -44,3 +44,12 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/* Gerak (Fase 10) */
+.ar-btn {
+  transition: var(--hover-transition);
+}
+/* Tombol sedikit turun saat ditekan */
+.ar-btn:not([disabled]):active {
+  transform: translateY(1px);
+}
